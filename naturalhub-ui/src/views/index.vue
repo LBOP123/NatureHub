@@ -2,15 +2,15 @@
   <div class="app-container home">
     <el-row :gutter="20">
       <el-col :sm="24" :lg="12" style="padding-left: 20px">
-        <h2>若依后台管理框架</h2>
+        <h2>自然汇后台管理</h2>
         <p>
-          一直想做一款后台管理系统，看了很多优秀的开源项目但是发现没有合适自己的。于是利用空闲休息时间开始自己写一套后台系统。如此有了若依管理系统，她可以用于所有的Web应用程序，如网站管理后台，网站会员中心，CMS，CRM，OA等等，当然，您也可以对她进行深度定制，以做出更强系统。所有前端后台代码封装过后十分精简易上手，出错概率低。同时支持移动客户端访问。系统会陆续更新一些实用功能。
+          NatureHub 是一个帮助人们探索、了解生物世界的社群网络平台，核心功能覆盖管理端与用户端，结合大模型技术实现智能化生物知识服务。
         </p>
         <p>
           <b>当前版本:</b> <span>v{{ version }}</span>
         </p>
         <p>
-          <el-tag type="danger">&yen;免费开源</el-tag>
+<!--          <el-tag type="danger">&yen;免费开源</el-tag>-->
         </p>
         <p>
           <el-button
@@ -18,15 +18,15 @@
             size="mini"
             icon="el-icon-cloudy"
             plain
-            @click="goTarget('https://gitee.com/y_project/RuoYi-Vue')"
-            >访问码云</el-button
+            @click="goTarget('https://github.com/LBOP123/NatureHub.git')"
+            >访问用户端</el-button
           >
           <el-button
             size="mini"
             icon="el-icon-s-home"
             plain
-            @click="goTarget('http://ruoyi.vip')"
-            >访问主页</el-button
+            @click="goTarget('https://github.com/LBOP123/NatureHub.git')"
+            >访问github地址</el-button
           >
         </p>
       </el-col>
@@ -67,7 +67,7 @@
     </el-row>
     <el-divider />
     <el-row :gutter="20">
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
+<!--      <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
           <div slot="header" class="clearfix">
             <span>联系信息</span>
@@ -83,9 +83,9 @@
             <p>
               <i class="el-icon-user-solid"></i> QQ群：<s> 满937441 </s> <s> 满887144332 </s>
               <s> 满180251782 </s> <s> 满104180207 </s> <s> 满186866453 </s> <s> 满201396349 </s>
-              <s> 满101456076 </s> <s> 满101539465 </s> <s> 满264312783 </s> <s> 满167385320 </s> 
-              <s> 满104748341 </s> <s> 满160110482 </s> <s> 满170801498 </s> <s> 满108482800 </s> 
-              <s> 满101046199 </s> <s> 满136919097 </s> <s> 满143961921 </s> <s> 满174951577 </s> 
+              <s> 满101456076 </s> <s> 满101539465 </s> <s> 满264312783 </s> <s> 满167385320 </s>
+              <s> 满104748341 </s> <s> 满160110482 </s> <s> 满170801498 </s> <s> 满108482800 </s>
+              <s> 满101046199 </s> <s> 满136919097 </s> <s> 满143961921 </s> <s> 满174951577 </s>
               <s> 满161281055 </s> <s> 满138988063 </s> <s> 满151450850 </s> <s> 满224622315 </s>
               <s> 满287842588 </s> <s> 满187944233 </s> <s> 满228578329 </s> <a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=GsOo-OLz53J8y_9TPoO6XXSGNRTgbFxA&authKey=R7Uy%2Feq%2BZsoKNqHvRKhiXpypW7DAogoWapOawUGHokJSBIBIre2%2FoiAZeZBSLuBc&noverify=0&group_code=191164766" target="_blank">191164766</a>
             </p>
@@ -104,8 +104,8 @@
             </p>
           </div>
         </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
+      </el-col>-->
+<!--      <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
           <div slot="header" class="clearfix">
             <span>更新日志</span>
@@ -1031,8 +1031,8 @@
             </el-collapse-item>
           </el-collapse>
         </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
+      </el-col>-->
+<!--      <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
           <div slot="header" class="clearfix">
             <span>捐赠支持</span>
@@ -1048,7 +1048,7 @@
             >
           </div>
         </el-card>
-      </el-col>
+      </el-col>-->
     </el-row>
   </div>
 </template>
