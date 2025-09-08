@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.SpeciesTaxaMapper">
+    
+    <resultMap type="SpeciesTaxa" id="SpeciesTaxaResult">
+        <result property="taxonId"    column="taxon_id"    />
+        <result property="scientificName"    column="scientific_name"    />
+        <result property="chineseName"    column="chinese_name"    />
+        <result property="commonNames"    column="common_names"    />
+        <result property="rankLevel"    column="rank_level"    />
+        <result property="parentTaxonId"    column="parent_taxon_id"    />
+        <result property="taxonCode"    column="taxon_code"    />
+        <result property="isValid"    column="is_valid"    />
+        <result property="synonyms"    column="synonyms"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectSpeciesTaxaVo">
+        select taxon_id, scientific_name, chinese_name, common_names, rank_level, parent_taxon_id, taxon_code, is_valid, synonyms, create_by, create_time, update_by, update_time, remark from species_taxa
+    </sql>
+
+    <select id="selectSpeciesTaxaList" parameterType="SpeciesTaxa" resultMap="SpeciesTaxaResult">
+        <include refid="selectSpeciesTaxaVo"/>
+        <where>  
+            <if test="scientificName != null  and scientificName != ''"> and scientific_name like concat('%', #{scientificName}, '%')</if>
+            <if test="chineseName != null  and chineseName != ''"> and chinese_name like concat('%', #{chineseName}, '%')</if>
+            <if test="commonNames != null  and commonNames != ''"> and common_names = #{commonNames}</if>
+            <if test="rankLevel != null "> and rank_level = #{rankLevel}</if>
+            <if test="parentTaxonId != null "> and parent_taxon_id = #{parentTaxonId}</if>
+            <if test="taxonCode != null  and taxonCode != ''"> and taxon_code = #{taxonCode}</if>
+            <if test="isValid != null  and isValid != ''"> and is_valid = #{isValid}</if>
+            <if test="synonyms != null  and synonyms != ''"> and synonyms = #{synonyms}</if>
+            <if test="remark != null  and remark != ''"> and remark = #{remark}</if>
+        </where>
+    </select>
+    
+    <select id="selectSpeciesTaxaByTaxonId" parameterType="Long" resultMap="SpeciesTaxaResult">
+        <include refid="selectSpeciesTaxaVo"/>
+        where taxon_id = #{taxonId}
+    </select>
+
+    <insert id="insertSpeciesTaxa" parameterType="SpeciesTaxa" useGeneratedKeys="true" keyProperty="taxonId">
+        insert into species_taxa
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="scientificName != null and scientificName != ''">scientific_name,</if>
+            <if test="chineseName != null and chineseName != ''">chinese_name,</if>
+            <if test="commonNames != null">common_names,</if>
+            <if test="rankLevel != null">rank_level,</if>
+            <if test="parentTaxonId != null">parent_taxon_id,</if>
+            <if test="taxonCode != null">taxon_code,</if>
+            <if test="isValid != null and isValid != ''">is_valid,</if>
+            <if test="synonyms != null">synonyms,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="scientificName != null and scientificName != ''">#{scientificName},</if>
+            <if test="chineseName != null and chineseName != ''">#{chineseName},</if>
+            <if test="commonNames != null">#{commonNames},</if>
+            <if test="rankLevel != null">#{rankLevel},</if>
+            <if test="parentTaxonId != null">#{parentTaxonId},</if>
+            <if test="taxonCode != null">#{taxonCode},</if>
+            <if test="isValid != null and isValid != ''">#{isValid},</if>
+            <if test="synonyms != null">#{synonyms},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSpeciesTaxa" parameterType="SpeciesTaxa">
+        update species_taxa
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="scientificName != null and scientificName != ''">scientific_name = #{scientificName},</if>
+            <if test="chineseName != null and chineseName != ''">chinese_name = #{chineseName},</if>
+            <if test="commonNames != null">common_names = #{commonNames},</if>
+            <if test="rankLevel != null">rank_level = #{rankLevel},</if>
+            <if test="parentTaxonId != null">parent_taxon_id = #{parentTaxonId},</if>
+            <if test="taxonCode != null">taxon_code = #{taxonCode},</if>
+            <if test="isValid != null and isValid != ''">is_valid = #{isValid},</if>
+            <if test="synonyms != null">synonyms = #{synonyms},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where taxon_id = #{taxonId}
+    </update>
+
+    <delete id="deleteSpeciesTaxaByTaxonId" parameterType="Long">
+        delete from species_taxa where taxon_id = #{taxonId}
+    </delete>
+
+    <delete id="deleteSpeciesTaxaByTaxonIds" parameterType="String">
+        delete from species_taxa where taxon_id in 
+        <foreach item="taxonId" collection="array" open="(" separator="," close=")">
+            #{taxonId}
+        </foreach>
+    </delete>
+</mapper>
