@@ -42,6 +42,7 @@ public class SysRegisterService
     public String register(RegisterBody registerBody)
     {
         String msg = "", username = registerBody.getUsername(), password = registerBody.getPassword();
+        String userType = registerBody.getUserType();
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
 
@@ -79,6 +80,17 @@ public class SysRegisterService
             sysUser.setNickName(username);
             sysUser.setPwdUpdateDate(DateUtils.getNowDate());
             sysUser.setPassword(SecurityUtils.encryptPassword(password));
+            // 设置用户类型
+            if (StringUtils.isNotEmpty(userType)) {
+                sysUser.setUserType(userType);
+            }
+            // 设置邮箱和手机号
+            if (StringUtils.isNotEmpty(registerBody.getEmail())) {
+                sysUser.setEmail(registerBody.getEmail());
+            }
+            if (StringUtils.isNotEmpty(registerBody.getPhonenumber())) {
+                sysUser.setPhonenumber(registerBody.getPhonenumber());
+            }
             boolean regFlag = userService.registerUser(sysUser);
             if (!regFlag)
             {

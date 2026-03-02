@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.CommunityTopicMapper">
+    
+    <resultMap type="CommunityTopic" id="CommunityTopicResult">
+        <result property="topicId"    column="topic_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="userName"    column="user_name"    />
+        <result property="category"    column="category"    />
+        <result property="title"    column="title"    />
+        <result property="content"    column="content"    />
+        <result property="images"    column="images"    />
+        <result property="tags"    column="tags"    />
+        <result property="viewCount"    column="view_count"    />
+        <result property="likeCount"    column="like_count"    />
+        <result property="commentCount"    column="comment_count"    />
+        <result property="collectCount"    column="collect_count"    />
+        <result property="shareCount"    column="share_count"    />
+        <result property="hotScore"    column="hot_score"    />
+        <result property="isTop"    column="is_top"    />
+        <result property="isEssence"    column="is_essence"    />
+        <result property="status"    column="status"    />
+        <result property="auditStatus"    column="audit_status"    />
+        <result property="auditRemark"    column="audit_remark"    />
+        <result property="auditTime"    column="audit_time"    />
+        <result property="auditBy"    column="audit_by"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectCommunityTopicVo">
+        select topic_id, user_id, user_name, category, title, content, images, tags, 
+               view_count, like_count, comment_count, collect_count, share_count, hot_score, 
+               is_top, is_essence, status, audit_status, audit_remark, audit_time, audit_by,
+               create_by, create_time, update_by, update_time, remark 
+        from nh_community_topic
+    </sql>
+
+    <select id="selectCommunityTopicList" parameterType="CommunityTopic" resultMap="CommunityTopicResult">
+        <include refid="selectCommunityTopicVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="category != null  and category != ''"> and category = #{category}</if>
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
+            <if test="tags != null  and tags != ''"> and tags like concat('%', #{tags}, '%')</if>
+            <if test="isTop != null  and isTop != ''"> and is_top = #{isTop}</if>
+            <if test="isEssence != null  and isEssence != ''"> and is_essence = #{isEssence}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="auditStatus != null  and auditStatus != ''"> and audit_status = #{auditStatus}</if>
+        </where>
+        order by is_top desc, hot_score desc, create_time desc
+    </select>
+    
+    <select id="selectCommunityTopicByTopicId" parameterType="Long" resultMap="CommunityTopicResult">
+        <include refid="selectCommunityTopicVo"/>
+        where topic_id = #{topicId}
+    </select>
+        
+    <insert id="insertCommunityTopic" parameterType="CommunityTopic" useGeneratedKeys="true" keyProperty="topicId">
+        insert into nh_community_topic
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="userName != null">user_name,</if>
+            <if test="category != null and category != ''">category,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="content != null and content != ''">content,</if>
+            <if test="images != null">images,</if>
+            <if test="tags != null">tags,</if>
+            <if test="viewCount != null">view_count,</if>
+            <if test="likeCount != null">like_count,</if>
+            <if test="commentCount != null">comment_count,</if>
+            <if test="collectCount != null">collect_count,</if>
+            <if test="shareCount != null">share_count,</if>
+            <if test="hotScore != null">hot_score,</if>
+            <if test="isTop != null">is_top,</if>
+            <if test="isEssence != null">is_essence,</if>
+            <if test="status != null">status,</if>
+            <if test="auditStatus != null">audit_status,</if>
+            <if test="auditRemark != null">audit_remark,</if>
+            <if test="auditTime != null">audit_time,</if>
+            <if test="auditBy != null">audit_by,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="userName != null">#{userName},</if>
+            <if test="category != null and category != ''">#{category},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="content != null and content != ''">#{content},</if>
+            <if test="images != null">#{images},</if>
+            <if test="tags != null">#{tags},</if>
+            <if test="viewCount != null">#{viewCount},</if>
+            <if test="likeCount != null">#{likeCount},</if>
+            <if test="commentCount != null">#{commentCount},</if>
+            <if test="collectCount != null">#{collectCount},</if>
+            <if test="shareCount != null">#{shareCount},</if>
+            <if test="hotScore != null">#{hotScore},</if>
+            <if test="isTop != null">#{isTop},</if>
+            <if test="isEssence != null">#{isEssence},</if>
+            <if test="status != null">#{status},</if>
+            <if test="auditStatus != null">#{auditStatus},</if>
+            <if test="auditRemark != null">#{auditRemark},</if>
+            <if test="auditTime != null">#{auditTime},</if>
+            <if test="auditBy != null">#{auditBy},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCommunityTopic" parameterType="CommunityTopic">
+        update nh_community_topic
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="userName != null">user_name = #{userName},</if>
+            <if test="category != null and category != ''">category = #{category},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="content != null and content != ''">content = #{content},</if>
+            <if test="images != null">images = #{images},</if>
+            <if test="tags != null">tags = #{tags},</if>
+            <if test="viewCount != null">view_count = #{viewCount},</if>
+            <if test="likeCount != null">like_count = #{likeCount},</if>
+            <if test="commentCount != null">comment_count = #{commentCount},</if>
+            <if test="collectCount != null">collect_count = #{collectCount},</if>
+            <if test="shareCount != null">share_count = #{shareCount},</if>
+            <if test="hotScore != null">hot_score = #{hotScore},</if>
+            <if test="isTop != null">is_top = #{isTop},</if>
+            <if test="isEssence != null">is_essence = #{isEssence},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="auditRemark != null">audit_remark = #{auditRemark},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+            <if test="auditBy != null">audit_by = #{auditBy},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where topic_id = #{topicId}
+    </update>
+
+    <delete id="deleteCommunityTopicByTopicId" parameterType="Long">
+        delete from nh_community_topic where topic_id = #{topicId}
+    </delete>
+
+    <delete id="deleteCommunityTopicByTopicIds" parameterType="String">
+        delete from nh_community_topic where topic_id in 
+        <foreach item="topicId" collection="array" open="(" separator="," close=")">
+            #{topicId}
+        </foreach>
+    </delete>
+
+    <update id="incrementViewCount" parameterType="Long">
+        update nh_community_topic set view_count = view_count + 1 where topic_id = #{topicId}
+    </update>
+
+    <update id="updateTopicStats" parameterType="Long">
+        update nh_community_topic t
+        set t.like_count = (select count(*) from nh_community_like where target_type = 'topic' and target_id = #{topicId}),
+            t.comment_count = (select count(*) from nh_community_comment where topic_id = #{topicId} and status = '0'),
+            t.collect_count = (select count(*) from nh_community_collect where topic_id = #{topicId}),
+            t.hot_score = (t.view_count * 0.1 + t.like_count * 2 + t.comment_count * 3 + t.collect_count * 5)
+        where t.topic_id = #{topicId}
+    </update>
+
+    <select id="checkUserLike" resultType="int">
+        select count(*) from nh_community_like 
+        where user_id = #{userId} and target_type = 'topic' and target_id = #{topicId}
+    </select>
+
+    <select id="checkUserCollect" resultType="int">
+        select count(*) from nh_community_collect 
+        where user_id = #{userId} and topic_id = #{topicId}
+    </select>
+</mapper>
