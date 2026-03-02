@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.ObservationDiaryMapper">
+    
+    <resultMap type="ObservationDiary" id="ObservationDiaryResult">
+        <result property="diaryId"    column="diary_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="title"    column="title"    />
+        <result property="observationDate"    column="observation_date"    />
+        <result property="location"    column="location"    />
+        <result property="routeInfo"    column="route_info"    />
+        <result property="weather"    column="weather"    />
+        <result property="temperature"    column="temperature"    />
+        <result property="speciesFound"    column="species_found"    />
+        <result property="content"    column="content"    />
+        <result property="images"    column="images"    />
+        <result property="visibility"    column="visibility"    />
+        <result property="isArchived"    column="is_archived"    />
+        <result property="tags"    column="tags"    />
+        <result property="observationIds"    column="observation_ids"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectObservationDiaryVo">
+        select diary_id, user_id, title, observation_date, location, route_info, weather, temperature, species_found, content, images, visibility, is_archived, tags, observation_ids, create_by, create_time, update_by, update_time, remark from nh_observation_diary
+    </sql>
+
+    <select id="selectObservationDiaryList" parameterType="ObservationDiary" resultMap="ObservationDiaryResult">
+        <include refid="selectObservationDiaryVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
+            <if test="observationDate != null "> and observation_date = #{observationDate}</if>
+            <if test="location != null  and location != ''"> and location like concat('%', #{location}, '%')</if>
+            <if test="weather != null  and weather != ''"> and weather = #{weather}</if>
+            <if test="visibility != null  and visibility != ''"> and visibility = #{visibility}</if>
+            <if test="isArchived != null  and isArchived != ''"> and is_archived = #{isArchived}</if>
+            <if test="tags != null  and tags != ''"> and tags like concat('%', #{tags}, '%')</if>
+            <if test="params.beginObservationDate != null and params.beginObservationDate != '' and params.endObservationDate != null and params.endObservationDate != ''"> and observation_date between #{params.beginObservationDate} and #{params.endObservationDate}</if>
+        </where>
+        order by observation_date desc, create_time desc
+    </select>
+    
+    <select id="selectObservationDiaryByDiaryId" parameterType="Long" resultMap="ObservationDiaryResult">
+        <include refid="selectObservationDiaryVo"/>
+        where diary_id = #{diaryId}
+    </select>
+        
+    <insert id="insertObservationDiary" parameterType="ObservationDiary" useGeneratedKeys="true" keyProperty="diaryId">
+        insert into nh_observation_diary
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="observationDate != null">observation_date,</if>
+            <if test="location != null">location,</if>
+            <if test="routeInfo != null">route_info,</if>
+            <if test="weather != null">weather,</if>
+            <if test="temperature != null">temperature,</if>
+            <if test="speciesFound != null">species_found,</if>
+            <if test="content != null">content,</if>
+            <if test="images != null">images,</if>
+            <if test="visibility != null">visibility,</if>
+            <if test="isArchived != null">is_archived,</if>
+            <if test="tags != null">tags,</if>
+            <if test="observationIds != null">observation_ids,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="observationDate != null">#{observationDate},</if>
+            <if test="location != null">#{location},</if>
+            <if test="routeInfo != null">#{routeInfo},</if>
+            <if test="weather != null">#{weather},</if>
+            <if test="temperature != null">#{temperature},</if>
+            <if test="speciesFound != null">#{speciesFound},</if>
+            <if test="content != null">#{content},</if>
+            <if test="images != null">#{images},</if>
+            <if test="visibility != null">#{visibility},</if>
+            <if test="isArchived != null">#{isArchived},</if>
+            <if test="tags != null">#{tags},</if>
+            <if test="observationIds != null">#{observationIds},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateObservationDiary" parameterType="ObservationDiary">
+        update nh_observation_diary
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="observationDate != null">observation_date = #{observationDate},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="routeInfo != null">route_info = #{routeInfo},</if>
+            <if test="weather != null">weather = #{weather},</if>
+            <if test="temperature != null">temperature = #{temperature},</if>
+            <if test="speciesFound != null">species_found = #{speciesFound},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="images != null">images = #{images},</if>
+            <if test="visibility != null">visibility = #{visibility},</if>
+            <if test="isArchived != null">is_archived = #{isArchived},</if>
+            <if test="tags != null">tags = #{tags},</if>
+            <if test="observationIds != null">observation_ids = #{observationIds},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where diary_id = #{diaryId}
+    </update>
+
+    <delete id="deleteObservationDiaryByDiaryId" parameterType="Long">
+        delete from nh_observation_diary where diary_id = #{diaryId}
+    </delete>
+
+    <delete id="deleteObservationDiaryByDiaryIds" parameterType="String">
+        delete from nh_observation_diary where diary_id in 
+        <foreach item="diaryId" collection="array" open="(" separator="," close=")">
+            #{diaryId}
+        </foreach>
+    </delete>
+</mapper>

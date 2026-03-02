@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.CommunityInteractionMapper">
+    
+    <insert id="insertLike">
+        insert into nh_community_like (user_id, target_type, target_id, create_time)
+        values (#{userId}, #{targetType}, #{targetId}, now())
+    </insert>
+
+    <delete id="deleteLike">
+        delete from nh_community_like 
+        where user_id = #{userId} and target_type = #{targetType} and target_id = #{targetId}
+    </delete>
+
+    <insert id="insertCollect">
+        insert into nh_community_collect (user_id, topic_id, create_time)
+        values (#{userId}, #{topicId}, now())
+    </insert>
+
+    <delete id="deleteCollect">
+        delete from nh_community_collect 
+        where user_id = #{userId} and topic_id = #{topicId}
+    </delete>
+
+    <select id="countLikes" resultType="int">
+        select count(*) from nh_community_like 
+        where target_type = #{targetType} and target_id = #{targetId}
+    </select>
+
+    <select id="countCollects" resultType="int">
+        select count(*) from nh_community_collect where topic_id = #{topicId}
+    </select>
+</mapper>

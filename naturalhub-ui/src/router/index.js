@@ -5,6 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import UserLayout from '@/layout/UserLayout'
 
 /**
  * Note: 路由配置项
@@ -85,6 +86,92 @@ export const constantRoutes = [
         component: () => import('@/views/system/user/profile/index'),
         name: 'Profile',
         meta: { title: '个人中心', icon: 'user' }
+      }
+    ]
+  },
+  // 用户端路由
+  {
+    path: '/user/login',
+    component: () => import('@/views/user/login'),
+    hidden: true,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/user/register',
+    component: () => import('@/views/user/register'),
+    hidden: true,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/user',
+    component: UserLayout,
+    hidden: true,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/user/index'),
+        name: 'UserIndex',
+        meta: { title: '用户首页' }
+      },
+      {
+        path: 'upload',
+        component: () => import('@/views/user/upload'),
+        name: 'UserUpload',
+        meta: { title: '生物识别上传' }
+      },
+      {
+        path: 'observations',
+        component: () => import('@/views/user/observations'),
+        name: 'UserObservations',
+        meta: { title: '我的观察记录' }
+      },
+      {
+        path: 'identify',
+        component: () => import('@/views/user/identify'),
+        name: 'UserIdentify',
+        meta: { title: '物种鉴定求助' }
+      },
+      {
+        path: 'survey',
+        component: () => import('@/views/user/survey'),
+        name: 'UserSurvey',
+        meta: { title: '野外调查记录' }
+      },
+      {
+        path: 'qa',
+        component: () => import('@/views/user/qa'),
+        name: 'UserQA',
+        meta: { title: 'AI科普问答' }
+      },
+      {
+        path: 'knowledge',
+        component: () => import('@/views/user/knowledge'),
+        name: 'UserKnowledge',
+        meta: { title: '物种知识图谱' }
+      },
+      {
+        path: 'community',
+        component: () => import('@/views/user/community'),
+        name: 'UserCommunity',
+        meta: { title: '社群交流' }
+      },
+      {
+        path: 'diary',
+        component: () => import('@/views/user/diary'),
+        name: 'UserDiary',
+        meta: { title: '个人观察日志' }
+      },
+      {
+        path: 'myProfile',
+        component: () => import('@/views/user/profile'),
+        name: 'UserProfile',
+        meta: { title: '个人中心' }
+      },
+      {
+        path: 'settings',
+        component: () => import('@/views/user/settings'),
+        name: 'UserSettings',
+        meta: { title: '设置' }
       }
     ]
   }
