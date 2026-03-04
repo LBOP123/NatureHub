@@ -162,6 +162,36 @@ export const constantRoutes = [
         meta: { title: '个人观察日志' }
       },
       {
+        path: 'bioRecognition',
+        component: () => import('@/views/user/bioRecognition/index'),
+        name: 'BioRecognition',
+        meta: { title: '生物识别上传' }
+      },
+      {
+        path: 'observation/list',
+        component: () => import('@/views/user/observation/list'),
+        name: 'ObservationList',
+        meta: { title: '观察记录列表' }
+      },
+      {
+        path: 'observation/upload',
+        component: () => import('@/views/user/observation/upload'),
+        name: 'ObservationUpload',
+        meta: { title: '新增观察记录' }
+      },
+      {
+        path: 'observation/upload/:recordId',
+        component: () => import('@/views/user/observation/upload'),
+        name: 'ObservationEdit',
+        meta: { title: '编辑观察记录' }
+      },
+      {
+        path: 'observation/detail/:recordId',
+        component: () => import('@/views/user/observation/detail'),
+        name: 'ObservationDetail',
+        meta: { title: '观察记录详情' }
+      },
+      {
         path: 'myProfile',
         component: () => import('@/views/user/profile'),
         name: 'UserProfile',

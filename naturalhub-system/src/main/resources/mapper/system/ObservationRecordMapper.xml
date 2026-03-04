@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.ObservationRecordMapper">
+    
+    <resultMap type="ObservationRecord" id="ObservationRecordResult">
+        <result property="recordId"    column="record_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="title"    column="title"    />
+        <result property="observationTime"    column="observation_time"    />
+        <result property="location"    column="location"    />
+        <result property="latitude"    column="latitude"    />
+        <result property="longitude"    column="longitude"    />
+        <result property="speciesType"    column="species_type"    />
+        <result property="speciesName"    column="species_name"    />
+        <result property="habitat"    column="habitat"    />
+        <result property="description"    column="description"    />
+        <result property="images"    column="images"    />
+        <result property="videos"    column="videos"    />
+        <result property="reviewStatus"    column="review_status"    />
+        <result property="submitTime"    column="submit_time"    />
+        <result property="reviewTime"    column="review_time"    />
+        <result property="reviewerId"    column="reviewer_id"    />
+        <result property="reviewComment"    column="review_comment"    />
+        <result property="rejectReason"    column="reject_reason"    />
+        <result property="specimenId"    column="specimen_id"    />
+        <result property="isShared"    column="is_shared"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectObservationRecordVo">
+        select record_id, user_id, title, observation_time, location, latitude, longitude, 
+               species_type, species_name, habitat, description, images, videos, 
+               review_status, submit_time, review_time, reviewer_id, review_comment, 
+               reject_reason, specimen_id, is_shared, del_flag, create_by, create_time, 
+               update_by, update_time, remark 
+        from nh_observation_record
+    </sql>
+
+    <select id="selectObservationRecordList" parameterType="ObservationRecord" resultMap="ObservationRecordResult">
+        <include refid="selectObservationRecordVo"/>
+        <where>  
+            del_flag = '0'
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
+            <if test="location != null  and location != ''"> and location like concat('%', #{location}, '%')</if>
+            <if test="speciesType != null  and speciesType != ''"> and species_type = #{speciesType}</if>
+            <if test="speciesName != null  and speciesName != ''"> and species_name like concat('%', #{speciesName}, '%')</if>
+            <if test="reviewStatus != null  and reviewStatus != ''"> and review_status = #{reviewStatus}</if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                and date_format(observation_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                and date_format(observation_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectObservationRecordByRecordId" parameterType="Long" resultMap="ObservationRecordResult">
+        <include refid="selectObservationRecordVo"/>
+        where record_id = #{recordId}
+    </select>
+        
+    <insert id="insertObservationRecord" parameterType="ObservationRecord" useGeneratedKeys="true" keyProperty="recordId">
+        insert into nh_observation_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="observationTime != null">observation_time,</if>
+            <if test="location != null and location != ''">location,</if>
+            <if test="latitude != null">latitude,</if>
+            <if test="longitude != null">longitude,</if>
+            <if test="speciesType != null and speciesType != ''">species_type,</if>
+            <if test="speciesName != null and speciesName != ''">species_name,</if>
+            <if test="habitat != null">habitat,</if>
+            <if test="description != null and description != ''">description,</if>
+            <if test="images != null">images,</if>
+            <if test="videos != null">videos,</if>
+            <if test="reviewStatus != null">review_status,</if>
+            <if test="submitTime != null">submit_time,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="observationTime != null">#{observationTime},</if>
+            <if test="location != null and location != ''">#{location},</if>
+            <if test="latitude != null">#{latitude},</if>
+            <if test="longitude != null">#{longitude},</if>
+            <if test="speciesType != null and speciesType != ''">#{speciesType},</if>
+            <if test="speciesName != null and speciesName != ''">#{speciesName},</if>
+            <if test="habitat != null">#{habitat},</if>
+            <if test="description != null and description != ''">#{description},</if>
+            <if test="images != null">#{images},</if>
+            <if test="videos != null">#{videos},</if>
+            <if test="reviewStatus != null">#{reviewStatus},</if>
+            <if test="submitTime != null">#{submitTime},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+         </trim>
+    </insert>
+
+    <update id="updateObservationRecord" parameterType="ObservationRecord">
+        update nh_observation_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="observationTime != null">observation_time = #{observationTime},</if>
+            <if test="location != null and location != ''">location = #{location},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="speciesType != null and speciesType != ''">species_type = #{speciesType},</if>
+            <if test="speciesName != null and speciesName != ''">species_name = #{speciesName},</if>
+            <if test="habitat != null">habitat = #{habitat},</if>
+            <if test="description != null and description != ''">description = #{description},</if>
+            <if test="images != null">images = #{images},</if>
+            <if test="videos != null">videos = #{videos},</if>
+            <if test="reviewStatus != null">review_status = #{reviewStatus},</if>
+            <if test="submitTime != null">submit_time = #{submitTime},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewComment != null">review_comment = #{reviewComment},</if>
+            <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
+            <if test="specimenId != null">specimen_id = #{specimenId},</if>
+            <if test="isShared != null">is_shared = #{isShared},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where record_id = #{recordId}
+    </update>
+
+    <delete id="deleteObservationRecordByRecordId" parameterType="Long">
+        update nh_observation_record set del_flag = '2' where record_id = #{recordId}
+    </delete>
+
+    <delete id="deleteObservationRecordByRecordIds" parameterType="Long">
+        update nh_observation_record set del_flag = '2' where record_id in
+        <foreach item="recordId" collection="array" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </delete>
+
+    <update id="submitForReview" parameterType="Long">
+        update nh_observation_record 
+        set review_status = 'pending', 
+            submit_time = sysdate(),
+            update_time = sysdate()
+        where record_id = #{recordId}
+    </update>
+</mapper>

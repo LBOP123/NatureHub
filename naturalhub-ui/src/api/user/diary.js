@@ -67,3 +67,38 @@ export function toggleVisibility(diaryId, visibility) {
     method: 'put'
   })
 }
+
+// 提交审核
+export function submitForReview(diaryId) {
+  return request({
+    url: '/user/diary/submit/' + diaryId,
+    method: 'put'
+  })
+}
+
+// 分享到社群
+export function shareToCommunity(data) {
+  return request({
+    url: '/user/diary/share',
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取审核状态
+export function getReviewStatus(diaryId) {
+  return request({
+    url: '/user/diary/review/' + diaryId,
+    method: 'get'
+  })
+}
+
+// 上传图片/视频到OSS
+export function uploadFile(data) {
+  return request({
+    url: '/common/upload',
+    method: 'post',
+    data: data,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}

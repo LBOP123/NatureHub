@@ -128,3 +128,12 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+baidu:
+  ai:
+    # API Key（请替换为你的实际Key）
+    api-key: ErJWvJtUlv48YRg7FWlvz81w
+    # Secret Key（请替换为你的实际Key）
+    secret-key: tpaZv0Tpuy5032MCXDxnrsuQOsRIE233
+    # Token缓存时间（秒），默认25天
+    token-expire-time: 2160000

@@ -11,14 +11,17 @@
           <a @click.prevent="$router.push('/user/index')" :class="{ active: isActive('/user/index') }">
             <i class="el-icon-s-home"></i> 首页
           </a>
-          <a @click.prevent="$router.push('/user/observations')" :class="{ active: isActive('/user/observations') }">
-            <i class="el-icon-view"></i> 观察
+          <a @click.prevent="$router.push('/user/observation/list')" :class="{ active: isActive('/user/observation') }">
+            <i class="el-icon-view"></i> 记录
           </a>
-          <a @click.prevent="$router.push('/user/identify')" :class="{ active: isActive('/user/identify') }">
-            <i class="el-icon-search"></i> 鉴定
+          <a @click.prevent="$router.push('/user/diary')" :class="{ active: isActive('/user/diary') }">
+            <i class="el-icon-notebook-2"></i> 日志
           </a>
           <a @click.prevent="$router.push('/user/community')" :class="{ active: isActive('/user/community') }">
             <i class="el-icon-chat-dot-round"></i> 社群
+          </a>
+          <a @click.prevent="$router.push('/user/myProfile')" :class="{ active: isActive('/user/myProfile') }">
+            <i class="el-icon-user"></i> 个人中心
           </a>
         </nav>
 
@@ -91,7 +94,7 @@ export default {
   },
   methods: {
     isActive(path) {
-      return this.$route.path === path
+      return this.$route.path.startsWith(path)
     },
     handleCommand(command) {
       switch (command) {

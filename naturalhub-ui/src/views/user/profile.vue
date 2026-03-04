@@ -9,7 +9,6 @@
             <span class="nickname">{{ userInfo.nickName || userInfo.userName || userInfo.name }}</span>
             <el-tag type="success" size="small" class="identity-tag">{{ identityLabel }}</el-tag>
           </div>
-          <div class="username">@{{ userInfo.userName || userInfo.name }}</div>
           <div class="intro">
             {{ userInfo.intro || '热爱自然，乐于分享观察与发现。' }}
           </div>
@@ -449,9 +448,12 @@ export default {
           intro: storeUser.remark || storeUser.intro,
           createTime: storeUser.createTime
         }
-        this.identityLabel = (this.$store.getters.roles || []).includes('expert') ? '鉴定者' : '探索者'
 
-        // ✅ 关键：查询自己的话题/日志
+        const userType = parseInt(storeUser.userType || 1);
+        if (userType === 0) this.identityLabel = "管理员";
+        else if (userType === 2) this.identityLabel = "鉴定者";
+        else this.identityLabel = "探索者";
+
         this.topicQuery.userId = targetUserId
         this.diaryQuery.userId = targetUserId
 
@@ -472,7 +474,11 @@ export default {
             intro: data.remark,
             createTime: data.createTime
           }
-          this.identityLabel = data.userType === 'supervisor' ? '鉴定者' : '探索者'
+
+          const userType = parseInt(data.userType || 1);
+          if (userType === 0) this.identityLabel = "管理员";
+          else if (userType === 2) this.identityLabel = "鉴定者";
+          else this.identityLabel = "探索者";
 
           this.topicQuery.userId = targetUserId
           this.diaryQuery.userId = targetUserId
