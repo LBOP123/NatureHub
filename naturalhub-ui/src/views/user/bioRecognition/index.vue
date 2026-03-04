@@ -231,24 +231,20 @@ export default {
     },
 
     handleSuccess(response, file) {
-      this.loading = false
-      console.log('上传响应:', response)
+      this.loading = false;
+      console.log('上传响应:', response);
 
       if (response.code === 200) {
-        this.imageUrl = response.url || response.fileName || response.data || response.imgUrl
-
+        this.imageUrl = response.url;
         if (this.imageUrl) {
-          if (!this.imageUrl.startsWith('http')) {
-            this.imageUrl = process.env.VUE_APP_BASE_API + this.imageUrl
-          }
-          this.$message.success('上传成功，点击"开始识别"')
-          console.log('图片URL:', this.imageUrl)
+          this.$message.success('上传成功，点击"开始识别"');
+          console.log('图片预览URL:', this.imageUrl);
         } else {
-          this.$message.error('上传成功，但未获取到图片地址')
-          console.error('返回数据异常:', response)
+          this.$message.error('上传成功，但未获取到图片地址');
+          console.error('返回数据异常:', response);
         }
       } else {
-        this.$message.error(response.msg || '上传失败')
+        this.$message.error(response.msg || '上传失败');
       }
     },
 
