@@ -1,5 +1,6 @@
 package com.naturalhub.framework.web.service;
 
+import com.naturalhub.framework.config.AvatarUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.naturalhub.common.constant.CacheConstants;
@@ -80,10 +81,14 @@ public class SysRegisterService
             sysUser.setNickName(username);
             sysUser.setPwdUpdateDate(DateUtils.getNowDate());
             sysUser.setPassword(SecurityUtils.encryptPassword(password));
+
+
             // 设置用户类型
             if (StringUtils.isNotEmpty(userType)) {
                 sysUser.setUserType(userType);
             }
+
+
             // 设置邮箱和手机号
             if (StringUtils.isNotEmpty(registerBody.getEmail())) {
                 sysUser.setEmail(registerBody.getEmail());
@@ -91,6 +96,7 @@ public class SysRegisterService
             if (StringUtils.isNotEmpty(registerBody.getPhonenumber())) {
                 sysUser.setPhonenumber(registerBody.getPhonenumber());
             }
+
             boolean regFlag = userService.registerUser(sysUser);
             if (!regFlag)
             {

@@ -17,11 +17,11 @@ const isWhiteList = (path) => {
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
-  
+
   // 判断是否是用户端路由
   const isUserRoute = to.path.startsWith('/user/')
   const isUserAuthRoute = to.path === '/user/login' || to.path === '/user/register'
-  
+
   if (getToken()) {
     to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
     /* has token*/

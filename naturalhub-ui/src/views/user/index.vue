@@ -4,10 +4,10 @@
       <h1 class="hero-title">🌿 欢迎来到自然汇</h1>
       <p class="hero-subtitle">记录每一次与自然的相遇，探索生命的奥秘</p>
     </div>
-    
+
     <div class="features-grid">
-      <div 
-        v-for="feature in features" 
+      <div
+        v-for="feature in features"
         :key="feature.id"
         class="feature-card"
         @click="navigateTo(feature.path)"
@@ -32,14 +32,14 @@ export default {
           icon: "🔍",
           title: "生物识别上传",
           description: "拍照上传，AI智能识别物种信息",
-          path: "/user/upload"
+          path: "/user/bioRecognition"
         },
         {
           id: 2,
           icon: "📝",
-          title: "我的观察记录",
-          description: "查看和管理你的所有观察记录",
-          path: "/user/observations"
+          title: "观察记录管理",
+          description: "记录和管理你的自然观察",
+          path: "/user/observation/list"
         },
         {
           id: 3,
@@ -107,7 +107,7 @@ export default {
   text-align: center;
   margin-bottom: 60px;
   animation: fadeIn 0.8s ease-out;
-  
+
   .hero-title {
     font-size: 42px;
     font-weight: 700;
@@ -115,7 +115,7 @@ export default {
     margin: 0 0 16px 0;
     letter-spacing: 1px;
   }
-  
+
   .hero-subtitle {
     font-size: 18px;
     color: #7f8c8d;
@@ -161,7 +161,7 @@ export default {
   border: 2px solid #f0f0f0;
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -173,46 +173,46 @@ export default {
     transform: scaleX(0);
     transition: transform 0.3s ease;
   }
-  
+
   &:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
     border-color: #43cea2;
-    
+
     &::before {
       transform: scaleX(1);
     }
-    
+
     .feature-icon {
       transform: scale(1.1) rotate(5deg);
     }
-    
+
     .feature-arrow {
       transform: translateX(8px);
       opacity: 1;
     }
   }
-  
+
   .feature-icon {
     font-size: 48px;
     margin-bottom: 16px;
     transition: transform 0.3s ease;
   }
-  
+
   .feature-title {
     font-size: 20px;
     font-weight: 600;
     color: #2c3e50;
     margin: 0 0 12px 0;
   }
-  
+
   .feature-desc {
     font-size: 14px;
     color: #7f8c8d;
     line-height: 1.6;
     margin: 0;
   }
-  
+
   .feature-arrow {
     position: absolute;
     bottom: 24px;
@@ -227,21 +227,21 @@ export default {
 @media (max-width: 768px) {
   .hero-section {
     margin-bottom: 40px;
-    
+
     .hero-title {
       font-size: 32px;
     }
-    
+
     .hero-subtitle {
       font-size: 16px;
     }
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .feature-card {
     padding: 24px 20px;
   }
