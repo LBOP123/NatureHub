@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import com.naturalhub.common.core.domain.AjaxResult;
 import com.naturalhub.common.utils.StringUtils;
 import com.naturalhub.common.utils.file.FileUploadUtils;
 import com.naturalhub.common.utils.file.FileUtils;
+import com.naturalhub.common.utils.qiniu.QiniuUtil;
 import com.naturalhub.framework.config.ServerConfig;
 
 /**
@@ -33,6 +35,12 @@ public class CommonController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired(required = false)
+    private QiniuUtil qiniuUtil;
+
+    @Value("${qiniu.enabled:false}")
+    private boolean qiniuEnabled;
 
     private static final String FILE_DELIMETER = ",";
 
@@ -70,54 +78,92 @@ public class CommonController
 
     /**
      * 通用上传请求（单个）
+     * 支持七牛云和本地上传
      */
     @PostMapping("/upload")
     public AjaxResult uploadFile(MultipartFile file) throws Exception
     {
         try
         {
-            // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
-            // 上传并返回新文件名称
-            String fileName = FileUploadUtils.upload(filePath, file);
-            String url = serverConfig.getUrl() + fileName;
-            AjaxResult ajax = AjaxResult.success();
-            ajax.put("url", url);
-            ajax.put("fileName", fileName);
-            ajax.put("newFileName", FileUtils.getName(fileName));
-            ajax.put("originalFilename", file.getOriginalFilename());
-            return ajax;
+            // 判断是否启用七牛云
+            if (qiniuEnabled && qiniuUtil != null)
+            {
+                log.info("使用七牛云上传文件: {}", file.getOriginalFilename());
+                String url = qiniuUtil.uploadFile(file);
+                AjaxResult ajax = AjaxResult.success();
+                ajax.put("url", url);
+                ajax.put("fileName", url);
+                ajax.put("newFileName", FileUtils.getName(url));
+                ajax.put("originalFilename", file.getOriginalFilename());
+                return ajax;
+            }
+            else
+            {
+                log.info("使用本地上传文件: {}", file.getOriginalFilename());
+                // 上传文件路径
+                String filePath = RuoYiConfig.getUploadPath();
+                // 上传并返回新文件名称
+                String fileName = FileUploadUtils.upload(filePath, file);
+                String url = serverConfig.getUrl() + fileName;
+                AjaxResult ajax = AjaxResult.success();
+                ajax.put("url", url);
+                ajax.put("fileName", fileName);
+                ajax.put("newFileName", FileUtils.getName(fileName));
+                ajax.put("originalFilename", file.getOriginalFilename());
+                return ajax;
+            }
         }
         catch (Exception e)
         {
+            log.error("上传文件失败", e);
             return AjaxResult.error(e.getMessage());
         }
     }
 
     /**
      * 通用上传请求（多个）
+     * 支持七牛云和本地上传
      */
     @PostMapping("/uploads")
     public AjaxResult uploadFiles(List<MultipartFile> files) throws Exception
     {
         try
         {
-            // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
             List<String> urls = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();
             List<String> newFileNames = new ArrayList<String>();
             List<String> originalFilenames = new ArrayList<String>();
-            for (MultipartFile file : files)
+            
+            // 判断是否启用七牛云
+            if (qiniuEnabled && qiniuUtil != null)
             {
-                // 上传并返回新文件名称
-                String fileName = FileUploadUtils.upload(filePath, file);
-                String url = serverConfig.getUrl() + fileName;
-                urls.add(url);
-                fileNames.add(fileName);
-                newFileNames.add(FileUtils.getName(fileName));
-                originalFilenames.add(file.getOriginalFilename());
+                log.info("使用七牛云批量上传文件，数量: {}", files.size());
+                for (MultipartFile file : files)
+                {
+                    String url = qiniuUtil.uploadFile(file);
+                    urls.add(url);
+                    fileNames.add(url);
+                    newFileNames.add(FileUtils.getName(url));
+                    originalFilenames.add(file.getOriginalFilename());
+                }
             }
+            else
+            {
+                log.info("使用本地批量上传文件，数量: {}", files.size());
+                // 上传文件路径
+                String filePath = RuoYiConfig.getUploadPath();
+                for (MultipartFile file : files)
+                {
+                    // 上传并返回新文件名称
+                    String fileName = FileUploadUtils.upload(filePath, file);
+                    String url = serverConfig.getUrl() + fileName;
+                    urls.add(url);
+                    fileNames.add(fileName);
+                    newFileNames.add(FileUtils.getName(fileName));
+                    originalFilenames.add(file.getOriginalFilename());
+                }
+            }
+            
             AjaxResult ajax = AjaxResult.success();
             ajax.put("urls", StringUtils.join(urls, FILE_DELIMETER));
             ajax.put("fileNames", StringUtils.join(fileNames, FILE_DELIMETER));
@@ -127,6 +173,7 @@ public class CommonController
         }
         catch (Exception e)
         {
+            log.error("批量上传文件失败", e);
             return AjaxResult.error(e.getMessage());
         }
     }

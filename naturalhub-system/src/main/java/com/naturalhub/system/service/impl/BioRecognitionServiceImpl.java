@@ -11,33 +11,26 @@ import com.naturalhub.system.service.IBioRecognitionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * 生物识别Service实现类
- * 适配服务器路径：/home/ruoyi/uploadPath/upload/xxx
- * 适配访问URL：http://81.68.236.229/profile/upload/xxx
+ * 使用七牛云URL直接传递给百度API，避免Base64传输过大
+ * 
  * @author naturalhub
  * @date 2025-03-03
  */
-@Service
+@Service("bioRecognitionSystemServiceImpl")
 public class BioRecognitionServiceImpl implements IBioRecognitionService {
 
     private static final Logger log = LoggerFactory.getLogger(BioRecognitionServiceImpl.class);
 
     @Autowired
     private BaiduAiUtil baiduAiUtil;
-
-    // 注入框架配置的文件根路径（自动读取application.yml的ruoyi.profile）
-    @Value("${ruoyi.profile}")
-    private String rootUploadPath;
 
     /** 植物相关关键词 */
     private static final List<String> PLANT_KEYWORDS = Arrays.asList(
@@ -61,37 +54,23 @@ public class BioRecognitionServiceImpl implements IBioRecognitionService {
             throw new IllegalArgumentException("图片Base64和URL不能同时为空");
         }
 
-        // ==============================================
-        // 🔥 核心适配：根据返回URL解析服务器本地真实文件路径
-        // 服务器URL：http://xxx/profile/upload/2026/03/05/xxx.png
-        // 本地路径：rootUploadPath + /upload/2026/03/05/xxx.png
-        // ==============================================
+        // 优先使用URL，避免Base64传输过大
+        String imageParam = null;
+        String urlParam = null;
+        
         if (request.getUrl() != null && !request.getUrl().isEmpty()) {
-            log.info("解析图片URL为本地路径，URL:{}", request.getUrl());
-            // 截取URL中/profile/upload/后的相对路径
-            String relativePath = request.getUrl().substring(request.getUrl().indexOf("/profile/upload/") + "/profile/upload/".length());
-            // 拼接服务器本地真实文件路径
-            File localImageFile = new File(rootUploadPath + "/upload/" + relativePath);
-            log.info("服务器本地图片路径:{}", localImageFile.getAbsolutePath());
-
-            // 校验文件是否存在
-            if (!localImageFile.exists()) {
-                throw new Exception("服务器本地图片不存在，路径：" + localImageFile.getAbsolutePath());
-            }
-
-            // 本地文件转Base64（纯编码，无前缀）
-            byte[] imageBytes = Files.readAllBytes(localImageFile.toPath());
-            String imageBase64 = java.util.Base64.getEncoder().encodeToString(imageBytes);
-
-            // 覆盖参数：使用Base64传给百度AI，清空URL（避免百度去下载公网URL）
-            request.setImage(imageBase64);
-            request.setUrl(null);
-            log.info("本地图片转Base64成功，长度:{}", imageBase64.length());
+            // 使用URL方式
+            urlParam = request.getUrl();
+            log.info("使用URL方式识别: {}", urlParam);
+        } else if (request.getImage() != null && !request.getImage().isEmpty()) {
+            // 使用Base64方式
+            imageParam = request.getImage();
+            log.info("使用Base64方式识别，长度: {}", imageParam.length());
         }
 
         // 第一步：通用物体识别，判断类型
         log.info("步骤1: 调用通用物体识别接口");
-        JSONObject generalResult = baiduAiUtil.generalRecognition(request.getImage(), request.getUrl());
+        JSONObject generalResult = baiduAiUtil.generalRecognition(imageParam, urlParam);
 
         String type = determineType(generalResult);
         log.info("识别类型: {}", type);
@@ -103,11 +82,11 @@ public class BioRecognitionServiceImpl implements IBioRecognitionService {
         // 第二步：根据类型调用专业识别接口
         if ("plant".equals(type)) {
             log.info("步骤2: 调用植物识别接口");
-            JSONObject plantResult = baiduAiUtil.plantRecognition(request.getImage(), request.getUrl());
+            JSONObject plantResult = baiduAiUtil.plantRecognition(imageParam, urlParam);
             response.setResults(parsePlantResult(plantResult));
         } else if ("animal".equals(type)) {
             log.info("步骤2: 调用动物识别接口");
-            JSONObject animalResult = baiduAiUtil.animalRecognition(request.getImage(), request.getUrl());
+            JSONObject animalResult = baiduAiUtil.animalRecognition(imageParam, urlParam);
             response.setResults(parseAnimalResult(animalResult));
         } else {
             log.info("步骤2: 使用通用识别结果");
