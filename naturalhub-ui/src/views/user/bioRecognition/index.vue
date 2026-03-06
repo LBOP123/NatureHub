@@ -2,7 +2,7 @@
   <div class="bio-recognition-container">
     <el-card class="header-card" shadow="never">
       <div class="header-content">
-        <div class="header-icon">🌿</div>
+        <div class="header-icon">🔍</div>
         <div class="header-text">
           <h2>AI生物识别</h2>
           <p>上传图片，智能识别动物、植物与生物信息</p>
@@ -34,7 +34,19 @@
           <div class="upload-tip">支持 jpg/png/bmp 格式，大小不超过4MB</div>
         </div>
         <div v-else class="preview-content">
-          <img :src="imageUrl" class="preview-image" />
+          <!-- 图片加载中动画 -->
+          <div v-show="imageLoading" class="image-loading">
+            <i class="el-icon-loading"></i>
+            <span>图片加载中...</span>
+          </div>
+          <!-- 预览图片 -->
+          <img
+            :src="imageUrl"
+            class="preview-image"
+            v-show="!imageLoading"
+            @load="handleImageLoad"
+            @error="handleImageError"
+          />
           <div class="preview-mask">
             <el-button type="primary" size="small" @click.stop="reUpload">
               <i class="el-icon-refresh-left"></i> 重新上传
@@ -208,6 +220,7 @@ export default {
       loading: false,
       recognizing: false,
       imageUrl: '',
+      imageLoading: false,
       result: null,
       previewVisible: false,
       previewImageUrl: ''
@@ -231,26 +244,38 @@ export default {
     },
 
     handleSuccess(response, file) {
-      this.loading = false;
-      console.log('上传响应:', response);
+      this.loading = false
+      console.log('上传响应:', response)
 
       if (response.code === 200) {
-        this.imageUrl = response.url;
+        this.imageLoading = true
+        this.imageUrl = response.url
         if (this.imageUrl) {
-          this.$message.success('上传成功，点击"开始识别"');
-          console.log('图片预览URL:', this.imageUrl);
+          this.$message.success('上传成功，点击"开始识别"')
+          console.log('图片预览URL:', this.imageUrl)
         } else {
-          this.$message.error('上传成功，但未获取到图片地址');
-          console.error('返回数据异常:', response);
+          this.$message.error('上传成功，但未获取到图片地址')
+          console.error('返回数据异常:', response)
         }
       } else {
-        this.$message.error(response.msg || '上传失败');
+        this.$message.error(response.msg || '上传失败')
       }
     },
 
     handleError(error) {
       this.loading = false
       this.$message.error('上传失败：' + error.message)
+    },
+
+    // 图片加载完成
+    handleImageLoad() {
+      this.imageLoading = false
+    },
+
+    // 图片加载失败
+    handleImageError() {
+      this.imageLoading = false
+      this.$message.error('图片加载失败，请重新上传')
     },
 
     recognizeImage() {
@@ -287,6 +312,7 @@ export default {
 
     reUpload() {
       this.imageUrl = ''
+      this.imageLoading = false
       this.result = null
     },
 
@@ -297,6 +323,7 @@ export default {
         type: 'warning'
       }).then(() => {
         this.imageUrl = ''
+        this.imageLoading = false
         this.result = null
         this.$message.success('已清空')
       }).catch(() => {})
@@ -308,7 +335,7 @@ export default {
         query: {
           speciesName: item.name,
           speciesType: this.result.type === 'plant' ? 'plant' :
-                       this.result.type === 'animal' ? 'animal' : 'other',
+            this.result.type === 'animal' ? 'animal' : 'other',
           description: item.baikeInfo ? item.baikeInfo.description : '',
           imageUrl: this.imageUrl
         }
@@ -485,6 +512,23 @@ export default {
     }
   }
 }
+
+// 图片加载中样式
+.image-loading {
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #409EFF;
+  font-size: 16px;
+  i {
+    font-size: 40px;
+    margin-bottom: 15px;
+  }
+}
+
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

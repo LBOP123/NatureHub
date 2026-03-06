@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.QaHistoryMapper">
+
+    <resultMap id="QaHistoryResult" type="com.naturalhub.system.domain.QaHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="conversationId" column="conversation_id"/>
+        <result property="username" column="username"/>
+        <result property="question" column="question"/>
+        <result property="answer" column="answer"/>
+        <result property="qaType" column="qa_type"/>
+        <result property="relatedSpecies" column="related_species"/>
+        <result property="createTime" column="create_time"/>
+        <result property="ipAddress" column="ip_address"/>
+    </resultMap>
+
+    <resultMap id="QaConversationResult" type="com.naturalhub.system.domain.QaConversation">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="title" column="title"/>
+        <result property="qaType" column="qa_type"/>
+        <result property="relatedSpecies" column="related_species"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectQaHistoryVo">
+        select id, user_id, conversation_id, username, question, answer, qa_type, related_species, create_time, ip_address
+        from qa_history
+    </sql>
+
+    <insert id="insertQaHistory" parameterType="com.naturalhub.system.domain.QaHistory" useGeneratedKeys="true" keyProperty="id">
+        insert into qa_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="conversationId != null">conversation_id,</if>
+            <if test="username != null">username,</if>
+            <if test="question != null">question,</if>
+            <if test="answer != null">answer,</if>
+            <if test="qaType != null">qa_type,</if>
+            <if test="relatedSpecies != null">related_species,</if>
+            <if test="ipAddress != null">ip_address,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="conversationId != null">#{conversationId},</if>
+            <if test="username != null">#{username},</if>
+            <if test="question != null">#{question},</if>
+            <if test="answer != null">#{answer},</if>
+            <if test="qaType != null">#{qaType},</if>
+            <if test="relatedSpecies != null">#{relatedSpecies},</if>
+            <if test="ipAddress != null">#{ipAddress},</if>
+            now()
+        </trim>
+    </insert>
+
+    <select id="selectUserQaHistory" resultMap="QaHistoryResult">
+        <include refid="selectQaHistoryVo"/>
+        where user_id = #{userId}
+        order by create_time desc
+    </select>
+
+    <select id="selectQaHistoryList" resultMap="QaHistoryResult">
+        <include refid="selectQaHistoryVo"/>
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="conversationId != null">and conversation_id = #{conversationId}</if>
+            <if test="username != null and username != ''">and username like concat('%', #{username}, '%')</if>
+            <if test="question != null and question != ''">and question like concat('%', #{question}, '%')</if>
+            <if test="qaType != null">and qa_type = #{qaType}</if>
+            <if test="relatedSpecies != null and relatedSpecies != ''">and related_species like concat('%', #{relatedSpecies}, '%')</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectQaHistoryById" resultMap="QaHistoryResult">
+        <include refid="selectQaHistoryVo"/>
+        where id = #{id}
+    </select>
+
+    <delete id="deleteQaHistoryById">
+        delete from qa_history where id = #{id}
+    </delete>
+
+    <delete id="deleteQaHistoryByIds">
+        delete from qa_history where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="countTotalQa" resultType="int">
+        select count(*) from qa_history
+    </select>
+
+    <select id="selectHotSpecies" resultType="map">
+        select
+            related_species as species,
+            count(*) as count
+        from qa_history
+        where related_species is not null and related_species != ''
+        group by related_species
+        order by count desc
+        limit #{limit}
+    </select>
+
+    <select id="selectQaStatsByDate" resultType="map">
+        select
+            DATE_FORMAT(create_time, '%Y-%m-%d') as date,
+            count(*) as count
+        from qa_history
+        where create_time >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        group by DATE_FORMAT(create_time, '%Y-%m-%d')
+        order by date
+    </select>
+
+    <!-- 对话相关 -->
+    <select id="selectUserConversations" resultMap="QaConversationResult">
+        select * from qa_conversation
+        <where>
+            <if test="username != null and username != ''">and username = #{username}</if>
+            <if test="qaType != null">and qa_type = #{qaType}</if>
+        </where>
+        order by update_time desc
+    </select>
+
+    <insert id="insertConversation" parameterType="com.naturalhub.system.domain.QaConversation" useGeneratedKeys="true" keyProperty="id">
+        insert into qa_conversation (username, title, qa_type, create_time, update_time)
+        values (#{username}, #{title}, #{qaType}, now(), now())
+    </insert>
+
+    <select id="selectConversationMessages" resultMap="QaHistoryResult">
+        <include refid="selectQaHistoryVo"/>
+        where conversation_id = #{conversationId}
+        order by create_time asc
+    </select>
+
+    <delete id="deleteConversation">
+        delete from qa_conversation where id = #{conversationId}
+    </delete>
+
+    <delete id="deleteConversationMessages">
+        delete from qa_history where conversation_id = #{conversationId}
+    </delete>
+
+</mapper>

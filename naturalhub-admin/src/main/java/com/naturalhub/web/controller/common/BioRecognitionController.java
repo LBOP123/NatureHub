@@ -1,19 +1,21 @@
 package com.naturalhub.web.controller.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.naturalhub.common.core.domain.AjaxResult;
+import com.naturalhub.common.utils.SecurityUtils;
+import com.naturalhub.common.utils.baidu.Base64Util;
+import com.naturalhub.system.domain.BioRecognition;
 import com.naturalhub.system.domain.dto.BioRecognitionRequest;
 import com.naturalhub.system.domain.dto.BioRecognitionResponse;
 import com.naturalhub.system.service.IBioRecognitionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.naturalhub.system.service.IBioRecognitionRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.naturalhub.common.utils.baidu.Base64Util;
-
-import java.io.File;
-import java.io.FileInputStream;
+import com.alibaba.fastjson2.JSON;
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 
 /**
  * 生物识别Controller
@@ -21,7 +23,7 @@ import java.io.FileInputStream;
  * @author naturalhub
  * @date 2025-03-03
  */
-@RestController
+@RestController("bioRecognitionCommonController")
 @RequestMapping("/common/bio")
 public class BioRecognitionController {
     
@@ -30,9 +32,9 @@ public class BioRecognitionController {
     @Autowired
     private IBioRecognitionService bioRecognitionService;
     
-    @Value("${naturalhub.profile:D:/naturalhub/uploadPath}")
-    private String uploadPath;
-    
+    @Autowired
+    private IBioRecognitionRecordService bioRecognitionRecordService;
+
     /**
      * 生物识别（Base64或URL）
      * 
@@ -40,79 +42,30 @@ public class BioRecognitionController {
      * @return 识别结果
      */
     @PostMapping("/recognize")
-    public AjaxResult recognize(@RequestBody BioRecognitionRequest request) {
+    public AjaxResult recognize(@RequestBody BioRecognitionRequest request, HttpServletRequest httpRequest) {
         try {
             log.info("收到生物识别请求");
             log.info("请求参数 - image: {}, url: {}", 
                      request.getImage() != null ? "有值" : "null",
                      request.getUrl() != null ? request.getUrl() : "null");
             
-            // 如果是URL，转换为Base64
-            if (request.getUrl() != null && !request.getUrl().isEmpty()) {
-                String imageBase64 = convertUrlToBase64(request.getUrl());
-                if (imageBase64 != null) {
-                    log.info("URL转Base64成功，长度: {}", imageBase64.length());
-                    request.setImage(imageBase64);
-                    request.setUrl(null); // 清空URL，使用Base64
-                }
-            }
-            
+            // 直接调用识别服务，优先使用URL
             BioRecognitionResponse response = bioRecognitionService.recognize(request);
+            
+            // 保存识别记录
+            saveRecognitionRecord(request, response, httpRequest);
+            
             return AjaxResult.success("识别成功", response);
         } catch (IllegalArgumentException e) {
             log.error("参数错误: {}", e.getMessage());
+            // 保存失败记录
+            saveFailedRecord(request, e.getMessage(), httpRequest);
             return AjaxResult.error("参数错误: " + e.getMessage());
         } catch (Exception e) {
             log.error("识别失败", e);
+            // 保存失败记录
+            saveFailedRecord(request, e.getMessage(), httpRequest);
             return AjaxResult.error("识别失败: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * 将图片URL转换为Base64
-     * 支持本地路径和HTTP URL
-     * 
-     * @param url 图片URL
-     * @return Base64字符串
-     */
-    private String convertUrlToBase64(String url) {
-        try {
-            log.info("开始转换URL为Base64: {}", url);
-            
-            // 如果是本地路径（相对路径或绝对路径）
-            if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                // 处理相对路径
-                String filePath = url;
-                if (url.startsWith("/profile")) {
-                    // 若依框架的上传路径
-                    filePath = uploadPath + url.replace("/profile", "");
-                } else if (!new File(url).isAbsolute()) {
-                    // 相对路径，拼接上传目录
-                    filePath = uploadPath + File.separator + url;
-                }
-                
-                log.info("本地文件路径: {}", filePath);
-                
-                File file = new File(filePath);
-                if (!file.exists()) {
-                    log.error("文件不存在: {}", filePath);
-                    return null;
-                }
-                
-                // 读取文件并转Base64
-                try (FileInputStream fis = new FileInputStream(file)) {
-                    String base64 = Base64Util.encodeStreamToBase64(fis);
-                    log.info("本地文件转Base64成功");
-                    return base64;
-                }
-            } else {
-                // HTTP URL，使用Base64Util的URL转换方法
-                log.info("HTTP URL，使用URL转Base64");
-                return Base64Util.encodeUrlToBase64(url);
-            }
-        } catch (Exception e) {
-            log.error("URL转Base64失败", e);
-            return null;
         }
     }
     
@@ -123,7 +76,7 @@ public class BioRecognitionController {
      * @return 识别结果
      */
     @PostMapping("/recognizeFile")
-    public AjaxResult recognizeFile(@RequestParam("file") MultipartFile file) {
+    public AjaxResult recognizeFile(@RequestParam("file") MultipartFile file, HttpServletRequest httpRequest) {
         try {
             log.info("收到文件上传识别请求，文件名: {}", file.getOriginalFilename());
             
@@ -152,6 +105,10 @@ public class BioRecognitionController {
             request.setImage(base64);
             
             BioRecognitionResponse response = bioRecognitionService.recognize(request);
+            
+            // 保存识别记录
+            saveRecognitionRecord(request, response, httpRequest);
+            
             return AjaxResult.success("识别成功", response);
             
         } catch (Exception e) {
@@ -167,20 +124,14 @@ public class BioRecognitionController {
      * @return 最佳识别结果
      */
     @PostMapping("/quickRecognize")
-    public AjaxResult quickRecognize(@RequestBody BioRecognitionRequest request) {
+    public AjaxResult quickRecognize(@RequestBody BioRecognitionRequest request, HttpServletRequest httpRequest) {
         try {
             log.info("收到快速识别请求");
             
-            // 如果是URL，转换为Base64
-            if (request.getUrl() != null && !request.getUrl().isEmpty()) {
-                String imageBase64 = convertUrlToBase64(request.getUrl());
-                if (imageBase64 != null) {
-                    request.setImage(imageBase64);
-                    request.setUrl(null);
-                }
-            }
-            
             BioRecognitionResponse response = bioRecognitionService.recognize(request);
+            
+            // 保存识别记录
+            saveRecognitionRecord(request, response, httpRequest);
             
             // 只返回第一个结果
             if (response.getResults() != null && !response.getResults().isEmpty()) {
@@ -197,8 +148,112 @@ public class BioRecognitionController {
             }
         } catch (Exception e) {
             log.error("快速识别失败", e);
+            saveFailedRecord(request, e.getMessage(), httpRequest);
             return AjaxResult.error("识别失败: " + e.getMessage());
         }
+    }
+    
+    /**
+     * 保存识别记录
+     */
+    private void saveRecognitionRecord(BioRecognitionRequest request, BioRecognitionResponse response, HttpServletRequest httpRequest) {
+        try {
+            BioRecognition record = new BioRecognition();
+            
+            // 用户信息
+            try {
+                record.setUsername(SecurityUtils.getUsername());
+                record.setUserId(SecurityUtils.getUserId());
+            } catch (Exception e) {
+                record.setUsername("anonymous");
+            }
+            
+            // 图片URL
+            record.setImageUrl(request.getUrl() != null ? request.getUrl() : "base64");
+            
+            // 识别结果
+            if (response.getResults() != null && !response.getResults().isEmpty()) {
+                BioRecognitionResponse.RecognitionResult bestResult = response.getResults().get(0);
+                record.setRecognitionResult(bestResult.getName());
+                record.setConfidence(BigDecimal.valueOf(bestResult.getScore()));
+                
+                // 百科信息
+                if (bestResult.getBaikeInfo() != null) {
+                    record.setBaikeInfo(JSON.toJSONString(bestResult.getBaikeInfo()));
+                }
+            }
+            
+            // 识别类型
+            record.setRecognitionType(response.getType());
+            
+            // 所有结果
+            if (response.getResults() != null) {
+                record.setAllResults(JSON.toJSONString(response.getResults()));
+            }
+            
+            // 状态
+            record.setStatus("success");
+            
+            // IP地址
+            record.setIpAddress(getIpAddress(httpRequest));
+            
+            // 保存
+            bioRecognitionRecordService.saveBioRecognition(record);
+            log.info("识别记录保存成功，ID: {}", record.getId());
+            
+        } catch (Exception e) {
+            log.error("保存识别记录失败", e);
+        }
+    }
+    
+    /**
+     * 保存失败记录
+     */
+    private void saveFailedRecord(BioRecognitionRequest request, String errorMsg, HttpServletRequest httpRequest) {
+        try {
+            BioRecognition record = new BioRecognition();
+            
+            // 用户信息
+            try {
+                record.setUsername(SecurityUtils.getUsername());
+                record.setUserId(SecurityUtils.getUserId());
+            } catch (Exception e) {
+                record.setUsername("anonymous");
+            }
+            
+            // 图片URL
+            record.setImageUrl(request.getUrl() != null ? request.getUrl() : "base64");
+            
+            // 状态和备注
+            record.setStatus("fail");
+            record.setRemark(errorMsg);
+            
+            // IP地址
+            record.setIpAddress(getIpAddress(httpRequest));
+            
+            // 保存
+            bioRecognitionRecordService.saveBioRecognition(record);
+            
+        } catch (Exception e) {
+            log.error("保存失败记录失败", e);
+        }
+    }
+    
+    /**
+     * 获取IP地址
+     */
+    private String getIpAddress(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
     }
     
     /**
