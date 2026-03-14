@@ -125,17 +125,55 @@ export const constantRoutes = [
         name: 'UserObservations',
         meta: { title: '我的观察记录' }
       },
+      // 物种鉴定求助模块
       {
-        path: 'identify',
-        component: () => import('@/views/user/identify'),
-        name: 'UserIdentify',
-        meta: { title: '物种鉴定求助' }
+        path: 'identification/list',
+        component: () => import('@/views/user/identification/list'),
+        name: 'IdentificationList',
+        meta: { title: '我的鉴定求助' }
       },
       {
-        path: 'survey',
-        component: () => import('@/views/user/survey'),
-        name: 'UserSurvey',
-        meta: { title: '野外调查记录' }
+        path: 'identification/create',
+        component: () => import('@/views/user/identification/create'),
+        name: 'IdentificationCreate',
+        meta: { title: '发起鉴定求助' }
+      },
+      {
+        path: 'identification/detail',
+        component: () => import('@/views/user/identification/detail'),
+        name: 'IdentificationDetail',
+        meta: { title: '鉴定详情' }
+      },
+      {
+        path: 'identification/square',
+        component: () => import('@/views/user/identification/square'),
+        name: 'IdentificationSquare',
+        meta: { title: '鉴定广场' }
+      },
+      // 野外调查记录模块
+      {
+        path: 'survey/list',
+        component: () => import('@/views/user/survey/list'),
+        name: 'SurveyList',
+        meta: { title: '我的调查记录' }
+      },
+      {
+        path: 'survey/create',
+        component: () => import('@/views/user/survey/create'),
+        name: 'SurveyCreate',
+        meta: { title: '创建调查记录' }
+      },
+      {
+        path: 'survey/detail',
+        component: () => import('@/views/user/survey/detail'),
+        name: 'SurveyDetail',
+        meta: { title: '调查详情' }
+      },
+      {
+        path: 'survey/square',
+        component: () => import('@/views/user/survey/square'),
+        name: 'SurveySquare',
+        meta: { title: '调查广场' }
       },
       {
         path: 'qa',
@@ -151,15 +189,44 @@ export const constantRoutes = [
       },
       {
         path: 'community',
-        component: () => import('@/views/user/community'),
-        name: 'UserCommunity',
+        redirect: 'community/list'
+      },
+      {
+        path: 'community/list',
+        component: () => import('@/views/user/community/list'),
+        name: 'CommunityList',
         meta: { title: '社群交流' }
       },
       {
-        path: 'diary',
-        component: () => import('@/views/user/diary'),
-        name: 'UserDiary',
-        meta: { title: '个人观察日志' }
+        path: 'community/detail',
+        component: () => import('@/views/user/community/detail'),
+        name: 'CommunityDetail',
+        meta: { title: '话题详情' }
+      },
+      {
+        path: 'community/create',
+        component: () => import('@/views/user/community/create'),
+        name: 'CommunityCreate',
+        meta: { title: '发布话题' }
+      },
+      // 个人观察日志模块
+      {
+        path: 'diary/list',
+        component: () => import('@/views/user/diary/list'),
+        name: 'DiaryList',
+        meta: { title: '我的观察日志' }
+      },
+      {
+        path: 'diary/create',
+        component: () => import('@/views/user/diary/create'),
+        name: 'DiaryCreate',
+        meta: { title: '新建观察日志' }
+      },
+      {
+        path: 'diary/detail',
+        component: () => import('@/views/user/diary/detail'),
+        name: 'DiaryDetail',
+        meta: { title: '日志详情' }
       },
       {
         path: 'bioRecognition',

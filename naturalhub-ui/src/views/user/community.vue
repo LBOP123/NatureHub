@@ -48,6 +48,19 @@
             <el-tag v-if="topic.isTop === '1'" type="danger" size="mini" effect="dark">置顶</el-tag>
             <el-tag v-if="topic.isEssence === '1'" type="warning" size="mini" effect="dark">精华</el-tag>
             <el-tag :type="getCategoryType(topic.category)" size="mini">{{ getCategoryName(topic.category) }}</el-tag>
+            <!-- 来源标签 -->
+            <el-tag v-if="topic.sourceType === 'observation'" type="success" size="mini">
+              <i class="el-icon-view"></i> 来自观察记录
+            </el-tag>
+            <el-tag v-else-if="topic.sourceType === 'identification'" type="warning" size="mini">
+              <i class="el-icon-search"></i> 来自物种鉴定
+            </el-tag>
+            <el-tag v-else-if="topic.sourceType === 'survey'" type="primary" size="mini">
+              <i class="el-icon-map-location"></i> 来自野外调查
+            </el-tag>
+            <el-tag v-else-if="topic.sourceType === 'diary'" type="info" size="mini">
+              <i class="el-icon-notebook-2"></i> 来自观察日志
+            </el-tag>
           </div>
           <div class="topic-author">
             <el-avatar
@@ -94,6 +107,14 @@
           >
             <i class="el-icon-star-off"></i> {{ topic.collectCount }}
           </span>
+          <!-- 查看原始记录按钮 -->
+<!--          <span
+            v-if="topic.sourceId"
+            class="view-source"
+            @click.stop="viewSource(topic)"
+          >
+            <i class="el-icon-link"></i> 查看原始记录
+          </span>-->
         </div>
       </el-card>
 
@@ -175,6 +196,19 @@
             <el-tag :type="getCategoryType(currentTopic.category)" size="small">
               {{ getCategoryName(currentTopic.category) }}
             </el-tag>
+            <!-- 来源标签 -->
+            <el-tag v-if="currentTopic.sourceType === 'observation'" type="success" size="small">
+              <i class="el-icon-view"></i> 来自观察记录
+            </el-tag>
+            <el-tag v-else-if="currentTopic.sourceType === 'identification'" type="warning" size="small">
+              <i class="el-icon-search"></i> 来自物种鉴定
+            </el-tag>
+            <el-tag v-else-if="currentTopic.sourceType === 'survey'" type="primary" size="small">
+              <i class="el-icon-map-location"></i> 来自野外调查
+            </el-tag>
+            <el-tag v-else-if="currentTopic.sourceType === 'diary'" type="info" size="small">
+              <i class="el-icon-notebook-2"></i> 来自观察日志
+            </el-tag>
           </div>
           <h2>{{ currentTopic.title }}</h2>
           <div class="detail-author">
@@ -221,6 +255,13 @@
             {{ currentTopic.isCollected ? '已收藏' : '收藏' }} ({{ currentTopic.collectCount }})
           </el-button>
           <el-button icon="el-icon-view">浏览 {{ currentTopic.viewCount }}</el-button>
+          <!-- 查看原始记录按钮 -->
+<!--          <el-button
+            v-if="currentTopic.sourceId"
+            type="success"
+            icon="el-icon-link"
+            @click="viewSource(currentTopic)"
+          >查看原始记录</el-button>-->
           <el-button icon="el-icon-warning" @click="handleReportTopic(currentTopic)">举报</el-button>
         </div>
 
@@ -595,6 +636,25 @@ export default {
         tags: null
       }
       this.resetForm('form')
+    },
+    /** 查看原始记录 */
+    viewSource(topic) {
+      const routeMap = {
+        'observation': '/user/observation/detail',
+        'identification': '/user/identification/detail',
+        'survey': '/user/survey/detail',
+        'diary': '/user/diary/detail'
+      }
+
+      const path = routeMap[topic.sourceType]
+      if (path && topic.sourceId) {
+        this.$router.push({
+          path: path,
+          query: { id: topic.sourceId }
+        })
+      } else {
+        this.$message.warning('无法找到原始记录')
+      }
     }
   }
 }
@@ -726,6 +786,15 @@ export default {
 
       i {
         font-size: 16px;
+      }
+    }
+
+    .view-source {
+      color: #67C23A !important;
+      font-weight: 500;
+
+      &:hover {
+        color: #85ce61 !important;
       }
     }
   }

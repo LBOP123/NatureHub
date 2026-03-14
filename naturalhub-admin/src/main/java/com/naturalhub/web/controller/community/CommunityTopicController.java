@@ -141,7 +141,7 @@ public class CommunityTopicController extends BaseController
     @PreAuthorize("@ss.hasPermi('community:topic:audit')")
     @Log(title = "审核话题", businessType = BusinessType.UPDATE)
     @PutMapping("/audit/{topicId}/{auditStatus}")
-    public AjaxResult auditTopic(@PathVariable Long topicId, @PathVariable String auditStatus, String auditRemark)
+    public AjaxResult auditTopic(@PathVariable Long topicId, @PathVariable Integer auditStatus, String auditRemark)
     {
         return toAjax(communityTopicService.auditTopic(topicId, auditStatus, auditRemark));
     }

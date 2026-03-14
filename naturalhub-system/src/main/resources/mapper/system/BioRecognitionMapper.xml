@@ -13,14 +13,18 @@
         <result property="status" column="status"/>
         <result property="baikeInfo" column="baike_info"/>
         <result property="allResults" column="all_results"/>
+        <!-- 【新增】is_shared / shared_topic_id 字段映射 -->
+        <result property="isShared" column="is_shared"/>
+        <result property="sharedTopicId" column="shared_topic_id"/>
         <result property="remark" column="remark"/>
         <result property="ipAddress" column="ip_address"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
 
     <sql id="selectBioRecognitionVo">
-        select id, user_id, username, image_url, recognition_result, recognition_type, 
-               confidence, status, baike_info, all_results, remark, ip_address, create_time
+        select id, user_id, username, image_url, recognition_result, recognition_type,
+               confidence, status, baike_info, all_results, is_shared, shared_topic_id,
+               remark, ip_address, create_time
         from bio_recognition
     </sql>
 
@@ -36,6 +40,8 @@
             <if test="status != null">status,</if>
             <if test="baikeInfo != null">baike_info,</if>
             <if test="allResults != null">all_results,</if>
+            <if test="isShared != null">is_shared,</if>
+            <if test="sharedTopicId != null">shared_topic_id,</if>
             <if test="remark != null">remark,</if>
             <if test="ipAddress != null">ip_address,</if>
             create_time
@@ -50,6 +56,8 @@
             <if test="status != null">#{status},</if>
             <if test="baikeInfo != null">#{baikeInfo},</if>
             <if test="allResults != null">#{allResults},</if>
+            <if test="isShared != null">#{isShared},</if>
+            <if test="sharedTopicId != null">#{sharedTopicId},</if>
             <if test="remark != null">#{remark},</if>
             <if test="ipAddress != null">#{ipAddress},</if>
             now()
@@ -62,8 +70,9 @@
             <if test="userId != null">and user_id = #{userId}</if>
             <if test="username != null and username != ''">and username like concat('%', #{username}, '%')</if>
             <if test="recognitionResult != null and recognitionResult != ''">and recognition_result like concat('%', #{recognitionResult}, '%')</if>
-            <if test="recognitionType != null and recognitionType != ''">and recognition_type = #{recognitionType}</if>
-            <if test="status != null and status != ''">and status = #{status}</if>
+            <!-- 【改造点】recognitionType / status 均为数字类型，直接等值匹配 -->
+            <if test="recognitionType != null">and recognition_type = #{recognitionType}</if>
+            <if test="status != null">and status = #{status}</if>
         </where>
         order by create_time desc
     </select>
@@ -93,11 +102,12 @@
         where DATE(create_time) = CURDATE()
     </select>
 
+    <!-- 【改造点】status = 'success' -> status = 1 -->
     <select id="selectSuccessRate" resultType="map">
-        select 
+        select
             count(*) as total,
-            sum(case when status = 'success' then 1 else 0 end) as success_count,
-            round(sum(case when status = 'success' then 1 else 0 end) * 100.0 / count(*), 2) as success_rate
+            sum(case when status = 1 then 1 else 0 end) as success_count,
+            round(sum(case when status = 1 then 1 else 0 end) * 100.0 / count(*), 2) as success_rate
         from bio_recognition
     </select>
 
@@ -111,7 +121,7 @@
     </select>
 
     <select id="selectTrendData" resultType="map">
-        select 
+        select
             DATE_FORMAT(create_time, '%Y-%m-%d') as date,
             count(*) as count
         from bio_recognition
@@ -121,7 +131,7 @@
     </select>
 
     <select id="selectSpeciesRank" resultType="map">
-        select 
+        select
             recognition_result as species,
             count(*) as count
         from bio_recognition

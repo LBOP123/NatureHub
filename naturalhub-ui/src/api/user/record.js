@@ -54,11 +54,10 @@ export function submitForReview(recordId) {
 }
 
 // 分享到社群
-export function shareRecordToCommunity(data) {
+export function shareRecordToCommunity(recordId) {
   return request({
-    url: '/user/record/share',
-    method: 'post',
-    data: data
+    url: '/user/record/' + recordId + '/share',
+    method: 'post'
   })
 }
 

@@ -138,5 +138,5 @@ public interface ICommunityTopicService
      */
     public int setTopicStatus(Long topicId, String status);
 
-    int auditTopic(Long topicId, String auditStatus, String auditRemark);
+    int auditTopic(Long topicId, Integer auditStatus, String auditRemark);
 }

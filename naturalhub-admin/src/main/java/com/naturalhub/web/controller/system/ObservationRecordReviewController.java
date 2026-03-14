@@ -84,11 +84,11 @@ public class ObservationRecordReviewController extends BaseController
         if (record == null) {
             return AjaxResult.error("观察记录不存在");
         }
-        if (!"pending".equals(record.getReviewStatus())) {
+        if (record.getAuditStatus() != 1) {
             return AjaxResult.error("只能审核待审核状态的记录");
         }
         
-        record.setReviewStatus("approved");
+        record.setAuditStatus(2);
         record.setReviewComment(reviewComment);
         record.setReviewerId(getUserId());
         record.setReviewTime(new java.util.Date());
@@ -122,11 +122,10 @@ public class ObservationRecordReviewController extends BaseController
         if (record == null) {
             return AjaxResult.error("观察记录不存在");
         }
-        if (!"pending".equals(record.getReviewStatus())) {
+        if (record.getAuditStatus() != 1) {
             return AjaxResult.error("只能审核待审核状态的记录");
         }
-        
-        record.setReviewStatus("rejected");
+        record.setAuditStatus(3);
         record.setRejectReason(rejectReason);
         record.setReviewerId(getUserId());
         record.setReviewTime(new java.util.Date());
@@ -146,8 +145,8 @@ public class ObservationRecordReviewController extends BaseController
         int successCount = 0;
         for (Long recordId : recordIds) {
             ObservationRecord record = observationRecordService.selectObservationRecordByRecordId(recordId);
-            if (record != null && "pending".equals(record.getReviewStatus())) {
-                record.setReviewStatus("approved");
+            if (record != null && record.getAuditStatus() == 1) {
+                record.setAuditStatus(2);
                 record.setReviewerId(getUserId());
                 record.setReviewTime(new java.util.Date());
                 record.setUpdateBy(getUsername());
@@ -179,13 +178,16 @@ public class ObservationRecordReviewController extends BaseController
     {
         ObservationRecord query = new ObservationRecord();
         List<ObservationRecord> allRecords = observationRecordService.selectObservationRecordList(query);
-        
+
         long totalRecords = allRecords.size();
-        long pendingRecords = allRecords.stream().filter(r -> "pending".equals(r.getReviewStatus())).count();
-        long approvedRecords = allRecords.stream().filter(r -> "approved".equals(r.getReviewStatus())).count();
-        long rejectedRecords = allRecords.stream().filter(r -> "rejected".equals(r.getReviewStatus())).count();
-        long draftRecords = allRecords.stream().filter(r -> "draft".equals(r.getReviewStatus())).count();
-        
+        // 1 = 待审核 pending
+        long pendingRecords = allRecords.stream().filter(r -> r.getAuditStatus() == 1).count();
+        // 2 = 已通过 approved
+        long approvedRecords = allRecords.stream().filter(r -> r.getAuditStatus() == 2).count();
+        // 3 = 已驳回 rejected
+        long rejectedRecords = allRecords.stream().filter(r -> r.getAuditStatus() == 3).count();
+        // 0 = 草稿 draft
+        long draftRecords = allRecords.stream().filter(r -> r.getAuditStatus() == 0).count();
         AjaxResult result = AjaxResult.success();
         result.put("totalRecords", totalRecords);
         result.put("pendingRecords", pendingRecords);

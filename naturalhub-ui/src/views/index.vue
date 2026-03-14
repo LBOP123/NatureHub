@@ -18,7 +18,7 @@
             size="mini"
             icon="el-icon-cloudy"
             plain
-            @click="goTarget('https://github.com/LBOP123/NatureHub.git')"
+            @click="goTarget('http://81.68.236.229/user/login')"
             >访问用户端</el-button
           >
           <el-button

@@ -66,4 +66,19 @@ public interface IObservationRecordService
      * @return 结果
      */
     public int submitForReview(Long recordId);
+
+    /**
+     * 根据分享话题ID查询观察记录（兼容历史数据）
+     * @param sharedTopicId 话题ID
+     * @return 观察记录
+     */
+    public ObservationRecord selectObservationRecordBySharedTopicId(Long sharedTopicId);
+
+    /**
+     * 分享到社群
+     * 
+     * @param recordId 观察记录主键
+     * @return 社群话题ID
+     */
+    public Long shareToCommunity(Long recordId);
 }

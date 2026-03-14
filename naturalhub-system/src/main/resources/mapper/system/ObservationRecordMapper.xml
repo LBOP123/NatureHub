@@ -5,54 +5,56 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <mapper namespace="com.naturalhub.system.mapper.ObservationRecordMapper">
     
     <resultMap type="ObservationRecord" id="ObservationRecordResult">
-        <result property="recordId"    column="record_id"    />
-        <result property="userId"    column="user_id"    />
-        <result property="title"    column="title"    />
-        <result property="observationTime"    column="observation_time"    />
-        <result property="location"    column="location"    />
-        <result property="latitude"    column="latitude"    />
-        <result property="longitude"    column="longitude"    />
-        <result property="speciesType"    column="species_type"    />
-        <result property="speciesName"    column="species_name"    />
-        <result property="habitat"    column="habitat"    />
-        <result property="description"    column="description"    />
-        <result property="images"    column="images"    />
-        <result property="videos"    column="videos"    />
-        <result property="reviewStatus"    column="review_status"    />
-        <result property="submitTime"    column="submit_time"    />
-        <result property="reviewTime"    column="review_time"    />
-        <result property="reviewerId"    column="reviewer_id"    />
-        <result property="reviewComment"    column="review_comment"    />
-        <result property="rejectReason"    column="reject_reason"    />
-        <result property="specimenId"    column="specimen_id"    />
-        <result property="isShared"    column="is_shared"    />
-        <result property="delFlag"    column="del_flag"    />
-        <result property="createBy"    column="create_by"    />
-        <result property="createTime"    column="create_time"    />
-        <result property="updateBy"    column="update_by"    />
-        <result property="updateTime"    column="update_time"    />
-        <result property="remark"    column="remark"    />
+        <result property="recordId"         column="record_id"       />
+        <result property="userId"           column="user_id"         />
+        <result property="title"            column="title"           />
+        <result property="observationTime"  column="observation_time"/>
+        <result property="location"         column="location"        />
+        <result property="latitude"         column="latitude"        />
+        <result property="longitude"        column="longitude"       />
+        <result property="speciesType"      column="species_type"    />
+        <result property="speciesName"      column="species_name"    />
+        <result property="habitat"          column="habitat"         />
+        <result property="description"      column="description"     />
+        <result property="images"           column="images"          />
+        <result property="videos"           column="videos"          />
+        <result property="auditStatus"      column="audit_status"    />
+        <result property="submitTime"       column="submit_time"     />
+        <result property="reviewTime"       column="review_time"     />
+        <result property="reviewerId"       column="reviewer_id"     />
+        <result property="reviewComment"    column="review_comment"  />
+        <result property="rejectReason"     column="reject_reason"   />
+        <result property="specimenId"       column="specimen_id"     />
+        <result property="isShared"         column="is_shared"       />
+        <result property="sharedTopicId"    column="shared_topic_id" />
+        <result property="delFlag"          column="del_flag"        />
+        <result property="createBy"         column="create_by"       />
+        <result property="createTime"       column="create_time"     />
+        <result property="updateBy"         column="update_by"       />
+        <result property="updateTime"       column="update_time"     />
+        <result property="remark"           column="remark"          />
     </resultMap>
 
     <sql id="selectObservationRecordVo">
-        select record_id, user_id, title, observation_time, location, latitude, longitude, 
-               species_type, species_name, habitat, description, images, videos, 
-               review_status, submit_time, review_time, reviewer_id, review_comment, 
-               reject_reason, specimen_id, is_shared, del_flag, create_by, create_time, 
-               update_by, update_time, remark 
+        select record_id, user_id, title, observation_time, location, latitude, longitude,
+               species_type, species_name, habitat, description, images, videos,
+               audit_status, submit_time, review_time, reviewer_id, review_comment,
+               reject_reason, specimen_id, is_shared, shared_topic_id, del_flag,
+               create_by, create_time, update_by, update_time, remark
         from nh_observation_record
     </sql>
 
     <select id="selectObservationRecordList" parameterType="ObservationRecord" resultMap="ObservationRecordResult">
         <include refid="selectObservationRecordVo"/>
-        <where>  
+        <where>
             del_flag = '0'
-            <if test="userId != null "> and user_id = #{userId}</if>
-            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
-            <if test="location != null  and location != ''"> and location like concat('%', #{location}, '%')</if>
-            <if test="speciesType != null  and speciesType != ''"> and species_type = #{speciesType}</if>
-            <if test="speciesName != null  and speciesName != ''"> and species_name like concat('%', #{speciesName}, '%')</if>
-            <if test="reviewStatus != null  and reviewStatus != ''"> and review_status = #{reviewStatus}</if>
+            <if test="userId != null"> and user_id = #{userId}</if>
+            <if test="title != null and title != ''"> and title like concat('%', #{title}, '%')</if>
+            <if test="location != null and location != ''"> and location like concat('%', #{location}, '%')</if>
+            <if test="speciesType != null"> and species_type = #{speciesType}</if>
+            <if test="speciesName != null and speciesName != ''"> and species_name like concat('%', #{speciesName}, '%')</if>
+            <if test="auditStatus != null"> and audit_status = #{auditStatus}</if>
+            <if test="isShared != null"> and is_shared = #{isShared}</if>
             <if test="params.beginTime != null and params.beginTime != ''">
                 and date_format(observation_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
             </if>
@@ -62,12 +64,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
         order by create_time desc
     </select>
-    
+
     <select id="selectObservationRecordByRecordId" parameterType="Long" resultMap="ObservationRecordResult">
         <include refid="selectObservationRecordVo"/>
         where record_id = #{recordId}
     </select>
-        
+
     <insert id="insertObservationRecord" parameterType="ObservationRecord" useGeneratedKeys="true" keyProperty="recordId">
         insert into nh_observation_record
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -77,19 +79,21 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="location != null and location != ''">location,</if>
             <if test="latitude != null">latitude,</if>
             <if test="longitude != null">longitude,</if>
-            <if test="speciesType != null and speciesType != ''">species_type,</if>
+            <if test="speciesType != null">species_type,</if>
             <if test="speciesName != null and speciesName != ''">species_name,</if>
             <if test="habitat != null">habitat,</if>
             <if test="description != null and description != ''">description,</if>
             <if test="images != null">images,</if>
             <if test="videos != null">videos,</if>
-            <if test="reviewStatus != null">review_status,</if>
+            <if test="auditStatus != null">audit_status,</if>
             <if test="submitTime != null">submit_time,</if>
+            <if test="isShared != null">is_shared,</if>
+            <if test="sharedTopicId != null">shared_topic_id,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
             <if test="remark != null">remark,</if>
             create_time
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="userId != null">#{userId},</if>
             <if test="title != null and title != ''">#{title},</if>
@@ -97,19 +101,21 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="location != null and location != ''">#{location},</if>
             <if test="latitude != null">#{latitude},</if>
             <if test="longitude != null">#{longitude},</if>
-            <if test="speciesType != null and speciesType != ''">#{speciesType},</if>
+            <if test="speciesType != null">#{speciesType},</if>
             <if test="speciesName != null and speciesName != ''">#{speciesName},</if>
             <if test="habitat != null">#{habitat},</if>
             <if test="description != null and description != ''">#{description},</if>
             <if test="images != null">#{images},</if>
             <if test="videos != null">#{videos},</if>
-            <if test="reviewStatus != null">#{reviewStatus},</if>
+            <if test="auditStatus != null">#{auditStatus},</if>
             <if test="submitTime != null">#{submitTime},</if>
+            <if test="isShared != null">#{isShared},</if>
+            <if test="sharedTopicId != null">#{sharedTopicId},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="remark != null">#{remark},</if>
             sysdate()
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateObservationRecord" parameterType="ObservationRecord">
@@ -120,13 +126,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="location != null and location != ''">location = #{location},</if>
             <if test="latitude != null">latitude = #{latitude},</if>
             <if test="longitude != null">longitude = #{longitude},</if>
-            <if test="speciesType != null and speciesType != ''">species_type = #{speciesType},</if>
+            <if test="speciesType != null">species_type = #{speciesType},</if>
             <if test="speciesName != null and speciesName != ''">species_name = #{speciesName},</if>
             <if test="habitat != null">habitat = #{habitat},</if>
             <if test="description != null and description != ''">description = #{description},</if>
             <if test="images != null">images = #{images},</if>
             <if test="videos != null">videos = #{videos},</if>
-            <if test="reviewStatus != null">review_status = #{reviewStatus},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
             <if test="submitTime != null">submit_time = #{submitTime},</if>
             <if test="reviewTime != null">review_time = #{reviewTime},</if>
             <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
@@ -134,6 +140,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
             <if test="specimenId != null">specimen_id = #{specimenId},</if>
             <if test="isShared != null">is_shared = #{isShared},</if>
+            <if test="sharedTopicId != null">shared_topic_id = #{sharedTopicId},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="remark != null">remark = #{remark},</if>
             update_time = sysdate()
@@ -153,10 +160,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <update id="submitForReview" parameterType="Long">
-        update nh_observation_record 
-        set review_status = 'pending', 
+        update nh_observation_record
+        set audit_status = 1,
             submit_time = sysdate(),
             update_time = sysdate()
         where record_id = #{recordId}
     </update>
+
+    <select id="selectObservationRecordBySharedTopicId" parameterType="Long" resultMap="ObservationRecordResult">
+        <include refid="selectObservationRecordVo"/>
+        where shared_topic_id = #{sharedTopicId}
+    </select>
 </mapper>
