@@ -31,7 +31,14 @@ public class CommunityTopic extends BaseEntity
 
     /** 话题分类 */
     @Excel(name = "话题分类", readConverterExp = "species_science=物种科普,field_explore=野外探索,identify_help=鉴定求助")
-    private String category;
+    private Integer category; // 0=物种科普,1=野外探索,2=鉴定求助
+
+    /** 来源类型 */
+    @Excel(name = "来源类型", readConverterExp = "original=原创,observation=观察记录,identification=物种鉴定,survey=野外调查,diary=观察日志")
+    private Integer sourceType; // 0=原创,1=观察记录,2=物种鉴定,3=野外调查,4=观察日志
+
+    /** 来源记录ID */
+    private Long sourceId;
 
     /** 话题标题 */
     @Excel(name = "话题标题")
@@ -86,7 +93,7 @@ public class CommunityTopic extends BaseEntity
 
     /** 审核状态 */
     @Excel(name = "审核状态", readConverterExp = "pending=待审核,approved=已通过,rejected=已驳回")
-    private String auditStatus;
+    private Integer auditStatus; // 0=待审核,1=已通过,2=已驳回
 
     /** 审核备注 */
     private String auditRemark;
@@ -103,6 +110,12 @@ public class CommunityTopic extends BaseEntity
 
     /** 当前用户是否收藏 */
     private Boolean isCollected;
+
+    /** 来源记录的图片列表（JSON数组字符串，联查原始记录获得）*/
+    private String sourceImages;
+
+    /** 来源记录的关键信息（JSON对象字符串，联查原始记录获得）*/
+    private String sourceDetail;
 
     public void setTopicId(Long topicId) 
     {
@@ -134,14 +147,34 @@ public class CommunityTopic extends BaseEntity
         return userName;
     }
 
-    public void setCategory(String category) 
+    public void setCategory(Integer category) 
     {
         this.category = category;
     }
 
-    public String getCategory() 
+    public Integer getCategory() 
     {
         return category;
+    }
+
+    public void setSourceType(Integer sourceType) 
+    {
+        this.sourceType = sourceType;
+    }
+
+    public Integer getSourceType() 
+    {
+        return sourceType;
+    }
+
+    public void setSourceId(Long sourceId) 
+    {
+        this.sourceId = sourceId;
+    }
+
+    public Long getSourceId() 
+    {
+        return sourceId;
     }
 
     public void setTitle(String title) 
@@ -274,12 +307,12 @@ public class CommunityTopic extends BaseEntity
         return status;
     }
 
-    public String getAuditStatus() 
+    public Integer getAuditStatus() 
     {
         return auditStatus;
     }
 
-    public void setAuditStatus(String auditStatus) 
+    public void setAuditStatus(Integer auditStatus) 
     {
         this.auditStatus = auditStatus;
     }
@@ -334,6 +367,26 @@ public class CommunityTopic extends BaseEntity
         this.isCollected = isCollected;
     }
 
+    public String getSourceImages() 
+    {
+        return sourceImages;
+    }
+
+    public void setSourceImages(String sourceImages) 
+    {
+        this.sourceImages = sourceImages;
+    }
+
+    public String getSourceDetail() 
+    {
+        return sourceDetail;
+    }
+
+    public void setSourceDetail(String sourceDetail) 
+    {
+        this.sourceDetail = sourceDetail;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -341,6 +394,8 @@ public class CommunityTopic extends BaseEntity
             .append("userId", getUserId())
             .append("userName", getUserName())
             .append("category", getCategory())
+            .append("sourceType", getSourceType())
+            .append("sourceId", getSourceId())
             .append("title", getTitle())
             .append("content", getContent())
             .append("images", getImages())

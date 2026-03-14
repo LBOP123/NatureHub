@@ -80,6 +80,7 @@
 
 <script>
 import request from '@/utils/request'
+import { marked } from 'marked'
 
 export default {
   name: 'KnowledgePage',
@@ -133,9 +134,8 @@ export default {
         })
 
         if (response.code === 200) {
-          // 处理返回的数据，可能是字符串或对象
           const answer = typeof response.data === 'string' ? response.data : (response.data?.data || response.data || '暂无回答')
-          
+
           this.messages.push({
             type: 'ai',
             content: answer
@@ -143,7 +143,6 @@ export default {
           this.loadConversations()
         } else {
           this.$message.error(response.msg || '查询失败')
-          // 添加错误消息到聊天
           this.messages.push({
             type: 'ai',
             content: '抱歉，查询失败：' + (response.msg || '未知错误')
@@ -152,7 +151,6 @@ export default {
       } catch (error) {
         console.error('知识库查询失败:', error)
         this.$message.error('查询失败，请重试')
-        // 添加错误消息到聊天
         this.messages.push({
           type: 'ai',
           content: '抱歉，知识库查询失败，请稍后重试'
@@ -262,11 +260,15 @@ export default {
 
     formatAnswer(content) {
       if (!content) return ''
-      return content
-        .replace(/<[^>]+>/g, '')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/【(.*?)】/g, '<strong style="color: #67C23A;">$1</strong>')
-        .replace(/\n/g, '<br>')
+      try {
+        return marked.parse(content)
+      } catch (error) {
+        console.error('Markdown渲染失败:', error)
+        return content
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/【(.*?)】/g, '<strong style="color: #67C23A;">$1</strong>')
+          .replace(/\n/g, '<br>')
+      }
     },
 
     scrollToBottom() {
@@ -445,6 +447,23 @@ export default {
     gap: 4px;
     padding: 16px;
   }
+
+  ::v-deep {
+    h1, h2, h3, h4, h5, h6 {
+      margin: 12px 0 8px 0;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    h1 { font-size: 20px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 16px; }
+
+    p { margin: 8px 0; }
+    ul, ol { padding-left: 24px; }
+    code { background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 3px; }
+    pre { padding: 12px; background: rgba(0,0,0,0.05); border-radius: 6px; overflow-x: auto; }
+    a { color: #409EFF; }
+  }
 }
 
 .loading-dot {
@@ -454,24 +473,13 @@ export default {
   background: #999;
   animation: loading 1.4s infinite;
 
-  &:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  &:nth-child(3) {
-    animation-delay: 0.4s;
-  }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
 }
 
 @keyframes loading {
-  0%, 60%, 100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  30% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0%,60%,100%{opacity:0.3;transform:scale(0.8)}
+  30%{opacity:1;transform:scale(1)}
 }
 
 .input-area {
@@ -491,12 +499,7 @@ export default {
     gap: 12px;
   }
 
-  ::v-deep .el-textarea {
-    flex: 1;
-  }
-
-  .el-button {
-    align-self: flex-end;
-  }
+  ::v-deep .el-textarea { flex:1; }
+  .el-button { align-self:flex-end; }
 }
 </style>

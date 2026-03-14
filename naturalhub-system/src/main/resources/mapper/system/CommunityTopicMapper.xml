@@ -9,6 +9,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="userId"    column="user_id"    />
         <result property="userName"    column="user_name"    />
         <result property="category"    column="category"    />
+        <result property="sourceType"  column="source_type"  />
+        <result property="sourceId"    column="source_id"    />
         <result property="title"    column="title"    />
         <result property="content"    column="content"    />
         <result property="images"    column="images"    />
@@ -34,7 +36,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectCommunityTopicVo">
-        select topic_id, user_id, user_name, category, title, content, images, tags, 
+        select topic_id, user_id, user_name, category, source_type, source_id,
+               title, content, images, tags, 
                view_count, like_count, comment_count, collect_count, share_count, hot_score, 
                is_top, is_essence, status, audit_status, audit_remark, audit_time, audit_by,
                create_by, create_time, update_by, update_time, remark 
@@ -45,13 +48,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectCommunityTopicVo"/>
         <where>  
             <if test="userId != null "> and user_id = #{userId}</if>
-            <if test="category != null  and category != ''"> and category = #{category}</if>
+            <if test="category != null"> and category = #{category}</if>
             <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
             <if test="tags != null  and tags != ''"> and tags like concat('%', #{tags}, '%')</if>
             <if test="isTop != null  and isTop != ''"> and is_top = #{isTop}</if>
             <if test="isEssence != null  and isEssence != ''"> and is_essence = #{isEssence}</if>
             <if test="status != null  and status != ''"> and status = #{status}</if>
-            <if test="auditStatus != null  and auditStatus != ''"> and audit_status = #{auditStatus}</if>
+            <if test="auditStatus != null"> and audit_status = #{auditStatus}</if>
         </where>
         order by is_top desc, hot_score desc, create_time desc
     </select>
@@ -66,7 +69,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="userId != null">user_id,</if>
             <if test="userName != null">user_name,</if>
-            <if test="category != null and category != ''">category,</if>
+            <if test="category != null">category,</if>
+            <if test="sourceType != null">source_type,</if>
+            <if test="sourceId != null">source_id,</if>
             <if test="title != null and title != ''">title,</if>
             <if test="content != null and content != ''">content,</if>
             <if test="images != null">images,</if>
@@ -93,7 +98,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="userId != null">#{userId},</if>
             <if test="userName != null">#{userName},</if>
-            <if test="category != null and category != ''">#{category},</if>
+            <if test="category != null">#{category},</if>
+            <if test="sourceType != null">#{sourceType},</if>
+            <if test="sourceId != null">#{sourceId},</if>
             <if test="title != null and title != ''">#{title},</if>
             <if test="content != null and content != ''">#{content},</if>
             <if test="images != null">#{images},</if>
@@ -124,7 +131,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="userId != null">user_id = #{userId},</if>
             <if test="userName != null">user_name = #{userName},</if>
-            <if test="category != null and category != ''">category = #{category},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="sourceType != null">source_type = #{sourceType},</if>
+            <if test="sourceId != null">source_id = #{sourceId},</if>
             <if test="title != null and title != ''">title = #{title},</if>
             <if test="content != null and content != ''">content = #{content},</if>
             <if test="images != null">images = #{images},</if>

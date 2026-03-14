@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="88px">
-      <el-form-item label="用户ID" prop="userId">
-        <el-input
-          v-model="queryParams.userId"
-          placeholder="请输入用户ID"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+<!--      <el-form-item label="用户ID" prop="userId">-->
+<!--        <el-input-->
+<!--          v-model="queryParams.userId"-->
+<!--          placeholder="请输入用户ID"-->
+<!--          clearable-->
+<!--          @keyup.enter.native="handleQuery"-->
+<!--        />-->
+<!--      </el-form-item>-->
       <el-form-item label="标题" prop="title">
         <el-input
           v-model="queryParams.title"
@@ -19,18 +19,12 @@
       </el-form-item>
       <el-form-item label="物种类型" prop="speciesType">
         <el-select v-model="queryParams.speciesType" placeholder="请选择物种类型" clearable>
-          <el-option label="植物" value="plant" />
-          <el-option label="动物" value="animal" />
-          <el-option label="真菌" value="fungi" />
-          <el-option label="其他" value="other" />
+          <el-option v-for="dict in speciesTypeOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
         </el-select>
       </el-form-item>
-      <el-form-item label="审核状态" prop="reviewStatus">
-        <el-select v-model="queryParams.reviewStatus" placeholder="请选择审核状态" clearable>
-          <el-option label="草稿" value="draft" />
-          <el-option label="待审核" value="pending" />
-          <el-option label="已通过" value="approved" />
-          <el-option label="已驳回" value="rejected" />
+      <el-form-item label="审核状态" prop="auditStatus">
+        <el-select v-model="queryParams.auditStatus" placeholder="请选择审核状态" clearable>
+          <el-option v-for="dict in auditStatusOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
         </el-select>
       </el-form-item>
       <el-form-item label="观察时间">
@@ -59,7 +53,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleBatchApprove"
-          v-hasPermi="['system:record:approve']"
+          v-hasPermi="['observation:record:approve']"
         >批量通过</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -70,7 +64,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:record:remove']"
+          v-hasPermi="['observation:record:remove']"
         >批量删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -80,7 +74,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['system:record:export']"
+          v-hasPermi="['observation:record:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -144,28 +138,24 @@
 
     <el-table v-loading="loading" :data="recordList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="记录ID" align="center" prop="recordId" width="80" />
-      <el-table-column label="用户ID" align="center" prop="userId" width="80" />
+      <el-table-column label="ID" align="center" prop="recordId" width="80" />
+      <el-table-column label="发布人" align="center" prop="createBy" width="80" />
       <el-table-column label="标题" align="center" prop="title" :show-overflow-tooltip="true" min-width="150" />
       <el-table-column label="物种类型" align="center" prop="speciesType" width="100">
         <template slot-scope="scope">
-          <el-tag :type="getSpeciesTypeTag(scope.row.speciesType)" size="small">
-            {{ getSpeciesTypeText(scope.row.speciesType) }}
-          </el-tag>
+          <dict-tag :options="speciesTypeOptions" :value="String(scope.row.speciesType)" />
         </template>
       </el-table-column>
-      <el-table-column label="物种名称" align="center" prop="speciesName" :show-overflow-tooltip="true" width="120" />
+<!--      <el-table-column label="物种名称" align="center" prop="speciesName" :show-overflow-tooltip="true" width="120" />-->
       <el-table-column label="观察地点" align="center" prop="location" :show-overflow-tooltip="true" width="150" />
       <el-table-column label="观察时间" align="center" prop="observationTime" width="160">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.observationTime, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" prop="reviewStatus" width="100">
+      <el-table-column label="审核状态" align="center" prop="auditStatus" width="100">
         <template slot-scope="scope">
-          <el-tag :type="getStatusType(scope.row.reviewStatus)" size="small">
-            {{ getStatusText(scope.row.reviewStatus) }}
-          </el-tag>
+          <dict-tag :options="auditStatusOptions" :value="String(scope.row.auditStatus)" />
         </template>
       </el-table-column>
       <el-table-column label="提交时间" align="center" prop="submitTime" width="160">
@@ -173,42 +163,42 @@
           <span>{{ parseTime(scope.row.submitTime, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="200" fixed="right">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="250" fixed="right">
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
             icon="el-icon-view"
             @click="handleView(scope.row)"
-            v-hasPermi="['system:record:query']"
+            v-hasPermi="['observation:record:query']"
           >查看</el-button>
           <el-button
-            v-if="scope.row.reviewStatus === 'pending'"
+            v-if="scope.row.auditStatus === 1"
             size="mini"
             type="text"
             icon="el-icon-check"
             @click="handleApprove(scope.row)"
-            v-hasPermi="['system:record:approve']"
+            v-hasPermi="['observation:record:approve']"
           >通过</el-button>
           <el-button
-            v-if="scope.row.reviewStatus === 'pending'"
+            v-if="scope.row.auditStatus === 1"
             size="mini"
             type="text"
             icon="el-icon-close"
             @click="handleReject(scope.row)"
-            v-hasPermi="['system:record:reject']"
+            v-hasPermi="['observation:record:reject']"
           >驳回</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:record:remove']"
+            v-hasPermi="['observation:record:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -218,15 +208,13 @@
     />
 
     <!-- 查看详情对话框 -->
-    <el-dialog :title="'观察记录详情 - ' + detail.title" :visible.sync="detailOpen" width="900px" append-to-body>
+    <el-dialog :title="'观察记录详情'" :visible.sync="detailOpen" width="900px" append-to-body>
       <el-descriptions :column="2" border>
         <el-descriptions-item label="记录ID">{{ detail.recordId }}</el-descriptions-item>
-        <el-descriptions-item label="用户ID">{{ detail.userId }}</el-descriptions-item>
+        <el-descriptions-item label="发布人">{{ detail.createBy }}</el-descriptions-item>
         <el-descriptions-item label="标题" :span="2">{{ detail.title }}</el-descriptions-item>
         <el-descriptions-item label="物种类型">
-          <el-tag :type="getSpeciesTypeTag(detail.speciesType)" size="small">
-            {{ getSpeciesTypeText(detail.speciesType) }}
-          </el-tag>
+          <dict-tag :options="speciesTypeOptions" :value="String(detail.speciesType)" />
         </el-descriptions-item>
         <el-descriptions-item label="物种名称">{{ detail.speciesName }}</el-descriptions-item>
         <el-descriptions-item label="观察时间">{{ parseTime(detail.observationTime) }}</el-descriptions-item>
@@ -235,9 +223,7 @@
           {{ detail.latitude }}, {{ detail.longitude }}
         </el-descriptions-item>
         <el-descriptions-item label="审核状态">
-          <el-tag :type="getStatusType(detail.reviewStatus)" size="small">
-            {{ getStatusText(detail.reviewStatus) }}
-          </el-tag>
+          <dict-tag :options="auditStatusOptions" :value="String(detail.auditStatus)" />
         </el-descriptions-item>
         <el-descriptions-item label="生境描述" :span="2">{{ detail.habitat }}</el-descriptions-item>
         <el-descriptions-item label="详细描述" :span="2">
@@ -269,16 +255,16 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="detailOpen = false">关 闭</el-button>
         <el-button
-          v-if="detail.reviewStatus === 'pending'"
+          v-if="detail.auditStatus === 1"
           type="success"
           @click="handleApprove(detail)"
-          v-hasPermi="['system:record:approve']"
+          v-hasPermi="['observation:record:approve']"
         >审核通过</el-button>
         <el-button
-          v-if="detail.reviewStatus === 'pending'"
+          v-if="detail.auditStatus === 1"
           type="danger"
           @click="handleReject(detail)"
-          v-hasPermi="['system:record:reject']"
+          v-hasPermi="['observation:record:reject']"
         >审核驳回</el-button>
       </div>
     </el-dialog>
@@ -365,6 +351,10 @@ export default {
           { required: true, message: "驳回原因不能为空", trigger: "blur" }
         ]
       },
+      speciesTypeOptions: [],
+      auditStatusOptions: [],
+      speciesTypeOptions: [],
+      auditStatusOptions: [],
       // 日期范围
       dateRange: [],
       // 查询参数
@@ -374,7 +364,7 @@ export default {
         userId: null,
         title: null,
         speciesType: null,
-        reviewStatus: null
+        auditStatus: null
       },
       // 统计数据
       stats: {
@@ -387,6 +377,8 @@ export default {
     };
   },
   created() {
+    this.getDicts('nh_species_type').then(res => { this.speciesTypeOptions = res.data || [] })
+    this.getDicts('nh_audit_status').then(res => { this.auditStatusOptions = res.data || [] })
     this.getList();
     this.getStats();
   },
@@ -403,7 +395,19 @@ export default {
     /** 获取统计数据 */
     getStats() {
       getRecordStats().then(response => {
-        this.stats = response.data;
+        this.stats = response.data || response || {
+          totalRecords: 0,
+          pendingRecords: 0,
+          approvedRecords: 0,
+          rejectedRecords: 0
+        };
+      }).catch(() => {
+        this.stats = {
+          totalRecords: 0,
+          pendingRecords: 0,
+          approvedRecords: 0,
+          rejectedRecords: 0
+        };
       });
     },
     /** 搜索按钮操作 */
@@ -425,11 +429,18 @@ export default {
     },
     /** 查看详情 */
     handleView(row) {
-      const recordId = row.recordId || this.ids[0];
-      getRecord(recordId).then(response => {
-        this.detail = response.data;
-        this.detailImages = this.detail.images ? JSON.parse(this.detail.images) : [];
-        this.detailOpen = true;
+      // 先打开弹窗，保证一定能弹出
+      this.detailOpen = true;
+      this.detail = row;
+      this.detailImages = [];
+
+      // 再加载数据
+      getRecord(row.recordId).then(res => {
+        this.detail = res.data || res || {};
+        try {
+          let imgs = this.detail.images ? JSON.parse(this.detail.images) : [];
+          this.detailImages = Array.isArray(imgs) ? imgs : [];
+        } catch (e) {}
       });
     },
     /** 审核通过按钮 */
@@ -500,46 +511,6 @@ export default {
         ...this.queryParams
       }, `record_${new Date().getTime()}.xlsx`)
     },
-    /** 获取物种类型文本 */
-    getSpeciesTypeText(type) {
-      const typeMap = {
-        plant: '植物',
-        animal: '动物',
-        fungi: '真菌',
-        other: '其他'
-      };
-      return typeMap[type] || type;
-    },
-    /** 获取物种类型标签 */
-    getSpeciesTypeTag(type) {
-      const tagMap = {
-        plant: 'success',
-        animal: 'warning',
-        fungi: 'info',
-        other: ''
-      };
-      return tagMap[type] || '';
-    },
-    /** 获取审核状态文本 */
-    getStatusText(status) {
-      const statusMap = {
-        draft: '草稿',
-        pending: '待审核',
-        approved: '已通过',
-        rejected: '已驳回'
-      };
-      return statusMap[status] || status;
-    },
-    /** 获取审核状态类型 */
-    getStatusType(status) {
-      const typeMap = {
-        draft: 'info',
-        pending: 'warning',
-        approved: 'success',
-        rejected: 'danger'
-      };
-      return typeMap[status] || 'info';
-    }
   }
 };
 </script>

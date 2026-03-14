@@ -11,19 +11,12 @@
       </el-form-item>
       <el-form-item label="话题分类" prop="category">
         <el-select v-model="queryParams.category" placeholder="请选择话题分类" clearable>
-          <el-option
-            v-for="item in categoryList"
-            :key="item.categoryCode"
-            :label="item.categoryName"
-            :value="item.categoryCode"
-          />
+          <el-option v-for="dict in categoryTypeOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
         </el-select>
       </el-form-item>
       <el-form-item label="审核状态" prop="auditStatus">
         <el-select v-model="queryParams.auditStatus" placeholder="请选择审核状态" clearable>
-          <el-option label="待审核" value="0" />
-          <el-option label="已通过" value="1" />
-          <el-option label="已驳回" value="2" />
+          <el-option v-for="dict in auditStatusOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -56,16 +49,13 @@
       </el-table-column>
       <el-table-column label="分类" align="center" prop="category" width="100">
         <template slot-scope="scope">
-          {{ getCategoryName(scope.row.category) }}
+          <dict-tag :options="categoryTypeOptions" :value="String(scope.row.category)" />
         </template>
       </el-table-column>
       <el-table-column label="发布者" align="center" prop="userName" width="100" />
       <el-table-column label="审核状态" align="center" prop="auditStatus" width="100">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.auditStatus === '0'" type="warning">待审核</el-tag>
-          <el-tag v-else-if="scope.row.auditStatus === '1'" type="success">已通过</el-tag>
-          <el-tag v-else-if="scope.row.auditStatus === '2'" type="danger">已驳回</el-tag>
-          <el-tag v-else type="info">{{ scope.row.auditStatus }}</el-tag>
+          <dict-tag :options="auditStatusOptions" :value="String(scope.row.auditStatus)" />
         </template>
       </el-table-column>
       <el-table-column label="审核人" align="center" prop="auditBy" width="100" />
@@ -88,23 +78,23 @@
             @click="handleView(scope.row)"
           >查看</el-button>
           <el-button
-            v-if="scope.row.auditStatus === '0'"
+            v-if="scope.row.auditStatus === 0"
             size="mini"
             type="text"
             icon="el-icon-check"
-            @click="handleAudit(scope.row, '1')"
+            @click="handleAudit(scope.row, 1)"
           >通过</el-button>
           <el-button
-            v-if="scope.row.auditStatus === '0'"
+            v-if="scope.row.auditStatus === 0"
             size="mini"
             type="text"
             icon="el-icon-close"
-            @click="handleAudit(scope.row, '2')"
+            @click="handleAudit(scope.row, 2)"
           >驳回</el-button>
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -119,43 +109,39 @@
         <div class="detail-header">
           <h2>{{ currentTopic.title }}</h2>
           <div class="detail-badges">
-            <el-tag>{{ getCategoryName(currentTopic.category) }}</el-tag>
-            <el-tag v-if="currentTopic.auditStatus === '0'" type="warning">待审核</el-tag>
-            <el-tag v-else-if="currentTopic.auditStatus === '1'" type="success">已通过</el-tag>
-            <el-tag v-else-if="currentTopic.auditStatus === '2'" type="danger">已驳回</el-tag>
+            <dict-tag :options="categoryTypeOptions" :value="String(currentTopic.category)" />
+            <dict-tag :options="auditStatusOptions" :value="String(currentTopic.auditStatus)" />
           </div>
         </div>
-        
+
         <div class="detail-info">
           <el-descriptions :column="2" border>
             <el-descriptions-item label="发布者">{{ currentTopic.userName }}</el-descriptions-item>
             <el-descriptions-item label="发布时间">{{ parseTime(currentTopic.createTime) }}</el-descriptions-item>
             <el-descriptions-item label="审核状态">
-              <el-tag v-if="currentTopic.auditStatus === '0'" type="warning">待审核</el-tag>
-              <el-tag v-else-if="currentTopic.auditStatus === '1'" type="success">已通过</el-tag>
-              <el-tag v-else-if="currentTopic.auditStatus === '2'" type="danger">已驳回</el-tag>
+              <dict-tag :options="auditStatusOptions" :value="String(currentTopic.auditStatus)" />
             </el-descriptions-item>
             <el-descriptions-item label="审核人">{{ currentTopic.auditBy || '未审核' }}</el-descriptions-item>
             <el-descriptions-item label="审核时间">{{ parseTime(currentTopic.auditTime) || '未审核' }}</el-descriptions-item>
             <el-descriptions-item label="审核备注">{{ currentTopic.auditRemark || '无' }}</el-descriptions-item>
           </el-descriptions>
         </div>
-        
+
         <div class="detail-content">
           <h4>话题内容</h4>
           <div class="content-text">{{ currentTopic.content }}</div>
         </div>
-        
-        <div class="detail-actions" v-if="currentTopic.auditStatus === '0'">
+
+        <div class="detail-actions" v-if="currentTopic.auditStatus === 0">
           <el-button
             type="success"
             icon="el-icon-check"
-            @click="handleAudit(currentTopic, '1')"
+            @click="handleAudit(currentTopic, 1)"
           >通过审核</el-button>
           <el-button
             type="danger"
             icon="el-icon-close"
-            @click="handleAudit(currentTopic, '2')"
+            @click="handleAudit(currentTopic, 2)"
           >驳回审核</el-button>
         </div>
       </div>
@@ -165,7 +151,7 @@
     <el-dialog :title="auditTitle" :visible.sync="auditVisible" width="500px" append-to-body>
       <el-form ref="auditForm" :model="auditForm" label-width="80px">
         <el-form-item label="审核结果">
-          <el-tag v-if="auditForm.auditStatus === '1'" type="success">通过</el-tag>
+          <el-tag v-if="auditForm.auditStatus === 1" type="success">通过</el-tag>
           <el-tag v-else type="danger">驳回</el-tag>
         </el-form-item>
         <el-form-item label="审核备注">
@@ -199,12 +185,14 @@ export default {
       pendingCount: 0,
       topicList: [],
       categoryList: [],
+      auditStatusOptions: [],
+      categoryTypeOptions: [],
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         title: null,
         category: null,
-        auditStatus: '0'
+        auditStatus: 0
       },
       detailVisible: false,
       currentTopic: null,
@@ -218,6 +206,8 @@ export default {
     }
   },
   created() {
+    this.getDicts('nh_audit_status').then(res => { this.auditStatusOptions = res.data; });
+    this.getDicts('nh_community_category_type').then(res => { this.categoryTypeOptions = res.data; });
     this.getCategoryList()
     this.getList()
     this.getPendingCount()
@@ -237,7 +227,7 @@ export default {
       })
     },
     getPendingCount() {
-      listTopic({ auditStatus: '0', pageNum: 1, pageSize: 1 }).then(response => {
+      listTopic({ auditStatus: 0, pageNum: 1, pageSize: 1 }).then(response => {
         this.pendingCount = response.total
       })
     },
@@ -250,7 +240,7 @@ export default {
       this.handleQuery()
     },
     showPendingOnly() {
-      this.queryParams.auditStatus = '0'
+      this.queryParams.auditStatus = 0
       this.handleQuery()
     },
     handleView(row) {
@@ -289,30 +279,30 @@ export default {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid #f0f0f0;
-    
+
     h2 {
       margin: 0 0 10px 0;
       color: #2c3e50;
     }
-    
+
     .detail-badges {
       display: flex;
       gap: 8px;
     }
   }
-  
+
   .detail-info {
     margin-bottom: 20px;
   }
-  
+
   .detail-content {
     margin-bottom: 20px;
-    
+
     h4 {
       color: #2c3e50;
       margin: 0 0 10px 0;
     }
-    
+
     .content-text {
       padding: 15px;
       background: #f5f7fa;
@@ -322,7 +312,7 @@ export default {
       color: #606266;
     }
   }
-  
+
   .detail-actions {
     display: flex;
     gap: 10px;

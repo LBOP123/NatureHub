@@ -66,4 +66,12 @@ public interface ObservationRecordMapper
      * @return 结果
      */
     public int submitForReview(Long recordId);
+
+    /**
+     * 根据分享话题ID查询观察记录
+     *
+     * @param sharedTopicId 话题ID
+     * @return 观察记录
+     */
+    public ObservationRecord selectObservationRecordBySharedTopicId(Long sharedTopicId);
 }

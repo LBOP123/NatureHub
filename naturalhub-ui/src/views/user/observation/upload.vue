@@ -73,10 +73,7 @@
 
         <el-form-item label="物种类型" prop="speciesType">
           <el-select v-model="form.speciesType" placeholder="请选择物种类型" style="width: 100%">
-            <el-option label="植物" value="plant" />
-            <el-option label="动物" value="animal" />
-            <el-option label="真菌" value="fungi" />
-            <el-option label="其他" value="other" />
+            <el-option v-for="dict in speciesTypeOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
           </el-select>
         </el-form-item>
 
@@ -260,6 +257,7 @@ export default {
       previewVisible: false,
       previewImageUrl: '',
       submitLoading: false,
+      speciesTypeOptions: [],
       // 日期选择器配置
       pickerOptions: {
         disabledDate(time) {
@@ -269,6 +267,7 @@ export default {
     }
   },
   created() {
+    this.getDicts('nh_species_type').then(res => { this.speciesTypeOptions = res.data || [] })
     // 如果是编辑模式，加载数据
     const recordId = this.$route.params.recordId
     if (recordId) {
@@ -449,16 +448,19 @@ export default {
             const submitData = {
               ...this.form,
               images: JSON.stringify(this.form.images),
-              videos: JSON.stringify(this.form.videos),
-              submitReview: true
+              videos: JSON.stringify(this.form.videos)
             }
 
             const request = this.form.recordId ? updateRecord(submitData) : addRecord(submitData)
             
             request.then(response => {
-              if (response.data && response.data.recordId) {
+              // 获取记录ID（新增时从response.data获取，编辑时使用form.recordId）
+              const recordId = this.form.recordId || (response.data && response.data.recordId)
+              if (recordId) {
                 // 保存成功后提交审核
-                return submitReviewApi(response.data.recordId)
+                return submitReviewApi(recordId)
+              } else {
+                throw new Error('无法获取记录ID')
               }
             }).then(() => {
               this.$message.success('提交审核成功，请等待管理员审核')

@@ -6,21 +6,21 @@
         <el-button icon="el-icon-back" size="small" @click="goBack">返回</el-button>
         <div class="header-actions">
           <el-button
-            v-if="detail.reviewStatus === 'draft' || detail.reviewStatus === 'rejected'"
+            v-if="detail.auditStatus === 0 || detail.auditStatus === 3"
             type="primary"
             icon="el-icon-edit"
             size="small"
             @click="handleEdit"
           >编辑</el-button>
           <el-button
-            v-if="detail.reviewStatus === 'draft'"
+            v-if="detail.auditStatus === 0"
             type="success"
             icon="el-icon-s-promotion"
             size="small"
             @click="handleSubmitReview"
           >提交审核</el-button>
           <el-button
-            v-if="detail.reviewStatus === 'approved'"
+            v-if="detail.auditStatus === 2"
             type="success"
             icon="el-icon-share"
             size="small"
@@ -39,10 +39,13 @@
       <div class="detail-title-section">
         <h1 class="detail-title">{{ detail.title || '暂无标题' }}</h1>
         <div class="detail-status">
-          <el-tag :type="getStatusType(detail.reviewStatus)" size="medium">
-            {{ getStatusText(detail.reviewStatus) }}
+          <el-tag
+            :type="getAuditStatusType(detail.auditStatus)"
+            size="medium"
+          >
+            {{ getAuditStatusText(detail.auditStatus) }}
           </el-tag>
-          <span v-if="detail.reviewStatus === 'rejected'" class="reject-reason">
+          <span v-if="detail.auditStatus === 3" class="reject-reason">
             <el-popover placement="top" width="300" trigger="hover">
               <div class="reject-info">
                 <p><strong>驳回原因：</strong></p>
@@ -60,7 +63,7 @@
       <!-- 基本信息 -->
       <el-descriptions :column="2" border class="detail-info">
         <el-descriptions-item label="物种类型">
-          <el-tag type="success" size="small">{{ getSpeciesTypeText(detail.speciesType) }}</el-tag>
+          <dict-tag :options="speciesTypeOptions" :value="getSpeciesTypeText(detail.speciesType)" size="small" />
         </el-descriptions-item>
         <el-descriptions-item label="物种名称">
           <span class="species-name">{{ detail.speciesName || '暂无' }}</span>
@@ -78,8 +81,8 @@
           </el-button>
         </el-descriptions-item>
         <el-descriptions-item label="是否分享">
-          <el-tag :type="detail.isShared === '1' ? 'success' : 'info'" size="small">
-            {{ detail.isShared === '1' ? '已分享' : '未分享' }}
+          <el-tag :type="detail.isShared === 1 ? 'success' : 'info'" size="small">
+            {{ detail.isShared === 1 ? '已分享' : '未分享' }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="创建时间">
@@ -144,19 +147,19 @@
       </div>
 
       <!-- 审核信息 -->
-      <div v-if="detail.reviewStatus !== 'draft'" class="detail-section">
+      <div v-if="detail.auditStatus !== 0" class="detail-section">
         <h3 class="section-title">
           <i class="el-icon-s-check"></i> 审核信息
         </h3>
         <el-timeline>
           <el-timeline-item
             timestamp="提交审核"
-            :color="detail.reviewStatus === 'pending' ? '#409EFF' : '#67C23A'"
+            :color="detail.auditStatus === 1 ? '#409EFF' : '#67C23A'"
           >
             <p>提交时间：{{ detail.submitTime || detail.createTime || '暂无' }}</p>
           </el-timeline-item>
           <el-timeline-item
-            v-if="detail.reviewStatus === 'approved'"
+            v-if="detail.auditStatus === 2"
             timestamp="审核通过"
             color="#67C23A"
           >
@@ -165,7 +168,7 @@
             <p v-if="detail.reviewComment">审核意见：{{ detail.reviewComment }}</p>
           </el-timeline-item>
           <el-timeline-item
-            v-if="detail.reviewStatus === 'rejected'"
+            v-if="detail.auditStatus === 3"
             timestamp="审核驳回"
             color="#F56C6C"
           >
@@ -176,14 +179,6 @@
         </el-timeline>
       </div>
     </el-card>
-
-    <!-- 地图对话框 -->
-    <el-dialog title="观察位置" :visible.sync="mapDialogVisible" width="800px" append-to-body>
-      <div id="map-container" style="height: 500px;"></div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="mapDialogVisible = false">关 闭</el-button>
-      </div>
-    </el-dialog>
 
     <!-- 分享对话框 -->
     <el-dialog title="分享到社群" :visible.sync="shareDialogVisible" width="600px" append-to-body>
@@ -225,6 +220,8 @@ export default {
   data() {
     return {
       loading: false,
+      speciesTypeOptions: [],
+      auditStatusOptions: [],
       // 完全适配数据库 nh_observation_record
       detail: {
         recordId: null,
@@ -240,7 +237,7 @@ export default {
         description: '',
         images: '',
         videos: '',
-        reviewStatus: 'draft',
+        auditStatus: 'draft',
         submitTime: '',
         reviewTime: '',
         reviewerId: null,
@@ -280,6 +277,8 @@ export default {
     }
   },
   created() {
+    this.getDicts('nh_species_type').then(res => { this.speciesTypeOptions = res.data || [] })
+    this.getDicts('nh_audit_status').then(res => { this.auditStatusOptions = res.data || [] })
     const recordId = this.$route.params.recordId
     if (recordId) {
       this.getDetail(recordId)
@@ -379,45 +378,25 @@ export default {
       })
     },
 
-    /** 显示地图 */
-    showMap() {
-      this.mapDialogVisible = true
-      this.$nextTick(() => {
-        this.initMap()
-      })
+    getAuditStatusText(status) {
+      const item = this.auditStatusOptions.find(d => d.dictValue == status);
+      return item ? item.dictLabel : "";
     },
-
-    /** 初始化地图 */
-    initMap() {
-      const mapContainer = document.getElementById('map-container')
-      if (mapContainer) {
-        mapContainer.innerHTML = `
-          <div style="text-align: center; padding: 50px;">
-            <p>经度：${this.detail.longitude || '暂无'}</p>
-            <p>纬度：${this.detail.latitude || '暂无'}</p>
-            <p style="color: #909399; margin-top: 20px;">提示：集成地图API后可显示地图</p>
-          </div>
-        `
-      }
-    },
-
-    /** 物种类型 */
     getSpeciesTypeText(type) {
-      const typeMap = { plant: '植物', animal: '动物', fungi: '真菌', other: '其他' }
-      return typeMap[type] || '未知'
-    },
-
-    /** 状态文本 */
-    getStatusText(status) {
-      const statusMap = { draft: '草稿', pending: '待审核', approved: '已通过', rejected: '已驳回' }
-      return statusMap[status] || status
+      const item = this.speciesTypeOptions.find(d => d.dictValue == type);
+      return item ? item.dictLabel : "";
     },
 
     /** 状态样式 */
-    getStatusType(status) {
-      const typeMap = { draft: 'info', pending: 'warning', approved: 'success', rejected: 'danger' }
-      return typeMap[status] || 'info'
-    }
+    getAuditStatusType(status) {
+      switch (status) {
+        case 0: return "";        // 未提交
+        case 1: return "warning"; // 审核中
+        case 2: return "success"; // 通过
+        case 3: return "danger";  // 驳回
+        default: return "";
+      }
+    },
   }
 }
 </script>

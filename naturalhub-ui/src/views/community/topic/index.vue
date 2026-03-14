@@ -11,9 +11,7 @@
       </el-form-item>
       <el-form-item label="话题分类" prop="category">
         <el-select v-model="queryParams.category" placeholder="请选择话题分类" clearable>
-          <el-option label="物种科普" value="species_science" />
-          <el-option label="野外探索" value="field_explore" />
-          <el-option label="鉴定求助" value="identify_help" />
+          <el-option v-for="dict in categoryTypeOptions" :key="dict.dictValue" :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
         </el-select>
       </el-form-item>
       <el-form-item label="是否置顶" prop="isTop">
@@ -75,9 +73,7 @@
       </el-table-column>
       <el-table-column label="分类" align="center" prop="category" width="100">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.category === 'species_science'" type="success">物种科普</el-tag>
-          <el-tag v-else-if="scope.row.category === 'field_explore'" type="primary">野外探索</el-tag>
-          <el-tag v-else-if="scope.row.category === 'identify_help'" type="warning">鉴定求助</el-tag>
+          <dict-tag :options="categoryTypeOptions" :value="String(scope.row.category)" />
         </template>
       </el-table-column>
       <el-table-column label="发布者" align="center" prop="userName" width="100" />
@@ -166,9 +162,7 @@
             <el-tag v-if="currentTopic.isTop === '1'" type="danger">置顶</el-tag>
             <el-tag v-if="currentTopic.isEssence === '1'" type="warning">精华</el-tag>
             <el-tag v-if="currentTopic.status === '1'" type="danger">已关闭</el-tag>
-            <el-tag v-if="currentTopic.category === 'species_science'" type="success">物种科普</el-tag>
-            <el-tag v-else-if="currentTopic.category === 'field_explore'" type="primary">野外探索</el-tag>
-            <el-tag v-else-if="currentTopic.category === 'identify_help'" type="warning">鉴定求助</el-tag>
+            <dict-tag :options="categoryTypeOptions" :value="String(currentTopic.category)" />
           </div>
         </div>
 
@@ -240,11 +234,17 @@ export default {
         isEssence: null,
         status: null
       },
+      categoryTypeOptions: [],
+      categoryTypeOptions: [],
+      categoryTypeOptions: [],
       detailVisible: false,
       currentTopic: null
     }
   },
   created() {
+    this.getDicts('nh_community_category_type').then(res => { this.categoryTypeOptions = res.data; });
+    this.getDicts('nh_community_category_type').then(res => { this.categoryTypeOptions = res.data; });
+    this.getDicts('nh_community_category_type').then(res => { this.categoryTypeOptions = res.data; });
     this.getList()
   },
   methods: {

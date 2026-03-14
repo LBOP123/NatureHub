@@ -43,7 +43,7 @@ public class CommunityTopicServiceImpl implements ICommunityTopicService
     public int insertCommunityTopic(CommunityTopic communityTopic)
     {
         communityTopic.setCreateTime(DateUtils.getNowDate());
-        communityTopic.setAuditStatus("pending"); // 默认待审核
+        communityTopic.setAuditStatus(0); // 0=待审核 // 默认待审核
         return communityTopicMapper.insertCommunityTopic(communityTopic);
     }
 
@@ -150,7 +150,7 @@ public class CommunityTopicServiceImpl implements ICommunityTopicService
     }
 
     @Override
-    public int auditTopic(Long topicId, String auditStatus, String auditRemark)
+    public int auditTopic(Long topicId, Integer auditStatus, String auditRemark)
     {
         CommunityTopic topic = communityTopicMapper.selectCommunityTopicByTopicId(topicId);
         if (topic == null)

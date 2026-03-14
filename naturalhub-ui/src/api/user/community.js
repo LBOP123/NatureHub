@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+﻿import request from '@/utils/request'
 
 // 查询社群话题列表
 export function listTopic(query) {
@@ -114,6 +114,14 @@ export function unlikeComment(commentId) {
   return request({
     url: '/user/community/comment/like/' + commentId,
     method: 'delete'
+  })
+}
+
+// 获取话题关联的原始业务记录详情（type: observation|identification|survey）
+export function getSourceDetail(type, id) {
+  return request({
+    url: '/user/community/source/' + type + '/' + id,
+    method: 'get'
   })
 }
 

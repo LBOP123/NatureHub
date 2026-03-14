@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.FieldSurveyMapper">
+
+    <resultMap type="FieldSurvey" id="FieldSurveyResult">
+        <result property="surveyId"       column="survey_id"      />
+        <result property="userId"         column="user_id"        />
+        <result property="userName"       column="user_name"      />
+        <result property="title"          column="title"          />
+        <result property="surveyDate"     column="survey_date"    />
+        <result property="startTime"      column="start_time"     />
+        <result property="endTime"        column="end_time"       />
+        <result property="location"       column="location"       />
+        <result property="routeInfo"      column="route_info"     />
+        <result property="weather"        column="weather"        />
+        <result property="temperature"    column="temperature"    />
+        <!-- ?????habitatType/surveyMethod ??? Integer -->
+        <result property="habitatType"    column="habitat_type"   />
+        <result property="surveyMethod"   column="survey_method"  />
+        <result property="teamMembers"    column="team_members"   />
+        <result property="speciesCount"   column="species_count"  />
+        <result property="speciesList"    column="species_list"   />
+        <result property="description"    column="description"    />
+        <result property="findings"       column="findings"       />
+        <result property="images"         column="images"         />
+        <result property="attachments"    column="attachments"    />
+        <result property="isShared"       column="is_shared"      />
+        <result property="sharedTopicId"  column="shared_topic_id"/>
+        <result property="auditStatus"    column="audit_status"   />
+        <result property="auditTime"      column="audit_time"     />
+        <result property="auditBy"        column="audit_by"       />
+        <result property="auditRemark"    column="audit_remark"   />
+        <result property="delFlag"        column="del_flag"       />
+        <result property="createBy"       column="create_by"      />
+        <result property="createTime"     column="create_time"    />
+        <result property="updateBy"       column="update_by"      />
+        <result property="updateTime"     column="update_time"    />
+        <result property="remark"         column="remark"         />
+    </resultMap>
+
+    <sql id="selectFieldSurveyVo">
+        select fs.survey_id, fs.user_id, u.user_name, fs.title, fs.survey_date, fs.start_time, fs.end_time,
+               fs.location, fs.route_info, fs.weather, fs.temperature, fs.habitat_type, fs.survey_method,
+               fs.team_members, fs.species_count, fs.species_list, fs.description, fs.findings,
+               fs.images, fs.attachments, fs.is_shared, fs.shared_topic_id,
+               fs.audit_status, fs.audit_time, fs.audit_by, fs.audit_remark, fs.del_flag,
+               fs.create_by, fs.create_time, fs.update_by, fs.update_time, fs.remark
+        from nh_field_survey fs
+        left join sys_user u on fs.user_id = u.user_id
+    </sql>
+
+    <select id="selectFieldSurveyList" parameterType="FieldSurvey" resultMap="FieldSurveyResult">
+        <include refid="selectFieldSurveyVo"/>
+        <where>
+            fs.del_flag = '0'
+            <if test="userId != null"> and fs.user_id = #{userId}</if>
+            <if test="title != null and title != ''"> and fs.title like concat('%', #{title}, '%')</if>
+            <if test="location != null and location != ''"> and fs.location like concat('%', #{location}, '%')</if>
+            <!-- ?????habitatType/surveyMethod ????????????? -->
+            <if test="habitatType != null"> and fs.habitat_type = #{habitatType}</if>
+            <if test="surveyMethod != null"> and fs.survey_method = #{surveyMethod}</if>
+            <if test="auditStatus != null"> and fs.audit_status = #{auditStatus}</if>
+            <if test="params.beginSurveyDate != null and params.beginSurveyDate != ''">
+                and date_format(fs.survey_date,'%y%m%d') &gt;= date_format(#{params.beginSurveyDate},'%y%m%d')
+            </if>
+            <if test="params.endSurveyDate != null and params.endSurveyDate != ''">
+                and date_format(fs.survey_date,'%y%m%d') &lt;= date_format(#{params.endSurveyDate},'%y%m%d')
+            </if>
+        </where>
+        order by fs.survey_date desc, fs.create_time desc
+    </select>
+
+    <select id="selectFieldSurveyBySurveyId" parameterType="Long" resultMap="FieldSurveyResult">
+        <include refid="selectFieldSurveyVo"/>
+        where fs.survey_id = #{surveyId} and fs.del_flag = '0'
+    </select>
+
+    <insert id="insertFieldSurvey" parameterType="FieldSurvey" useGeneratedKeys="true" keyProperty="surveyId">
+        insert into nh_field_survey
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="surveyDate != null">survey_date,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="location != null">location,</if>
+            <if test="routeInfo != null">route_info,</if>
+            <if test="weather != null">weather,</if>
+            <if test="temperature != null">temperature,</if>
+            <if test="habitatType != null">habitat_type,</if>
+            <if test="surveyMethod != null">survey_method,</if>
+            <if test="teamMembers != null">team_members,</if>
+            <if test="speciesCount != null">species_count,</if>
+            <if test="speciesList != null">species_list,</if>
+            <if test="description != null">description,</if>
+            <if test="findings != null">findings,</if>
+            <if test="images != null">images,</if>
+            <if test="attachments != null">attachments,</if>
+            <if test="isShared != null">is_shared,</if>
+            <if test="sharedTopicId != null">shared_topic_id,</if>
+            <if test="auditStatus != null">audit_status,</if>
+            <if test="auditTime != null">audit_time,</if>
+            <if test="auditBy != null">audit_by,</if>
+            <if test="auditRemark != null">audit_remark,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="surveyDate != null">#{surveyDate},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="location != null">#{location},</if>
+            <if test="routeInfo != null">#{routeInfo},</if>
+            <if test="weather != null">#{weather},</if>
+            <if test="temperature != null">#{temperature},</if>
+            <if test="habitatType != null">#{habitatType},</if>
+            <if test="surveyMethod != null">#{surveyMethod},</if>
+            <if test="teamMembers != null">#{teamMembers},</if>
+            <if test="speciesCount != null">#{speciesCount},</if>
+            <if test="speciesList != null">#{speciesList},</if>
+            <if test="description != null">#{description},</if>
+            <if test="findings != null">#{findings},</if>
+            <if test="images != null">#{images},</if>
+            <if test="attachments != null">#{attachments},</if>
+            <if test="isShared != null">#{isShared},</if>
+            <if test="sharedTopicId != null">#{sharedTopicId},</if>
+            <if test="auditStatus != null">#{auditStatus},</if>
+            <if test="auditTime != null">#{auditTime},</if>
+            <if test="auditBy != null">#{auditBy},</if>
+            <if test="auditRemark != null">#{auditRemark},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateFieldSurvey" parameterType="FieldSurvey">
+        update nh_field_survey
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="surveyDate != null">survey_date = #{surveyDate},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="routeInfo != null">route_info = #{routeInfo},</if>
+            <if test="weather != null">weather = #{weather},</if>
+            <if test="temperature != null">temperature = #{temperature},</if>
+            <if test="habitatType != null">habitat_type = #{habitatType},</if>
+            <if test="surveyMethod != null">survey_method = #{surveyMethod},</if>
+            <if test="teamMembers != null">team_members = #{teamMembers},</if>
+            <if test="speciesCount != null">species_count = #{speciesCount},</if>
+            <if test="speciesList != null">species_list = #{speciesList},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="findings != null">findings = #{findings},</if>
+            <if test="images != null">images = #{images},</if>
+            <if test="attachments != null">attachments = #{attachments},</if>
+            <if test="isShared != null">is_shared = #{isShared},</if>
+            <if test="sharedTopicId != null">shared_topic_id = #{sharedTopicId},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+            <if test="auditBy != null">audit_by = #{auditBy},</if>
+            <if test="auditRemark != null">audit_remark = #{auditRemark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where survey_id = #{surveyId}
+    </update>
+
+    <delete id="deleteFieldSurveyBySurveyId" parameterType="Long">
+        update nh_field_survey set del_flag = '2' where survey_id = #{surveyId}
+    </delete>
+
+    <delete id="deleteFieldSurveyBySurveyIds" parameterType="String">
+        update nh_field_survey set del_flag = '2' where survey_id in
+        <foreach item="surveyId" collection="array" open="(" separator="," close=")">
+            #{surveyId}
+        </foreach>
+    </delete>
+
+    <select id="selectFieldSurveyBySharedTopicId" parameterType="Long" resultMap="FieldSurveyResult">
+        <include refid="selectFieldSurveyVo"/>
+        where shared_topic_id = #{sharedTopicId}
+    </select>
+
+</mapper>

@@ -71,6 +71,7 @@
 
 <script>
 import request from '@/utils/request'
+import { marked } from 'marked'
 
 export default {
   name: 'QaPage',
@@ -96,10 +97,7 @@ export default {
         await this.createNewConversation(userQuestion)
       }
 
-      this.messages.push({
-        type: 'user',
-        content: userQuestion
-      })
+      this.messages.push({ type: 'user', content: userQuestion })
       this.question = ''
       this.loading = true
 
@@ -117,35 +115,20 @@ export default {
         })
 
         if (response.code === 200) {
-          // 处理返回的数据，可能是字符串或对象
           const answer = typeof response.data === 'string' ? response.data : (response.data?.data || response.data || '暂无回答')
-          
-          this.messages.push({
-            type: 'ai',
-            content: answer
-          })
+          this.messages.push({ type: 'ai', content: answer })
           this.loadConversations()
         } else {
           this.$message.error(response.msg || '提问失败')
-          // 添加错误消息到聊天
-          this.messages.push({
-            type: 'ai',
-            content: '抱歉，回答失败：' + (response.msg || '未知错误')
-          })
+          this.messages.push({ type: 'ai', content: '抱歉，回答失败：' + (response.msg || '未知错误') })
         }
       } catch (error) {
         console.error('请求失败:', error)
         this.$message.error('请求失败，请重试')
-        // 添加错误消息到聊天
-        this.messages.push({
-          type: 'ai',
-          content: '抱歉，网络请求失败，请稍后重试'
-        })
+        this.messages.push({ type: 'ai', content: '抱歉，网络请求失败，请稍后重试' })
       } finally {
         this.loading = false
-        this.$nextTick(() => {
-          this.scrollToBottom()
-        })
+        this.$nextTick(() => this.scrollToBottom())
       }
     },
 
@@ -235,10 +218,14 @@ export default {
 
     formatAnswer(content) {
       if (!content) return ''
-      return content
-        .replace(/<[^>]+>/g, '')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>')
+      try {
+        return marked.parse(content)
+      } catch (error) {
+        console.error('Markdown渲染失败:', error)
+        return content
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\n/g, '<br>')
+      }
     },
 
     scrollToBottom() {
@@ -298,15 +285,9 @@ export default {
 
   &:hover {
     background: #f5f5f5;
-
-    .delete-btn {
-      display: block;
-    }
+    .delete-btn { display: block; }
   }
-
-  &.active {
-    background: #e6f7ff;
-  }
+  &.active { background: #e6f7ff; }
 }
 
 .conversation-title {
@@ -317,149 +298,48 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.conversation-time { font-size:12px; color:#999; }
+.delete-btn { position:absolute; top:8px; right:8px; display:none; color:#999; &:hover{color:#f56c6c;} }
 
-.conversation-time {
-  font-size: 12px;
-  color: #999;
-}
+.chat-area { flex:1; display:flex; flex-direction:column; background:#fff; }
+.chat-header { padding:16px 24px; border-bottom:1px solid #e5e5e5; h3{margin:0; font-size:16px;} }
 
-.delete-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: none;
-  color: #999;
-
-  &:hover {
-    color: #f56c6c;
-  }
-}
-
-.chat-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-}
-
-.chat-header {
-  padding: 16px 24px;
-  border-bottom: 1px solid #e5e5e5;
-
-  h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-    color: #333;
-  }
-}
-
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #999;
-
-  .empty-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-  }
-
-  .empty-text {
-    font-size: 14px;
-  }
-}
+.messages { flex:1; overflow-y:auto; padding:24px; }
+.empty-state { text-align:center; padding:60px 20px; color:#999; .empty-icon{font-size:48px; margin-bottom:16px;} }
 
 .message-item {
-  margin-bottom: 16px;
-  display: flex;
-
-  &.user {
-    justify-content: flex-end;
-
-    .message-content {
-      background: #1890ff;
-      color: #fff;
-    }
-  }
-
-  &.ai {
-    justify-content: flex-start;
-
-    .message-content {
-      background: #f5f5f5;
-      color: #333;
-    }
-  }
+  margin-bottom:16px; display:flex;
+  &.user{justify-content:flex-end; .message-content{background:#1890ff; color:#fff;}}
+  &.ai{justify-content:flex-start; .message-content{background:#f5f5f5; color:#333;}}
 }
 
 .message-content {
-  max-width: 70%;
-  padding: 12px 16px;
-  border-radius: 8px;
-  line-height: 1.6;
-  font-size: 14px;
-  word-break: break-word;
-
-  ::v-deep strong {
-    font-weight: 600;
-  }
-
-  &.loading {
-    display: flex;
-    gap: 4px;
-    padding: 16px;
+  max-width:70%; padding:12px 16px; border-radius:8px; line-height:1.6; word-break:break-word;
+  &.loading{display:flex; gap:4px; padding:16px;}
+  ::v-deep strong{font-weight:600;}
+  ::v-deep {
+    h1,h2,h3{margin:12px 0 8px; font-weight:600;}
+    code{background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px;}
+    pre{background:rgba(0,0,0,0.05); padding:12px; border-radius:6px; overflow-x:auto;}
+    a{color:#409EFF;}
   }
 }
 
 .loading-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #999;
-  animation: loading 1.4s infinite;
-
-  &:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  &:nth-child(3) {
-    animation-delay: 0.4s;
-  }
+  width:8px; height:8px; border-radius:50%; background:#999; animation:loading 1.4s infinite;
+  &:nth-child(2){animation-delay:0.2s;}
+  &:nth-child(3){animation-delay:0.4s;}
 }
 
 @keyframes loading {
-  0%, 60%, 100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  30% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0%,60%,100%{opacity:0.3; transform:scale(0.8);}
+  30%{opacity:1; transform:scale(1);}
 }
 
 .input-area {
-  padding: 16px 24px;
-  border-top: 1px solid #e5e5e5;
-  background: #fff;
-
-  .input-row {
-    display: flex;
-    gap: 12px;
-  }
-
-  ::v-deep .el-textarea {
-    flex: 1;
-  }
-
-  .el-button {
-    align-self: flex-end;
-  }
+  padding:16px 24px; border-top:1px solid #e5e5e5; background:#fff;
+  .input-row{display:flex; gap:12px;}
+  ::v-deep .el-textarea{flex:1;}
+  .el-button{align-self:flex-end;}
 }
 </style>
