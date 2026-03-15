@@ -6,14 +6,14 @@
           <el-button icon="el-icon-back" size="small" @click="goBack">返回</el-button>
           <div class="header-actions">
             <el-button
-              v-if="survey.auditStatus === 'pending' || survey.auditStatus === 'rejected'"
+              v-if="survey.auditStatus === 0 || survey.auditStatus === 3"
               type="primary"
               icon="el-icon-edit"
               size="small"
               @click="handleEdit"
             >编辑</el-button>
             <el-button
-              v-if="survey.auditStatus === 'approved' && survey.isShared === '0'"
+              v-if="survey.auditStatus === 2 && survey.isShared === 0"
               type="success"
               icon="el-icon-share"
               size="small"
@@ -32,10 +32,8 @@
         <div class="detail-title-section">
           <h1 class="detail-title">{{ survey.title || '暂无标题' }}</h1>
           <div class="detail-status">
-            <el-tag :type="getAuditStatusType(survey.auditStatus)" size="medium">
-              {{ getAuditStatusText(survey.auditStatus) }}
-            </el-tag>
-            <span v-if="survey.auditStatus === 'rejected'" class="reject-reason">
+            <dict-tag :options="auditStatusOptions" :value="String(survey.auditStatus)" size="medium" />
+            <span v-if="survey.auditStatus === 3" class="reject-reason">
               <el-popover placement="top" width="300" trigger="hover">
                 <div class="reject-info">
                   <p><strong>驳回原因：</strong></p>
@@ -139,19 +137,19 @@
         </div>
 
         <!-- 审核信息 -->
-        <div v-if="survey.auditStatus !== 'pending'" class="detail-section">
+        <div v-if="survey.auditStatus !== 0" class="detail-section">
           <h3 class="section-title">
             <i class="el-icon-s-check"></i> 审核信息
           </h3>
           <el-timeline>
             <el-timeline-item
               timestamp="提交审核"
-              :color="survey.auditStatus === 'pending' ? '#409EFF' : '#67C23A'"
+              :color="survey.auditStatus === 0 ? '#409EFF' : '#67C23A'"
             >
               <p>提交时间：{{ survey.createTime || '暂无' }}</p>
             </el-timeline-item>
             <el-timeline-item
-              v-if="survey.auditStatus === 'approved'"
+              v-if="survey.auditStatus === 2"
               timestamp="审核通过"
               color="#67C23A"
             >
@@ -160,7 +158,7 @@
               <p v-if="survey.auditRemark">审核意见：{{ survey.auditRemark }}</p>
             </el-timeline-item>
             <el-timeline-item
-              v-if="survey.auditStatus === 'rejected'"
+              v-if="survey.auditStatus === 3"
               timestamp="审核驳回"
               color="#F56C6C"
             >
@@ -190,6 +188,7 @@
     data() {
       return {
         loading: true,
+        auditStatusOptions: [],
         survey: {},
         imageList: [],
         mapDialogVisible: false
@@ -201,6 +200,7 @@
       }
     },
     created() {
+      this.getDicts('nh_observation_audit_status').then(res => { this.auditStatusOptions = res.data || [] })
       this.getDetail();
     },
     methods: {
@@ -264,12 +264,17 @@
         }
       },
       getAuditStatusText(status) {
-        const statusMap = { pending: '待审核', approved: '已通过', rejected: '已驳回' };
-        return statusMap[status] || status;
+        const item = this.auditStatusOptions.find(d => d.dictValue == status);
+        return item ? item.dictLabel : '';
       },
       getAuditStatusType(status) {
-        const typeMap = { pending: 'warning', approved: 'success', rejected: 'danger' };
-        return typeMap[status] || 'info';
+        switch (status) {
+          case 0: return '';
+          case 1: return 'warning';
+          case 2: return 'success';
+          case 3: return 'danger';
+          default: return '';
+        }
       }
     }
   };

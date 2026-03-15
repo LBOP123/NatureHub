@@ -1,5 +1,6 @@
 package com.naturalhub.system.service;
 
+import com.naturalhub.common.core.domain.AjaxResult;
 import com.naturalhub.system.domain.BioRecognition;
 import java.util.List;
 import java.util.Map;
@@ -38,4 +39,9 @@ public interface IBioRecognitionRecordService {
      * 获取统计数据
      */
     Map<String, Object> getStatistics();
+
+    /**
+     * 获取用户识别历史记录（分页）
+     */
+    AjaxResult getUserRecognitionHistory(String username, Integer pageNum, Integer pageSize);
 }

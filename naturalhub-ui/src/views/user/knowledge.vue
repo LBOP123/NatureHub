@@ -57,9 +57,9 @@
       <div class="input-area">
         <div class="quick-questions">
           <el-button size="small" @click="quickAsk('绿萝的养护方法')">绿萝养护</el-button>
-          <el-button size="small" @click="quickAsk('多肉植物怎么浇水')">多肉浇水</el-button>
-          <el-button size="small" @click="quickAsk('仙人掌的生长习性')">仙人掌习性</el-button>
-          <el-button size="small" @click="quickAsk('蝴蝶兰的繁殖方法')">蝴蝶兰繁殖</el-button>
+          <el-button size="small" @click="quickAsk('猫咪的常见习性')">猫咪的常见习性</el-button>
+          <el-button size="small" @click="quickAsk('蜜蜂的作用')">蜜蜂的作用</el-button>
+          <el-button size="small" @click="quickAsk('食品发酵的生物小知识')">食品发酵的生物小知识</el-button>
         </div>
         <div class="input-row">
           <el-input

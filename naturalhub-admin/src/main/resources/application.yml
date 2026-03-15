@@ -7,7 +7,7 @@ ruoyi:
   # 版权年份
   copyrightYear: 2025
   # 文件路径 示例（ Windows配置D:/ruoyi/uploadPath，Linux配置 /home/ruoyi/uploadPath）
-  profile: /home/ruoyi/uploadPath
+  profile: D:/ruoyi/uploadPath
   # 获取ip地址开关
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
@@ -129,6 +129,7 @@ xss:
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
 
+# 百度AI配置
 baidu:
   ai:
     # API Key（请替换为你的实际Key）
@@ -137,3 +138,18 @@ baidu:
     secret-key: tpaZv0Tpuy5032MCXDxnrsuQOsRIE233
     # Token缓存时间（秒），默认25天
     token-expire-time: 2160000
+
+# 七牛云配置
+qiniu:
+  # 是否启用七牛云存储（true=七牛云，false=本地存储）
+  enabled: true
+  # AccessKey（请替换为你的七牛云AccessKey）
+  access-key: LWRS2kV2Nfh7ZYf1Ng4qavgeZqybwt_aQvW1yw-d
+  # SecretKey（请替换为你的七牛云SecretKey）
+  secret-key: GuaYsFRNSM1IS7RcAjdcBwO4FfjpfOOopocetNxH
+  # 存储空间名称（请替换为你的Bucket名称）
+  bucket: naturalhub
+  # 外链域名（请替换为你的七牛云域名，必须以http://或https://开头）
+  domain: http://tbazebjur.hn-bkt.clouddn.com
+  # 存储区域（huadong/huabei/huanan/beimei/xinjiapo）
+  zone: huanan
