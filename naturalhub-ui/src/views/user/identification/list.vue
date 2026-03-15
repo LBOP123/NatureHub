@@ -407,7 +407,7 @@ export default {
     display: flex;
     align-items: center;
 
-    :deep(.el-input__prefix) {
+    ::v-deep .el-input__prefix{
       display: flex;
       align-items: center;
       top: 50%;

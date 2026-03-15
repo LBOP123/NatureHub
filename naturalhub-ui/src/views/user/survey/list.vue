@@ -62,14 +62,16 @@
           <div class="card-info">
             <div class="card-title">{{ item.title }}</div>
             <div class="info-item single-line"><span class="label">地点：</span>{{ item.location }}</div>
-            <div class="info-item single-line"><span class="label">时间：</span>{{ formatGridDateTime(item.surveyDate) }}</div>
+            <div class="info-item single-line"><span class="label">时间：</span>{{ formatGridDateTime(item.surveyDate) }}
+            </div>
             <div class="info-item single-line"><span class="label">物种：</span>{{ item.speciesCount || 0 }} 种</div>
             <div class="card-actions">
               <el-button size="mini" type="text" icon="el-icon-view" @click.stop="handleView(item)">查看</el-button>
               <el-button v-if="item.auditStatus === 0 || item.auditStatus === 3" size="mini" type="text"
                          icon="el-icon-edit" @click.stop="handleEdit(item)">编辑
               </el-button>
-              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text" icon="el-icon-share"
+              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text"
+                         icon="el-icon-share"
                          @click.stop="handleShare(item)">分享
               </el-button>
               <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
@@ -122,7 +124,8 @@
               <el-button v-if="item.auditStatus === 0 || item.auditStatus === 3" size="mini" type="text"
                          icon="el-icon-edit" @click.stop="handleEdit(item)">编辑
               </el-button>
-              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text" icon="el-icon-share"
+              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text"
+                         icon="el-icon-share"
                          @click.stop="handleShare(item)">分享
               </el-button>
               <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
@@ -177,14 +180,14 @@
 </template>
 
 <script>
-import { listSurvey, delSurvey, shareSurvey, updateSurvey } from '@/api/user/survey'
+import {listSurvey, delSurvey, shareSurvey, updateSurvey} from '@/api/user/survey'
 
 export default {
   name: 'SurveyList',
   data() {
     return {
       viewType: 'grid',
-      queryParams: { pageNum: 1, pageSize: 8, title: null },
+      queryParams: {pageNum: 1, pageSize: 8, title: null},
       auditStatusOptions: [],
       habitatTypeOptions: [],
       surveyList: [],
@@ -194,17 +197,21 @@ export default {
       hasMore: true,
       shareDialogVisible: false,
       shareLoading: false,
-      shareForm: { surveyId: null, topicType: '', title: '', content: '' },
+      shareForm: {surveyId: null, topicType: '', title: '', content: ''},
       shareRules: {
-        topicType: [{ required: true, message: '请选择板块', trigger: 'change' }],
-        title: [{ required: true, message: '请输入分享标题', trigger: 'blur' }],
-        content: [{ required: true, message: '请输入分享内容', trigger: 'blur' }]
+        topicType: [{required: true, message: '请选择板块', trigger: 'change'}],
+        title: [{required: true, message: '请输入分享标题', trigger: 'blur'}],
+        content: [{required: true, message: '请输入分享内容', trigger: 'blur'}]
       }
     }
   },
   created() {
-    this.getDicts('nh_audit_status').then(res => { this.auditStatusOptions = res.data || [] })
-    this.getDicts('nh_habitat_type').then(res => { this.habitatTypeOptions = res.data || [] })
+    this.getDicts('nh_audit_status').then(res => {
+      this.auditStatusOptions = res.data || []
+    })
+    this.getDicts('nh_habitat_type').then(res => {
+      this.habitatTypeOptions = res.data || []
+    })
     this.getList()
     this.bindScroll()
   },
@@ -243,11 +250,16 @@ export default {
     },
     getAuditStatusType(status) {
       switch (status) {
-        case 0: return ''
-        case 1: return 'warning'
-        case 2: return 'success'
-        case 3: return 'danger'
-        default: return ''
+        case 0:
+          return ''
+        case 1:
+          return 'warning'
+        case 2:
+          return 'success'
+        case 3:
+          return 'danger'
+        default:
+          return ''
       }
     },
     getHabitatTypeText(val) {
@@ -288,7 +300,7 @@ export default {
       this.$router.push('/user/survey/create')
     },
     handleView(row) {
-      this.$router.push({ path: '/user/survey/detail', query: { id: row.surveyId } })
+      this.$router.push({path: '/user/survey/detail', query: {id: row.surveyId}})
     },
     handleEdit(row) {
       this.$router.push('/user/survey/create?id=' + row.surveyId)
@@ -299,7 +311,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        return updateSurvey({ surveyId: row.surveyId, auditStatus: 1 })
+        return updateSurvey({surveyId: row.surveyId, auditStatus: 1})
       }).then(() => {
         this.$message.success('提交审核成功')
         this.getList()
@@ -437,7 +449,7 @@ export default {
     align-items: center;
 
     // 修复搜索图标垂直居中
-    :deep(.el-input__prefix) {
+    ::v-deep .el-input__prefix {
       display: flex;
       align-items: center;
       top: 50%;
@@ -635,20 +647,34 @@ export default {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
 @media (max-width: 992px) {
   .grid-view {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 768px) {
-  .survey-list-container { padding: 15px 10px; }
-  .grid-view { grid-template-columns: 1fr; }
-  .view-switch-top { left: 10px; }
+  .survey-list-container {
+    padding: 15px 10px;
+  }
+  .grid-view {
+    grid-template-columns: 1fr;
+  }
+  .view-switch-top {
+    left: 10px;
+  }
 
   .search-wrapper {
     flex-wrap: wrap !important;
-    .search-input { width: 100%; }
-    .search-btn, .add-btn { flex: 1; }
+
+    .search-input {
+      width: 100%;
+    }
+
+    .search-btn, .add-btn {
+      flex: 1;
+    }
   }
 }
 </style>
