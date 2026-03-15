@@ -1,5 +1,8 @@
 package com.naturalhub.system.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.naturalhub.common.core.domain.AjaxResult;
 import com.naturalhub.system.domain.BioRecognition;
 import com.naturalhub.system.mapper.BioRecognitionMapper;
 import com.naturalhub.system.service.IBioRecognitionRecordService;
@@ -72,5 +75,22 @@ public class BioRecognitionRecordServiceImpl implements IBioRecognitionRecordSer
         stats.put("speciesRank", bioRecognitionMapper.selectSpeciesRank(10));
         
         return stats;
+    }
+
+    @Override
+    public AjaxResult getUserRecognitionHistory(String username, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        BioRecognition query = new BioRecognition();
+        query.setUsername(username);
+        List<BioRecognition> list = bioRecognitionMapper.selectBioRecognitionList(query);
+        PageInfo<BioRecognition> pageInfo = new PageInfo<>(list);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("rows", pageInfo.getList());
+        result.put("total", pageInfo.getTotal());
+        result.put("pageNum", pageInfo.getPageNum());
+        result.put("pageSize", pageInfo.getPageSize());
+        
+        return AjaxResult.success(result);
     }
 }

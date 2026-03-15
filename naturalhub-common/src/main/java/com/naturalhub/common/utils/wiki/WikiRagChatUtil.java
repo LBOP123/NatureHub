@@ -136,11 +136,11 @@ public class WikiRagChatUtil {
                         .getString("content")
                         .replaceAll("<[^>]+>", "");
 
-                context.append("【").append(title).append("】\n");
+//                context.append("【").append(title).append("】\n");
                 context.append(content).append("\n\n");
             }
 
-            String prompt = "你是生物知识库助手，请根据资料简洁回答，不要编造。资料：" + context + " 问题：" + question;
+            String prompt = "你是生物知识库助手，请直接按照资料原文回答，不要做任何修改和精简。资料：" + context + " 问题：" + question;
             return qwen(prompt);
         } catch (Exception e) {
             return "解析知识库失败：" + e.getMessage();

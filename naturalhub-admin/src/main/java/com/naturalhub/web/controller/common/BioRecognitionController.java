@@ -228,6 +228,38 @@ public class BioRecognitionController {
     }
 
     /**
+     * 获取识别历史记录
+     */
+    @GetMapping("/history")
+    public AjaxResult getHistory(@RequestParam(defaultValue = "1") Integer pageNum,
+                                 @RequestParam(defaultValue = "10") Integer pageSize) {
+        try {
+            String username = SecurityUtils.getUsername();
+            return bioRecognitionRecordService.getUserRecognitionHistory(username, pageNum, pageSize);
+        } catch (Exception e) {
+            log.error("获取历史记录失败", e);
+            return AjaxResult.error("获取历史记录失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取识别历史详情
+     */
+    @GetMapping("/history/{id}")
+    public AjaxResult getHistoryDetail(@PathVariable Long id) {
+        try {
+            BioRecognition record = bioRecognitionRecordService.selectBioRecognitionById(id);
+            if (record == null) {
+                return AjaxResult.error("记录不存在");
+            }
+            return AjaxResult.success(record);
+        } catch (Exception e) {
+            log.error("获取历史详情失败", e);
+            return AjaxResult.error("获取历史详情失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 健康检查
      */
     @GetMapping("/health")

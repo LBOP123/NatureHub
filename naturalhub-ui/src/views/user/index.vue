@@ -15,10 +15,10 @@
         <!-- 物种库 -->
         <div class="feature-card" @click="navigateTo('/user/knowledge')">
           <div class="card-header">
-            <h3 class="card-title">物种知识图谱</h3>
+            <h3 class="card-title">物种百科</h3>
             <div class="title-underline"></div>
           </div>
-          <p class="card-desc">我国首个权威发布且具有完全自主知识产权的中国生物物种全信息数据库，收录了1...</p>
+          <p class="card-desc">基于知识图谱和RAG检索技术构建的物种信息库，智能匹配相关内容，让你快速找到所需的物种知识。</p>
           <div class="card-stats">
             <div class="stat-item">
               <span class="stat-number">443,153</span>
@@ -37,10 +37,10 @@
         <!-- 知识库 -->
         <div class="feature-card" @click="navigateTo('/user/qa')">
           <div class="card-header">
-            <h3 class="card-title">科普问答</h3>
+            <h3 class="card-title">自然对话</h3>
             <div class="title-underline"></div>
           </div>
-          <p class="card-desc">汇集生命科学类、生态学、专业科普等多个学科领域的权威知识，同时收录《中国物...</p>
+          <p class="card-desc">与AI助手进行自然对话，提出你的生态问题，获得专业的科学解答和深度的知识讲解。</p>
           <div class="card-stats">
             <div class="stat-item">
               <span class="stat-number">4,939</span>
@@ -59,11 +59,11 @@
             <h3 class="card-title">生物识别</h3>
             <div class="title-underline"></div>
           </div>
-          <p class="card-desc">生态科学术语库提供生态科学领域常用、基础性重要的名词术语，提供权威、准...</p>
+          <p class="card-desc">拍照识别物种，自动调用百度百科获取权威信息，一键了解物种的详细百科资料。</p>
           <div class="card-stats">
             <div class="stat-item">
               <span class="stat-number">135,334</span>
-              <span class="stat-label">术语条目</span>
+              <span class="stat-label">识别物种</span>
             </div>
           </div>
           <div class="card-images">
@@ -74,10 +74,10 @@
         <!-- 图像库 -->
         <div class="feature-card" @click="navigateTo('/user/bioRecognition')">
           <div class="card-header">
-            <h3 class="card-title">3D数字标本</h3>
+            <h3 class="card-title">3D标本库</h3>
             <div class="title-underline"></div>
           </div>
-          <p class="card-desc">多媒体资源库中的图片、视频、音频等多媒体资源，包括图片、视频、音频等一站式...</p>
+          <p class="card-desc">将2D图片智能转换为3D模型，支持360度交互查看，沉浸式体验自然界的精妙结构。</p>
           <div class="card-stats">
             <div class="stat-item">
               <span class="stat-number">244,757</span>

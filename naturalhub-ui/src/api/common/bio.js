@@ -43,3 +43,20 @@ export function bioHealth() {
     method: 'get'
   })
 }
+
+// 获取识别历史记录
+export function getBioRecognitionHistory(query) {
+  return request({
+    url: '/common/bio/history',
+    method: 'get',
+    params: query
+  })
+}
+
+// 获取识别历史详情
+export function getBioRecognitionDetail(id) {
+  return request({
+    url: '/common/bio/history/' + id,
+    method: 'get'
+  })
+}
