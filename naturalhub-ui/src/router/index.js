@@ -92,13 +92,13 @@ export const constantRoutes = [
   // 用户端路由
   {
     path: '/user/login',
-    component: () => import('@/views/user/login'),
+    component: () => import('@/views/user/login/index'),
     hidden: true,
     meta: { requiresAuth: false }
   },
   {
     path: '/user/register',
-    component: () => import('@/views/user/register'),
+    component: () => import('@/views/user/register/index'),
     hidden: true,
     meta: { requiresAuth: false }
   },
@@ -112,18 +112,6 @@ export const constantRoutes = [
         component: () => import('@/views/user/index'),
         name: 'UserIndex',
         meta: { title: '用户首页' }
-      },
-      {
-        path: 'upload',
-        component: () => import('@/views/user/upload'),
-        name: 'UserUpload',
-        meta: { title: '生物识别上传' }
-      },
-      {
-        path: 'observations',
-        component: () => import('@/views/user/observations'),
-        name: 'UserObservations',
-        meta: { title: '我的观察记录' }
       },
       // 物种鉴定求助模块
       {
@@ -177,13 +165,13 @@ export const constantRoutes = [
       },
       {
         path: 'qa',
-        component: () => import('@/views/user/qa'),
+        component: () => import('@/views/user/qa/index'),
         name: 'UserQA',
         meta: { title: 'AI科普问答' }
       },
       {
         path: 'knowledge',
-        component: () => import('@/views/user/knowledge'),
+        component: () => import('@/views/user/knowledge/index'),
         name: 'UserKnowledge',
         meta: { title: '物种知识图谱' }
       },
@@ -260,15 +248,15 @@ export const constantRoutes = [
       },
       {
         path: 'myProfile',
-        component: () => import('@/views/user/profile'),
+        component: () => import('@/views/user/profile/index'),
         name: 'UserProfile',
         meta: { title: '个人中心' }
       },
       {
-        path: 'settings',
-        component: () => import('@/views/user/settings'),
-        name: 'UserSettings',
-        meta: { title: '设置' }
+        path: 'detail',
+        component: () => import('@/views/user/profile/detail'),
+        name: 'UserDetail',
+        meta: { title: '内容详情' }
       }
     ]
   }

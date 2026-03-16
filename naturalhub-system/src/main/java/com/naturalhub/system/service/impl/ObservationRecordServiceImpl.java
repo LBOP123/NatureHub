@@ -172,11 +172,20 @@ public class ObservationRecordServiceImpl implements IObservationRecordService
         
         communityTopicMapper.insertCommunityTopic(topic);
         
+        // 获取插入后的 topicId
+        Long topicId = topic.getTopicId();
+        System.out.println("topicId: " + topicId);
+        if (topicId == null || topicId <= 0) {
+            throw new RuntimeException("分享失败：无法获取话题ID");
+        }
+        
+        // 更新观察记录，保存 topicId
         record.setIsShared(1);
-        record.setSharedTopicId(topic.getTopicId());
+        record.setTopicId(topicId);
+        record.setSharedTopicId(topicId);
         observationRecordMapper.updateObservationRecord(record);
         
-        return topic.getTopicId();
+        return topicId;
     }
 
 

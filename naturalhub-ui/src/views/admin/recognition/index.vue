@@ -2,7 +2,7 @@
   <div class="app-container">
     <!-- 统计卡片 -->
     <el-row :gutter="20" class="mb20">
-      <el-col :span="6">
+      <el-col :xs="24" :sm="12" :md="6" :lg="6">
         <el-card shadow="hover">
           <div class="stat-card">
             <div class="stat-icon" style="background: #409EFF;"><i class="el-icon-picture"></i></div>
@@ -13,7 +13,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="24" :sm="12" :md="6" :lg="6">
         <el-card shadow="hover">
           <div class="stat-card">
             <div class="stat-icon" style="background: #67C23A;"><i class="el-icon-success"></i></div>
@@ -24,7 +24,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="24" :sm="12" :md="6" :lg="6">
         <el-card shadow="hover">
           <div class="stat-card">
             <div class="stat-icon" style="background: #E6A23C;"><i class="el-icon-document"></i></div>
@@ -35,7 +35,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="24" :sm="12" :md="6" :lg="6">
         <el-card shadow="hover">
           <div class="stat-card">
             <div class="stat-icon" style="background: #F56C6C;"><i class="el-icon-star-on"></i></div>
@@ -87,41 +87,41 @@
     </el-row>
 
     <!-- 数据表格 -->
-    <el-table v-loading="loading" :data="recognitionList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="recognitionList" @selection-change="handleSelectionChange" border fit>
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" align="center" prop="id" width="80" />
-      <el-table-column label="缩略图" align="center" width="100">
+      <el-table-column label="ID" align="center" prop="id" min-width="80" />
+      <el-table-column label="缩略图" align="center" min-width="100">
         <template slot-scope="scope">
           <el-image style="width: 60px; height: 60px; border-radius: 4px;" :src="scope.row.imageUrl" :preview-src-list="[scope.row.imageUrl]" fit="cover" />
         </template>
       </el-table-column>
-      <el-table-column label="用户名" align="center" prop="username" width="120" />
-      <el-table-column label="识别结果" align="center" prop="recognitionResult" width="150">
+      <el-table-column label="用户名" align="center" prop="username" min-width="120" />
+      <el-table-column label="识别结果" align="center" prop="recognitionResult" min-width="150">
         <template slot-scope="scope">
           <el-tag type="success" v-if="scope.row.recognitionResult">{{ scope.row.recognitionResult }}</el-tag>
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="置信度" align="center" prop="confidence" width="120">
+      <el-table-column label="置信度" align="center" prop="confidence" min-width="120">
         <template slot-scope="scope">
           <el-progress :percentage="Number((parseFloat(scope.row.confidence) * 100).toFixed(0))" :color="getConfidenceColor(scope.row.confidence)"></el-progress>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" width="100">
+      <el-table-column label="状态" align="center" min-width="100">
         <template slot-scope="scope">
           <dict-tag :options="statusOptions" :value="scope.row.statusLabel"/>
         </template>
       </el-table-column>
-      <el-table-column label="类型" align="center" width="100">
+      <el-table-column label="类型" align="center" min-width="100">
         <template slot-scope="scope">
           <dict-tag :options="typeOptions" :value="scope.row.recognitionTypeLabel"/>
         </template>
       </el-table-column>
-      <el-table-column label="IP地址" align="center" prop="ipAddress" width="130" />
-      <el-table-column label="上传时间" align="center" prop="createTime" width="160">
+      <el-table-column label="IP地址" align="center" prop="ipAddress" min-width="130" />
+      <el-table-column label="上传时间" align="center" prop="createTime" min-width="160">
         <template slot-scope="scope"><span>{{ parseTime(scope.row.createTime) }}</span></template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="150">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" min-width="150">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-view" @click="handleView(scope.row)">查看</el-button>
           <el-button size="mini" type="text" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
@@ -192,7 +192,7 @@ export default {
         pageSize: 10,
         username: null,
         recognitionResult: null,
-        status: null  // 传数字
+        status: null
       },
       form: {},
       statistics: {
@@ -306,6 +306,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.app-container {
+  width: 100%;
+}
+
 .mb20 { margin-bottom: 20px; }
 .mb8 { margin-bottom: 8px; }
 .stat-card {
@@ -324,5 +328,10 @@ export default {
 .content-box {
   padding: 15px; background: #f5f7fa; border-radius: 4px;
   line-height: 1.8; white-space: pre-wrap; word-break: break-word;
+}
+
+::v-deep .el-table {
+  width: 100% !important;
+  table-layout: auto;
 }
 </style>

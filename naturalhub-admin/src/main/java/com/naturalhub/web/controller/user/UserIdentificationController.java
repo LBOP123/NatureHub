@@ -40,13 +40,13 @@ public class UserIdentificationController extends BaseController
     private IIdentificationAnswerService identificationAnswerService;
 
     /**
-     * 查询物种鉴定求助列表（我的求助）
+     * 查询物种鉴定求助列表（所有记录）
      */
     @GetMapping("/list")
     public TableDataInfo list(SpeciesIdentification speciesIdentification)
     {
         startPage();
-        // 只查询当前用户的记录
+        // 查询当前用户的所有记录
         speciesIdentification.setUserId(SecurityUtils.getUserId());
         List<SpeciesIdentification> list = speciesIdentificationService.selectSpeciesIdentificationList(speciesIdentification);
         return getDataTable(list);
@@ -59,8 +59,9 @@ public class UserIdentificationController extends BaseController
     public TableDataInfo square(SpeciesIdentification speciesIdentification)
     {
         startPage();
-        // 只查询审核通过的记录（2=已通过）
+        // 只查询审核通过且已分享的记录（2=已通过）
         speciesIdentification.setAuditStatus(2);
+        speciesIdentification.setIsShared(1);
         List<SpeciesIdentification> list = speciesIdentificationService.selectSpeciesIdentificationList(speciesIdentification);
         return getDataTable(list);
     }

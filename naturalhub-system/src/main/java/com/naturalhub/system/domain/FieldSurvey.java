@@ -96,46 +96,17 @@ public class FieldSurvey extends BaseEntity
     private String auditBy;
     private String auditRemark;
     private String delFlag;
+    /** 分享到社群的话题ID */
+    private Long topicId;
 
-    // ===== 字典标签转换方法 =====
-
-    public String getAuditStatusLabel() {
-        if (auditStatus == null) return "";
-        switch (auditStatus) {
-            case 0: return "草稿";
-            case 1: return "待审核";
-            case 2: return "已通过";
-            case 3: return "已驳回";
-            default: return "";
-        }
+    // getter 和 setter
+    public Long getTopicId() {
+        return topicId;
     }
 
-    public String getHabitatTypeLabel() {
-        if (habitatType == null) return "";
-        switch (habitatType) {
-            case 1: return "森林"; case 2: return "草地"; case 3: return "湿地";
-            case 4: return "河流"; case 5: return "湖泊"; case 6: return "海洋";
-            case 7: return "山地"; case 8: return "农田"; case 9: return "城市";
-            case 10: return "其他"; default: return "";
-        }
+    public void setTopicId(Long topicId) {
+        this.topicId = topicId;
     }
-
-    public String getSurveyMethodLabel() {
-        if (surveyMethod == null) return "";
-        switch (surveyMethod) {
-            case 1: return "样线法"; case 2: return "样方法"; case 3: return "定点观察";
-            case 4: return "随机游走"; case 5: return "陷阱法"; case 6: return "网捕法";
-            case 7: return "声音记录"; case 8: return "红外相机"; case 9: return "综合调查";
-            case 10: return "其他"; default: return "";
-        }
-    }
-
-    public String getIsSharedLabel() {
-        if (isShared == null) return "否";
-        return isShared == 1 ? "是" : "否";
-    }
-
-    // ===== getters / setters =====
 
     public void setSurveyId(Long surveyId) { this.surveyId = surveyId; }
     public Long getSurveyId() { return surveyId; }

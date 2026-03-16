@@ -104,6 +104,18 @@ public class SpeciesIdentification extends BaseEntity
     /** 删除标志 */
     private String delFlag;
 
+    /** 分享到社群的话题ID */
+    private Long topicId;
+
+    // getter 和 setter
+    public Long getTopicId() {
+        return topicId;
+    }
+
+    public void setTopicId(Long topicId) {
+        this.topicId = topicId;
+    }
+
     public void setIdentificationId(Long identificationId) 
     {
         this.identificationId = identificationId;

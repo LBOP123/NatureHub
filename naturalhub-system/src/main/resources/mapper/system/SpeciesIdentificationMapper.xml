@@ -50,6 +50,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>  
             si.del_flag = '0'
             <if test="userId != null "> and si.user_id = #{userId}</if>
+            <if test="isShared != null"> and si.is_shared = #{isShared}</if>
             <if test="title != null  and title != ''"> and si.title like concat('%', #{title}, '%')</if>
             <if test="status != null"> and si.status = #{status}</if>
             <if test="auditStatus != null"> and si.audit_status = #{auditStatus}</if>
@@ -182,7 +183,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="setBestAnswer">
         update nh_species_identification set best_answer_id = #{answerId}, status = 2 where identification_id = #{identificationId}
     </update>
-
 
     <select id="selectSpeciesIdentificationBySharedTopicId" parameterType="Long" resultMap="SpeciesIdentificationResult">
         <include refid="selectSpeciesIdentificationVo"/>

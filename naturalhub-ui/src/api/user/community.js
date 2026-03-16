@@ -1,4 +1,4 @@
-﻿import request from '@/utils/request'
+import request from '@/utils/request'
 
 // 查询社群话题列表
 export function listTopic(query) {
@@ -129,6 +129,15 @@ export function getSourceDetail(type, id) {
 export function myTopicList(query) {
   return request({
     url: '/user/community/my/topic',
+    method: 'get',
+    params: query
+  })
+}
+
+// 我的收藏列表
+export function myCollectionList(query) {
+  return request({
+    url: '/user/community/my/collection',
     method: 'get',
     params: query
   })

@@ -35,11 +35,11 @@ public class ObservationRecordController extends BaseController {
     private IObservationRecordService observationRecordService;
 
     /**
-     * 查询观察记录列表
+     * 查询观察记录列表（所有记录）
      */
     @GetMapping("/list")
     public TableDataInfo list(ObservationRecord observationRecord) {
-        // 只查询当前用户的记录
+        // 查询当前用户的所有记录
         observationRecord.setUserId(getUserId());
         startPage();
         List<ObservationRecord> list = observationRecordService.selectObservationRecordList(observationRecord);
