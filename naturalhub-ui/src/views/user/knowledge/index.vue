@@ -261,14 +261,41 @@ export default {
     formatAnswer(content) {
       if (!content) return ''
       try {
-        return marked.parse(content)
+        const parsedContent = marked.parse(content)
+        return this.addVideoGuide(parsedContent)
       } catch (error) {
         console.error('Markdown渲染失败:', error)
-        return content
+        const formattedContent = content
           .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
           .replace(/【(.*?)】/g, '<strong style="color: #67C23A;">$1</strong>')
           .replace(/\n/g, '<br>')
+        return this.addVideoGuide(formattedContent)
       }
+    },
+
+    addVideoGuide(content) {
+      const guide = `
+        <div class="video-guide-section">
+          <div class="guide-divider"></div>
+          <div class="guide-content">
+            <div class="guide-title">💡 想更直观地了解这个知识点吗？</div>
+            <p>我可以为你生成一段讲解视频，用画面和声音帮你快速理解，需要吗？</p>
+            <div class="guide-actions">
+              <el-button type="success" size="small" @click="generateVideo">是的，生成视频</el-button>
+              <el-button size="small" @click="dismissGuide">暂不需要</el-button>
+            </div>
+          </div>
+        </div>
+      `
+      return content + guide
+    },
+
+    generateVideo() {
+      this.$message.info('视频生成功能开发中...')
+    },
+
+    dismissGuide() {
+      this.$message.success('已关闭提示')
     },
 
     scrollToBottom() {
@@ -480,6 +507,44 @@ export default {
 @keyframes loading {
   0%,60%,100%{opacity:0.3;transform:scale(0.8)}
   30%{opacity:1;transform:scale(1)}
+}
+
+.video-guide-section {
+  margin-top: 20px;
+  padding-top: 16px;
+}
+
+.guide-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #ddd, transparent);
+  margin-bottom: 16px;
+}
+
+.guide-content {
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f5f5 100%);
+  border-left: 3px solid #67C23A;
+  padding: 12px 16px;
+  border-radius: 6px;
+}
+
+.guide-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.guide-content p {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.guide-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .input-area {

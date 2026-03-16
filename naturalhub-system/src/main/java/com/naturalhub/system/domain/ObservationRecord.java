@@ -101,6 +101,9 @@ public class ObservationRecord extends BaseEntity
     /** 删除标志 */
     private String delFlag;
 
+    /** 分享到社群的话题ID */
+    private Long topicId;
+
     public void setRecordId(Long recordId) { this.recordId = recordId; }
     public Long getRecordId() { return recordId; }
 
@@ -170,6 +173,13 @@ public class ObservationRecord extends BaseEntity
     public void setDelFlag(String delFlag) { this.delFlag = delFlag; }
     public String getDelFlag() { return delFlag; }
 
+    public Long getTopicId() {
+        return topicId;
+    }
+
+    public void setTopicId(Long topicId) {
+        this.topicId = topicId;
+    }
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)

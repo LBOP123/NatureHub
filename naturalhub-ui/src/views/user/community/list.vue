@@ -12,7 +12,7 @@
           {{ item.categoryIcon }} {{ item.categoryName }}
         </el-radio-button>
       </el-radio-group>
-      <el-button type="primary" icon="el-icon-edit" @click="handleCreate">发布话题</el-button>
+<!--      <el-button type="primary" icon="el-icon-edit" @click="handleCreate">发布话题</el-button>-->
     </div>
 
     <!-- 精华/置顶筛选 -->
@@ -239,6 +239,7 @@ export default {
   display: grid;
   gap: 16px;
 }
+
 
 .topic-card {
   cursor: pointer;

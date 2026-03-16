@@ -27,6 +27,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="specimenId"       column="specimen_id"     />
         <result property="isShared"         column="is_shared"       />
         <result property="sharedTopicId"    column="shared_topic_id" />
+        <result property="topicId"          column="topic_id"        />
         <result property="delFlag"          column="del_flag"        />
         <result property="createBy"         column="create_by"       />
         <result property="createTime"       column="create_time"     />
@@ -39,7 +40,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select record_id, user_id, title, observation_time, location, latitude, longitude,
                species_type, species_name, habitat, description, images, videos,
                audit_status, submit_time, review_time, reviewer_id, review_comment,
-               reject_reason, specimen_id, is_shared, shared_topic_id, del_flag,
+               reject_reason, specimen_id, is_shared, shared_topic_id, topic_id, del_flag,
                create_by, create_time, update_by, update_time, remark
         from nh_observation_record
     </sql>
@@ -89,6 +90,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="submitTime != null">submit_time,</if>
             <if test="isShared != null">is_shared,</if>
             <if test="sharedTopicId != null">shared_topic_id,</if>
+            <if test="topicId != null">topic_id,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
             <if test="remark != null">remark,</if>
@@ -111,6 +113,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="submitTime != null">#{submitTime},</if>
             <if test="isShared != null">#{isShared},</if>
             <if test="sharedTopicId != null">#{sharedTopicId},</if>
+            <if test="topicId != null">#{topicId},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="remark != null">#{remark},</if>
@@ -141,6 +144,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="specimenId != null">specimen_id = #{specimenId},</if>
             <if test="isShared != null">is_shared = #{isShared},</if>
             <if test="sharedTopicId != null">shared_topic_id = #{sharedTopicId},</if>
+            <if test="topicId != null">topic_id = #{topicId},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="remark != null">remark = #{remark},</if>
             update_time = sysdate()

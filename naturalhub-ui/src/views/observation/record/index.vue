@@ -143,7 +143,7 @@
       <el-table-column label="标题" align="center" prop="title" :show-overflow-tooltip="true" min-width="150" />
       <el-table-column label="物种类型" align="center" prop="speciesType" width="100">
         <template slot-scope="scope">
-          <dict-tag :options="speciesTypeOptions" :value="String(scope.row.speciesType)" />
+          <dict-tag :options="speciesTypeOptions" :value="getSpeciesType(scope.row.speciesType)" />
         </template>
       </el-table-column>
 <!--      <el-table-column label="物种名称" align="center" prop="speciesName" :show-overflow-tooltip="true" width="120" />-->
@@ -155,7 +155,7 @@
       </el-table-column>
       <el-table-column label="审核状态" align="center" prop="auditStatus" width="100">
         <template slot-scope="scope">
-          <dict-tag :options="auditStatusOptions" :value="String(scope.row.auditStatus)" />
+          <dict-tag :options="auditStatusOptions" :value="getAuditStatus(scope.row.auditStatus)" />
         </template>
       </el-table-column>
       <el-table-column label="提交时间" align="center" prop="submitTime" width="160">
@@ -351,10 +351,6 @@ export default {
           { required: true, message: "驳回原因不能为空", trigger: "blur" }
         ]
       },
-      speciesTypeOptions: [],
-      auditStatusOptions: [],
-      speciesTypeOptions: [],
-      auditStatusOptions: [],
       // 日期范围
       dateRange: [],
       // 查询参数
@@ -409,6 +405,14 @@ export default {
           rejectedRecords: 0
         };
       });
+    },
+    getAuditStatus(val) {
+      const item = this.auditStatusOptions.find(d => d.dictValue == val);
+      return item ? item.dictLabel : "未知";
+    },
+    getSpeciesType(val) {
+      const item = this.speciesTypeOptions.find(d => d.dictValue == val);
+      return item ? item.dictLabel : "未知";
     },
     /** 搜索按钮操作 */
     handleQuery() {

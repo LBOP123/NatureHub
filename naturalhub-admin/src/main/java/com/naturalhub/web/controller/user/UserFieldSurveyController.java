@@ -36,13 +36,13 @@ public class UserFieldSurveyController extends BaseController
     private IFieldSurveyService fieldSurveyService;
 
     /**
-     * 查询野外调查记录列表（我的调查）
+     * 查询野外调查记录列表（所有记录）
      */
     @GetMapping("/list")
     public TableDataInfo list(FieldSurvey fieldSurvey)
     {
         startPage();
-        // 只查询当前用户的记录
+        // 查询当前用户的所有记录
         fieldSurvey.setUserId(SecurityUtils.getUserId());
         List<FieldSurvey> list = fieldSurveyService.selectFieldSurveyList(fieldSurvey);
         return getDataTable(list);
@@ -55,8 +55,9 @@ public class UserFieldSurveyController extends BaseController
     public TableDataInfo square(FieldSurvey fieldSurvey)
     {
         startPage();
-        // 只查询审核通过的记录
+        // 只查询审核通过且已分享的记录
         fieldSurvey.setAuditStatus(1);
+        fieldSurvey.setIsShared(1);
         List<FieldSurvey> list = fieldSurveyService.selectFieldSurveyList(fieldSurvey);
         return getDataTable(list);
     }

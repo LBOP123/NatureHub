@@ -16,7 +16,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="routeInfo"      column="route_info"     />
         <result property="weather"        column="weather"        />
         <result property="temperature"    column="temperature"    />
-        <!-- ?????habitatType/surveyMethod ??? Integer -->
         <result property="habitatType"    column="habitat_type"   />
         <result property="surveyMethod"   column="survey_method"  />
         <result property="teamMembers"    column="team_members"   />
@@ -56,9 +55,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             fs.del_flag = '0'
             <if test="userId != null"> and fs.user_id = #{userId}</if>
+            <if test="isShared != null"> and fs.is_shared = #{isShared}</if>
             <if test="title != null and title != ''"> and fs.title like concat('%', #{title}, '%')</if>
             <if test="location != null and location != ''"> and fs.location like concat('%', #{location}, '%')</if>
-            <!-- ?????habitatType/surveyMethod ????????????? -->
             <if test="habitatType != null"> and fs.habitat_type = #{habitatType}</if>
             <if test="surveyMethod != null"> and fs.survey_method = #{surveyMethod}</if>
             <if test="auditStatus != null"> and fs.audit_status = #{auditStatus}</if>
@@ -85,7 +84,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="surveyDate != null">survey_date,</if>
             <if test="startTime != null">start_time,</if>
             <if test="endTime != null">end_time,</if>
-            <if test="location != null">location,</if>
+            <if test="location != null and location != ''">location,</if>
             <if test="routeInfo != null">route_info,</if>
             <if test="weather != null">weather,</if>
             <if test="temperature != null">temperature,</if>
@@ -117,7 +116,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="surveyDate != null">#{surveyDate},</if>
             <if test="startTime != null">#{startTime},</if>
             <if test="endTime != null">#{endTime},</if>
-            <if test="location != null">#{location},</if>
+            <if test="location != null and location != ''">#{location},</if>
             <if test="routeInfo != null">#{routeInfo},</if>
             <if test="weather != null">#{weather},</if>
             <if test="temperature != null">#{temperature},</if>
@@ -191,7 +190,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectFieldSurveyBySharedTopicId" parameterType="Long" resultMap="FieldSurveyResult">
         <include refid="selectFieldSurveyVo"/>
-        where shared_topic_id = #{sharedTopicId}
+        where fs.shared_topic_id = #{sharedTopicId}
     </select>
-
 </mapper>

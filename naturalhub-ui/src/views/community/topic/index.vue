@@ -73,7 +73,7 @@
       </el-table-column>
       <el-table-column label="分类" align="center" prop="category" width="100">
         <template slot-scope="scope">
-          <dict-tag :options="categoryTypeOptions" :value="String(scope.row.category)" />
+          <dict-tag :options="categoryTypeOptions" :value="getCommunityCategoryType(scope.row.category)" />
         </template>
       </el-table-column>
       <el-table-column label="发布者" align="center" prop="userName" width="100" />
@@ -88,12 +88,12 @@
         </template>
       </el-table-column>
       <el-table-column label="热度分数" align="center" prop="hotScore" width="100" />
-      <el-table-column label="标记" align="center" width="120">
+<!--      <el-table-column label="标记" align="center" width="120">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.isTop === '1'" type="danger" size="mini">置顶</el-tag>
           <el-tag v-if="scope.row.isEssence === '1'" type="warning" size="mini">精华</el-tag>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="状态" align="center" prop="status" width="80">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.status === '0'" type="success">正常</el-tag>
@@ -162,7 +162,7 @@
             <el-tag v-if="currentTopic.isTop === '1'" type="danger">置顶</el-tag>
             <el-tag v-if="currentTopic.isEssence === '1'" type="warning">精华</el-tag>
             <el-tag v-if="currentTopic.status === '1'" type="danger">已关闭</el-tag>
-            <dict-tag :options="categoryTypeOptions" :value="String(currentTopic.category)" />
+            <dict-tag :options="categoryTypeOptions" :value="getCommunityCategoryType(currentTopic.category)" />
           </div>
         </div>
 
@@ -175,7 +175,7 @@
             <el-descriptions-item label="评论数">{{ currentTopic.commentCount }}</el-descriptions-item>
             <el-descriptions-item label="收藏数">{{ currentTopic.collectCount }}</el-descriptions-item>
             <el-descriptions-item label="热度分数">{{ currentTopic.hotScore }}</el-descriptions-item>
-            <el-descriptions-item label="标签">{{ currentTopic.tags || '无' }}</el-descriptions-item>
+<!--            <el-descriptions-item label="标签">{{ currentTopic.tags || '无' }}</el-descriptions-item>-->
           </el-descriptions>
         </div>
 
@@ -225,6 +225,7 @@ export default {
       showSearch: true,
       total: 0,
       topicList: [],
+      categoryTypeOptions: [],
       queryParams: {
         pageNum: 1,
         pageSize: 10,
@@ -234,16 +235,11 @@ export default {
         isEssence: null,
         status: null
       },
-      categoryTypeOptions: [],
-      categoryTypeOptions: [],
-      categoryTypeOptions: [],
       detailVisible: false,
       currentTopic: null
     }
   },
   created() {
-    this.getDicts('nh_community_category_type').then(res => { this.categoryTypeOptions = res.data; });
-    this.getDicts('nh_community_category_type').then(res => { this.categoryTypeOptions = res.data; });
     this.getDicts('nh_community_category_type').then(res => { this.categoryTypeOptions = res.data; });
     this.getList()
   },
@@ -255,6 +251,10 @@ export default {
         this.total = response.total
         this.loading = false
       })
+    },
+    getCommunityCategoryType(type) {
+      const item = this.categoryTypeOptions.find(d => d.dictValue == type)
+      return item ? item.dictLabel : ''
     },
     handleQuery() {
       this.queryParams.pageNum = 1

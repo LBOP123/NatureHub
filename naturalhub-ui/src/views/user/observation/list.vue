@@ -1,73 +1,64 @@
 <template>
   <div class="observation-list-container">
-    <!-- 左上角视图切换 -->
     <div class="view-switch-top">
-      <el-button
-        :class="['view-btn', { active: viewType === 'grid' }]"
-        @click="viewType = 'grid'"
-      >
-        <i class="el-icon-menu"></i> 网格
+      <el-button :class="['view-btn', { active: viewType === 'grid' }]" @click="viewType = 'grid'"><i
+        class="el-icon-menu"></i> 网格
       </el-button>
-      <el-button
-        :class="['view-btn', { active: viewType === 'list' }]"
-        @click="viewType = 'list'"
-      >
-        <i class="el-icon-tickets"></i> 列表
+      <el-button :class="['view-btn', { active: viewType === 'list' }]" @click="viewType = 'list'"><i
+        class="el-icon-tickets"></i> 列表
       </el-button>
     </div>
 
-    <!-- 顶部标题 -->
     <div class="page-header">
       <h1 class="page-title">我的观察记录</h1>
       <p class="page-subtitle">记录每一次与自然的相遇</p>
     </div>
 
-    <!-- 搜索框区域 -->
     <div class="search-wrapper">
-      <el-input
-        v-model="queryParams.title"
-        placeholder="搜索观察记录..."
-        prefix-icon="el-icon-search"
-        clearable
-        @keyup.enter.native="handleQuery"
-        class="search-input"
-      />
+      <el-input v-model="queryParams.title" placeholder="搜索观察记录..." prefix-icon="el-icon-search" clearable
+                @keyup.enter.native="handleQuery" class="search-input"/>
       <el-button type="primary" @click="handleQuery" class="search-btn">搜索</el-button>
       <el-button type="success" icon="el-icon-plus" @click="handleAdd" class="add-btn">新增观察记录</el-button>
     </div>
 
-    <!-- 内容区域 -->
     <div v-loading="loading" class="content-area">
-      <!-- 网格视图 -->
       <div v-if="viewType === 'grid' && observationList.length > 0" class="grid-view">
         <div v-for="item in observationList" :key="item.recordId" class="grid-card" @click="handleView(item)">
           <div class="card-image-wrapper">
             <img v-if="item.coverImage" :src="item.coverImage" class="card-image" alt="observation">
             <div v-else class="card-image-placeholder"><i class="el-icon-picture-outline"></i></div>
-            <!-- 审核状态标签 → 右上角 -->
             <div class="card-tag">
-              <el-tag
-                :type="getAuditStatusType(item.auditStatus)"
-                size="small"
-                effect="dark"
-              >
+              <el-tag :type="getAuditStatusType(item.auditStatus)" size="small" effect="dark">
                 {{ getAuditStatusText(item.auditStatus) }}
               </el-tag>
             </div>
           </div>
           <div class="card-info">
-            <!-- 独立的标题样式 -->
             <div class="card-title">{{ item.title }}</div>
-            <div class="info-item"><span class="label">物种：</span>{{ item.speciesName }}</div>
-            <div class="info-item"><span class="label">地点：</span>{{ item.location }}</div>
-            <div class="info-item"><span class="label">时间：</span>{{ formatGridDateTime(item.observationTime) }}</div>
+            <div class="info-item"><span class="label">物种：</span><span class="info-value">{{
+                item.speciesName
+              }}</span></div>
+            <div class="info-item"><span class="label">地点：</span><span class="info-value">{{ item.location }}</span>
+            </div>
+            <div class="info-item"><span class="label">时间：</span><span
+              class="info-value">{{ formatGridDateTime(item.observationTime) }}</span></div>
             <div class="card-actions">
               <el-button size="mini" type="text" icon="el-icon-view" @click.stop="handleView(item)">查看</el-button>
               <el-button v-if="item.auditStatus === 0 || item.auditStatus === 3" size="mini" type="text"
                          icon="el-icon-edit" @click.stop="handleEdit(item)">编辑
               </el-button>
-              <el-button v-if="item.auditStatus === 2" size="mini" type="text" icon="el-icon-share"
-                         @click.stop="handleShare(item)">分享
+              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text"
+                         icon="el-icon-share" @click.stop="handleShare(item)">分享
+              </el-button>
+              <el-button
+                v-if="item.isShared === 1"
+                size="mini"
+                type="text"
+                icon="el-icon-share"
+                disabled
+                style="cursor: not-allowed; color: #52c41a"
+              >
+                已分享
               </el-button>
               <el-button size="mini" type="text" icon="el-icon-delete" @click.stop="handleDelete(item)">删除</el-button>
             </div>
@@ -75,9 +66,7 @@
         </div>
       </div>
 
-      <!-- 列表视图 -->
       <div v-if="viewType === 'list'">
-        <!-- 列表表头 -->
         <div class="list-header">
           <div class="header-col col-1">媒体</div>
           <div class="header-col col-2">名称</div>
@@ -86,75 +75,57 @@
           <div class="header-col col-5">操作</div>
         </div>
 
-        <!-- 列表内容 -->
         <div v-if="observationList.length > 0" class="list-content">
-          <div
-            v-for="(item, index) in observationList"
-            :key="item.recordId"
-            class="list-item"
-            :class="{ 'gray-row': index % 2 === 1 }"
-            @click="handleView(item)"
-          >
-            <!-- 媒体列 -->
+          <div v-for="(item, index) in observationList" :key="item.recordId" class="list-item"
+               :class="{ 'gray-row': index % 2 === 1 }" @click="handleView(item)">
             <div class="list-col col-1">
               <div class="list-image">
                 <img v-if="item.coverImage" :src="item.coverImage" alt="observation">
                 <div v-else class="list-image-placeholder"><i class="el-icon-picture-outline"></i></div>
               </div>
             </div>
-
-            <!-- 名称列 -->
             <div class="list-col col-2">
               <div class="species-name">{{ item.speciesName }}</div>
             </div>
-
-            <!-- 日期列 -->
             <div class="list-col col-3">
-              <div class="obs-date">
-                {{ formatDatePart(item.observationTime) }}<br/>
-                {{ formatTimePart(item.observationTime) }}
+              <div class="obs-date">{{
+                  formatDatePart(item.observationTime)
+                }}<br/>{{ formatTimePart(item.observationTime) }}
               </div>
             </div>
-
-            <!-- 地点列 -->
             <div class="list-col col-4">
               <div class="obs-location">{{ item.location }}</div>
             </div>
-
-            <!-- 操作列 -->
             <div class="list-col col-5">
               <el-button size="mini" type="text" icon="el-icon-view" @click.stop="handleView(item)">查看</el-button>
               <el-button v-if="item.auditStatus === 0 || item.auditStatus === 3" size="mini" type="text"
                          icon="el-icon-edit" @click.stop="handleEdit(item)">编辑
               </el-button>
-              <el-button v-if="item.auditStatus === 2" size="mini" type="text" icon="el-icon-share"
-                         @click.stop="handleShare(item)">分享
+              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text"
+                         icon="el-icon-share" @click.stop="handleShare(item)">分享
               </el-button>
+              <el-tag v-if="item.isShared === 1" size="mini" type="success">已分享</el-tag>
               <el-button size="mini" type="text" icon="el-icon-delete" @click.stop="handleDelete(item)">删除</el-button>
             </div>
           </div>
         </div>
 
-        <!-- 列表空状态 -->
         <el-empty v-if="observationList.length === 0" description="暂无观察记录" class="empty-state">
           <el-button type="primary" @click="handleAdd">立即创建</el-button>
         </el-empty>
       </div>
 
-      <!-- 网格视图空状态 -->
       <el-empty v-if="viewType === 'grid' && observationList.length === 0" description="暂无观察记录"
                 class="empty-state">
         <el-button type="primary" @click="handleAdd">立即创建</el-button>
       </el-empty>
 
-      <!-- 加载更多提示 -->
       <div v-if="hasMore" class="load-more" :class="{loading: loadingMore}">
         <span v-if="!loadingMore">下拉加载更多</span>
         <span v-else>加载中...</span>
       </div>
     </div>
 
-    <!-- 分享弹窗 -->
     <el-dialog title="分享到社群" :visible.sync="shareDialogVisible" width="600px" append-to-body>
       <el-form :model="shareForm" :rules="shareRules" ref="shareForm" label-width="100px">
         <el-form-item label="选择板块" prop="topicType">
@@ -187,7 +158,7 @@ export default {
   name: 'ObservationList',
   data() {
     return {
-      viewType: 'grid', // 默认网格视图
+      viewType: 'grid',
       queryParams: {pageNum: 1, pageSize: 8, title: null},
       speciesTypeOptions: [],
       auditStatusOptions: [],
@@ -220,7 +191,6 @@ export default {
     window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
-    // 网格视图时间格式化
     formatGridDateTime(dateStr) {
       if (!dateStr) return ''
       const date = new Date(dateStr)
@@ -231,7 +201,6 @@ export default {
       const minutes = date.getMinutes().toString().padStart(2, '0')
       return `${year}-${month}-${day} ${hours}:${minutes}`
     },
-    // 列表视图日期格式化
     formatDatePart(dateStr) {
       if (!dateStr) return ''
       const date = new Date(dateStr)
@@ -241,7 +210,6 @@ export default {
       const year = date.getFullYear()
       return `${month} ${day}, ${year}`
     },
-    // 列表视图时间格式化
     formatTimePart(dateStr) {
       if (!dateStr) return ''
       const date = new Date(dateStr)
@@ -252,26 +220,29 @@ export default {
       const minutes = date.getMinutes().toString().padStart(2, '0')
       return `${hours}:${minutes} ${ampm} PST`
     },
-    // 日期格式化（备用）
     formatDate(dateStr) {
       if (!dateStr) return ''
       const date = new Date(dateStr)
       return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
     },
     getAuditStatusText(status) {
-      const item = this.auditStatusOptions.find(d => d.dictValue == status);
-      return item ? item.dictLabel : "";
+      const item = this.auditStatusOptions.find(d => d.dictValue == status)
+      return item ? item.dictLabel : ""
     },
     getAuditStatusType(status) {
       switch (status) {
-        case 0: return "";        // 未提交
-        case 1: return "warning"; // 审核中
-        case 2: return "success"; // 通过
-        case 3: return "danger";  // 驳回
-        default: return "";
+        case 0:
+          return ""
+        case 1:
+          return "warning"
+        case 2:
+          return "success"
+        case 3:
+          return "danger"
+        default:
+          return ""
       }
     },
-    // 获取列表数据
     async getList(loadMore = false) {
       if (!loadMore) {
         this.observationList = []
@@ -299,23 +270,18 @@ export default {
         this.loadingMore = false
       }
     },
-    // 搜索
     handleQuery() {
       this.getList(false)
     },
-    // 新增
     handleAdd() {
       this.$router.push('/user/observation/upload')
     },
-    // 查看详情
     handleView(row) {
       this.$router.push('/user/observation/detail/' + row.recordId)
     },
-    // 编辑
     handleEdit(row) {
       this.$router.push('/user/observation/upload/' + row.recordId)
     },
-    // 提交审核
     handleSubmitReview(row) {
       this.$confirm('提交审核后将无法修改，是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -326,7 +292,6 @@ export default {
         this.getList()
       })
     },
-    // 分享
     handleShare(row) {
       this.shareForm = {
         recordId: row.recordId,
@@ -336,7 +301,6 @@ export default {
       }
       this.shareDialogVisible = true
     },
-    // 确认分享
     confirmShare() {
       this.$refs.shareForm.validate(valid => {
         if (valid) {
@@ -351,7 +315,6 @@ export default {
         }
       })
     },
-    // 删除
     handleDelete(row) {
       this.$confirm('是否确认删除该观察记录?', '警告', {
         confirmButtonText: '确定',
@@ -362,11 +325,9 @@ export default {
         this.$message.success('删除成功')
       })
     },
-    // 绑定滚动加载
     bindScroll() {
       window.addEventListener('scroll', this.handleScroll)
     },
-    // 滚动加载更多
     handleScroll() {
       if (this.loadingMore || !this.hasMore) return
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
@@ -389,7 +350,6 @@ export default {
   position: relative;
 }
 
-// 视图切换按钮
 .view-switch-top {
   position: absolute;
   top: 20px;
@@ -422,7 +382,6 @@ export default {
   }
 }
 
-// 页面标题
 .page-header {
   text-align: center;
   margin-bottom: 20px;
@@ -442,51 +401,47 @@ export default {
   }
 }
 
-// 搜索框样式
 .search-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 20px;
-  max-width: 1200px; // 加宽搜索框容器
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
+  flex-wrap: nowrap !important;
+  width: 100%;
 
   .search-input {
     flex: 1;
-    height: 50px; // 加高搜索框
-    font-size: 16px;
-    border-radius: 6px;
+    height: 44px;
+    font-size: 14px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
 
-    &:focus {
-      border-color: #409eff;
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+    // 修复搜索图标垂直居中
+    ::v-deep .el-input__prefix {
+      display: flex;
+      align-items: center;
+      top: 50%;
+      transform: translateY(-50%);
     }
   }
 
-  .search-btn {
-    height: 40px;
-    margin-bottom: 10px;
-    padding: 0 25px;
-    font-size: 16px;
-    border-radius: 6px;
-  }
-
-  .add-btn {
-    height: 40px;
-    margin-bottom: 10px;
-    padding: 0 25px;
-    font-size: 16px;
-    border-radius: 6px;
+  .search-btn, .add-btn {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 14px;
+    border-radius: 4px;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 }
 
-// 内容区域
 .content-area {
   margin-bottom: 20px;
 
-  // 网格视图
   .grid-view {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -527,18 +482,18 @@ export default {
           font-size: 40px;
           color: #ddd;
         }
-      }
-      .card-tag {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        z-index: 1;
+
+        .card-tag {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          z-index: 1;
+        }
       }
 
       .card-info {
         padding: 14px;
 
-        // 新增标题样式
         .card-title {
           font-size: 15px;
           font-weight: 600;
@@ -548,18 +503,28 @@ export default {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 100%;
-          display: block;
         }
 
         .info-item {
           margin-bottom: 6px;
           font-size: 12px;
           color: #666;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
 
           .label {
             font-weight: 400;
             color: #888;
+          }
+
+          .info-value {
+            display: inline-block;
+            max-width: calc(100% - 40px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
           }
         }
 
@@ -567,12 +532,12 @@ export default {
           margin-top: 10px;
           display: flex;
           gap: 6px;
+          flex-wrap: wrap;
         }
       }
     }
   }
 
-  // 列表视图样式
   .list-header {
     display: flex;
     background: #e9e9e9;
@@ -585,31 +550,8 @@ export default {
       padding: 8px 10px;
       display: flex;
       align-items: center;
-
-      &.col-1 {
-        flex: 1;
-        min-width: 150px;
-      }
-
-      &.col-2 {
-        flex: 1;
-        min-width: 150px;
-      }
-
-      &.col-3 {
-        flex: 1;
-        min-width: 150px;
-      }
-
-      &.col-4 {
-        flex: 1;
-        min-width: 150px;
-      }
-
-      &.col-5 {
-        flex: 1;
-        min-width: 150px;
-      }
+      flex: 1;
+      min-width: 150px;
     }
   }
 
@@ -637,43 +579,25 @@ export default {
         padding: 8px 10px;
         display: flex;
         align-items: center;
-
-        &.col-1 {
-          flex: 1;
-          min-width: 150px;
-        }
-
-        &.col-2 {
-          flex: 1;
-          min-width: 150px;
-        }
-
-        &.col-3 {
-          flex: 1;
-          min-width: 150px;
-        }
-
-        &.col-4 {
-          flex: 1;
-          min-width: 150px;
-        }
+        flex: 1;
+        min-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &.col-5 {
-          flex: 1;
-          min-width: 150px;
-          display: flex;
           gap: 4px;
-          justify-content: flex-start;
+          flex-wrap: wrap;
         }
       }
 
-      // 媒体列图片样式
       .list-image {
         width: 80px;
         height: 80px;
         border-radius: 4px;
         overflow: hidden;
         background: #f0f0f0;
+        flex-shrink: 0;
 
         img {
           width: 100%;
@@ -696,124 +620,24 @@ export default {
         font-size: 14px;
         color: #333;
         line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .obs-date {
         font-size: 14px;
         color: #333;
         line-height: 1.4;
-        white-space: normal;
       }
     }
   }
 
-  // 响应式适配
-  @media (max-width: 1200px) {
-    .grid-view {
-      grid-template-columns: repeat(3, 1fr) !important;
-    }
-
-    .list-header, .list-item {
-      .header-col, .list-col {
-        &.col-1, &.col-2, &.col-3, &.col-4, &.col-5 {
-          min-width: 120px;
-        }
-      }
-    }
-  }
-
-  @media (max-width: 992px) {
-    .grid-view {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-
-    .search-wrapper {
-      flex-wrap: wrap;
-
-      .add-btn {
-        margin-top: 10px;
-        flex: 1;
-      }
-    }
-
-    .list-header, .list-item {
-      .header-col, .list-col {
-        &.col-1, &.col-2, &.col-3, &.col-4, &.col-5 {
-          min-width: 100px;
-          padding: 6px 8px;
-        }
-      }
-    }
-  }
-
-  @media (max-width: 768px) {
-    .observation-list-container {
-      padding: 15px 10px;
-    }
-
-    .grid-view {
-      grid-template-columns: 1fr !important;
-    }
-
-    .view-switch-top {
-      top: 15px;
-      left: 10px;
-    }
-
-    // 移动端列表适配
-    .list-header, .list-item {
-      flex-direction: column;
-      align-items: stretch;
-      min-height: auto;
-
-      .header-col, .list-col {
-        padding: 8px;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 5px;
-
-        &.col-1, &.col-2, &.col-3, &.col-4, &.col-5 {
-          min-width: auto;
-          flex: none;
-          width: 100%;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-
-          .list-image {
-            width: 60px !important;
-            height: 60px !important;
-            margin: 0;
-          }
-
-          .species-name, .obs-location, .obs-date {
-            flex: 1;
-            margin-left: 10px;
-            text-align: left;
-          }
-
-          .el-button {
-            margin-left: 10px;
-          }
-        }
-      }
-    }
-
-    // 移动端操作列特殊处理
-    .list-col.col-5 {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      justify-content: center;
-    }
-  }
-
-  // 空状态样式
   .empty-state {
     padding: 60px 0;
     text-align: center;
   }
 
-  // 加载更多样式
   .load-more {
     text-align: center;
     padding: 16px 0;
@@ -826,18 +650,9 @@ export default {
   }
 }
 
-// 响应式适配
 @media (max-width: 1200px) {
   .grid-view {
     grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  .list-header, .list-item {
-    .header-col, .list-col {
-      &.col-1, &.col-2, &.col-3, &.col-4, &.col-5 {
-        min-width: 120px;
-      }
-    }
   }
 }
 
@@ -854,14 +669,6 @@ export default {
       flex: 1;
     }
   }
-
-  .list-header, .list-item {
-    .header-col, .list-col {
-      &.col-1, &.col-2, &.col-3, &.col-4, &.col-5 {
-        min-width: 100px;
-      }
-    }
-  }
 }
 
 @media (max-width: 768px) {
@@ -876,52 +683,6 @@ export default {
   .view-switch-top {
     top: 15px;
     left: 10px;
-  }
-
-  // 移动端列表适配
-  .list-header, .list-item {
-    flex-direction: column;
-    align-items: stretch;
-    min-height: auto;
-
-    .header-col, .list-col {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 5px;
-
-      &.col-1, &.col-2, &.col-3, &.col-4, &.col-5 {
-        min-width: auto;
-        flex: none;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .list-image {
-          width: 60px !important;
-          height: 60px !important;
-          margin: 0;
-        }
-
-        .species-name, .obs-location, .obs-date {
-          flex: 1;
-          margin-left: 10px;
-          text-align: left;
-        }
-
-        .el-button {
-          margin-left: 10px;
-        }
-      }
-    }
-  }
-
-  // 移动端操作列特殊处理
-  .list-col.col-5 {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
   }
 }
 </style>

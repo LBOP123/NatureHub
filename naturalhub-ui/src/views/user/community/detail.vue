@@ -203,7 +203,7 @@ export default {
     loadSourceDetail() {
       this.sourceLoading = true
       this.sourceData = null
-      getSourceDetail(this.topic.sourceType, this.topic.topicId)
+      getSourceDetail(this.topic.sourceType, this.topic.sourceId)
         .then(r => { this.sourceData = r.data })
         .catch(() => { this.sourceData = null })
         .finally(() => { this.sourceLoading = false })
@@ -214,6 +214,9 @@ export default {
     getCategoryName(val) {
       const item = this.communityCategoryOptions.find(d => d.dictValue == val);
       return item ? item.dictLabel : "未分类";
+    },
+    goBack() {
+      this.$router.go(-1)
     },
     goToUserProfile(uid) {
       if (!uid) return
