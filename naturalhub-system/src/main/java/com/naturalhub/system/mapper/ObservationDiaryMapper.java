@@ -58,4 +58,12 @@ public interface ObservationDiaryMapper
      * @return 结果
      */
     public int deleteObservationDiaryByDiaryIds(Long[] diaryIds);
+
+    /**
+     * 更新日志的关联记录计数
+     * 
+     * @param observationDiary 观察日志
+     * @return 结果
+     */
+    public int updateRecordCount(ObservationDiary observationDiary);
 }

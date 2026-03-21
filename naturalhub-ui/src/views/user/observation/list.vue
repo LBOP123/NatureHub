@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="observation-list-container">
     <div class="view-switch-top">
       <el-button :class="['view-btn', { active: viewType === 'grid' }]" @click="viewType = 'grid'"><i
@@ -104,7 +104,16 @@
               <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text"
                          icon="el-icon-share" @click.stop="handleShare(item)">分享
               </el-button>
-              <el-tag v-if="item.isShared === 1" size="mini" type="success">已分享</el-tag>
+              <el-button
+                v-if="item.isShared === 1"
+                size="mini"
+                type="text"
+                icon="el-icon-share"
+                disabled
+                style="cursor: not-allowed; color: #52c41a"
+              >
+                已分享
+              </el-button>
               <el-button size="mini" type="text" icon="el-icon-delete" @click.stop="handleDelete(item)">删除</el-button>
             </div>
           </div>
@@ -126,33 +135,21 @@
       </div>
     </div>
 
-    <el-dialog title="分享到社群" :visible.sync="shareDialogVisible" width="600px" append-to-body>
-      <el-form :model="shareForm" :rules="shareRules" ref="shareForm" label-width="100px">
-        <el-form-item label="选择板块" prop="topicType">
-          <el-select v-model="shareForm.topicType" placeholder="请选择板块" style="width: 100%">
-            <el-option label="观察分享" value="observation"/>
-            <el-option label="物种讨论" value="species"/>
-            <el-option label="经验交流" value="experience"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="分享标题" prop="title">
-          <el-input v-model="shareForm.title" placeholder="请输入分享标题" maxlength="100" show-word-limit/>
-        </el-form-item>
-        <el-form-item label="分享内容" prop="content">
-          <el-input v-model="shareForm.content" type="textarea" :rows="5" placeholder="请输入分享内容" maxlength="500"
-                    show-word-limit/>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="shareDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmShare" :loading="shareLoading">确定</el-button>
-      </div>
-    </el-dialog>
+    <!-- 分享弹窗 -->
+    <share-dialog
+      :visible.sync="shareDialogVisible"
+      :source-type="1"
+      :init-title="shareForm.title"
+      :init-content="shareForm.content"
+      :loading="shareLoading"
+      @confirm="confirmShare"
+    />
   </div>
 </template>
 
 <script>
-import {listRecord, delRecord, submitForReview, shareRecordToCommunity} from '@/api/user/record'
+import {listRecord, delRecord, shareRecordToCommunity} from '@/api/user/record'
+import ShareDialog from '@/views/user/components/ShareDialog'
 
 export default {
   name: 'ObservationList',
@@ -170,13 +167,9 @@ export default {
       shareDialogVisible: false,
       shareLoading: false,
       shareForm: {recordId: null, topicType: '', title: '', content: ''},
-      shareRules: {
-        topicType: [{required: true, message: '请选择板块', trigger: 'change'}],
-        title: [{required: true, message: '请输入分享标题', trigger: 'blur'}],
-        content: [{required: true, message: '请输入分享内容', trigger: 'blur'}]
-      }
     }
   },
+  components: {ShareDialog},
   created() {
     this.getDicts('nh_species_type').then(res => {
       this.speciesTypeOptions = res.data || []
@@ -282,16 +275,6 @@ export default {
     handleEdit(row) {
       this.$router.push('/user/observation/upload/' + row.recordId)
     },
-    handleSubmitReview(row) {
-      this.$confirm('提交审核后将无法修改，是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => submitForReview(row.recordId)).then(() => {
-        this.$message.success('提交审核成功')
-        this.getList()
-      })
-    },
     handleShare(row) {
       this.shareForm = {
         recordId: row.recordId,
@@ -301,18 +284,14 @@ export default {
       }
       this.shareDialogVisible = true
     },
-    confirmShare() {
-      this.$refs.shareForm.validate(valid => {
-        if (valid) {
-          this.shareLoading = true
-          shareRecordToCommunity(this.shareForm.recordId).then(() => {
-            this.$message.success('分享成功')
-            this.shareDialogVisible = false
-            this.getList()
-          }).catch(() => {
-            this.shareLoading = false
-          })
-        }
+    confirmShare({title, content}) {
+      this.shareLoading = true
+      shareRecordToCommunity(this.shareForm.recordId, {title, content}).then(() => {
+        this.$message.success('分享成功')
+        this.shareDialogVisible = false
+        this.$router.push('/user/community')
+      }).finally(() => {
+        this.shareLoading = false
       })
     },
     handleDelete(row) {

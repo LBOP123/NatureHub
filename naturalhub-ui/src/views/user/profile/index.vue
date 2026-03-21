@@ -1,13 +1,15 @@
 <template>
   <div class="user-profile-container">
     <!-- 顶部个人信息卡片 -->
-    <el-card class="profile-card" shadow="hover">
-      <div class="profile-main">
-        <el-avatar :size="72" :src="userInfo.avatar" icon="el-icon-user-solid" />
+    <el-card class="profile-card" shadow="hover" v-loading="!infoLoaded">
+      <div class="profile-main" v-show="infoLoaded">
+        <!-- 头像：有图则显示，无则显示文字头像 -->
+        <el-avatar v-if="avatarUrl" :size="72" :src="avatarUrl" />
+        <div v-else class="avatar-text" :style="{ background: avatarBgColor }">{{ avatarInitial }}</div>
         <div class="profile-info">
           <div class="profile-name-row">
-            <span class="nickname">{{ userInfo.nickName || userInfo.userName || userInfo.name }}</span>
-            <el-tag type="success" size="small" class="identity-tag">{{ identityLabel }}</el-tag>
+            <span class="nickname">{{ userInfo.userName || userInfo.name }}</span>
+            <el-tag size="small" class="identity-tag" :class="'identity-' + identityType">{{ identityLabel }}</el-tag>
           </div>
           <div class="intro">
             {{ userInfo.intro || '热爱自然，乐于分享观察与发现。' }}
@@ -29,7 +31,7 @@
         <el-tab-pane label="自然足迹" name="overview">
           <el-tabs v-model="activeTab">
             <!-- 分享的观察记录 -->
-            <el-tab-pane label="分享的观察记录" name="records">
+            <el-tab-pane label="观察记录" name="records">
               <div class="list-container">
                 <content-card
                   v-for="record in recordList"
@@ -50,7 +52,7 @@
             </el-tab-pane>
 
             <!-- 分享的野外调查 -->
-            <el-tab-pane label="分享的野外调查" name="surveys">
+            <el-tab-pane label="野外调查" name="surveys">
               <div class="list-container">
                 <content-card
                   v-for="survey in surveyList"
@@ -71,7 +73,7 @@
             </el-tab-pane>
 
             <!-- 分享的物种鉴定 -->
-            <el-tab-pane label="分享的物种鉴定" name="identifications">
+            <el-tab-pane label="物种鉴定" name="identifications">
               <div class="list-container">
                 <content-card
                   v-for="item in identificationList"
@@ -131,8 +133,8 @@
                 :auto-upload="false"
                 :on-change="handleAvatarChange"
               >
-                <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar" />
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                <img v-if="avatarUrl" :src="avatarUrl" class="avatar" />
+                <div v-else class="avatar-text avatar-text-sm" :style="{ background: avatarBgColor }">{{ avatarInitial }}</div>
               </el-upload>
               <div class="avatar-tip">支持 JPG/PNG，大小不超过 2MB</div>
             </el-form-item>
@@ -168,9 +170,9 @@
 
 <script>
 import { listDiary } from '@/api/user/diary'
-import { listRecord } from '@/api/user/record'
-import { listSurvey } from '@/api/user/survey'
-import { listIdentification } from '@/api/user/identification'
+import { listRecord, listPublicRecord } from '@/api/user/record'
+import { listSurvey, listPublicSurvey } from '@/api/user/survey'
+import { listIdentification, listPublicIdentification } from '@/api/user/identification'
 import { getUserProfile, updateUserProfile, uploadAvatar } from '@/api/system/user'
 import { getPublicProfile } from '@/api/user/profile'
 import ContentCard from './ContentCard'
@@ -182,6 +184,8 @@ export default {
     return {
       userInfo: { userId: null, userName: '', nickName: '', name: '', avatar: '', intro: '', createTime: '' },
       identityLabel: '探索者',
+      identityType: 'info', // el-tag type: info/success/danger
+      userTypeOptions: [],  // 字典：nh_user_type
       mainTab: 'overview',
       activeTab: 'records',
       isSelf: true,
@@ -202,10 +206,49 @@ export default {
         nickName: [{ required: true, message: '昵称不能为空', trigger: 'blur' }],
         email: [{ type: 'email', message: '邮箱格式不正确', trigger: 'blur' }]
       },
-      profileSaving: false
+      profileSaving: false,
+      infoLoaded: false
+    }
+  },
+  computed: {
+    // 头像地址（不动）
+    avatarUrl() {
+      const avatar = this.userInfo.avatar
+      if (!avatar) return ''
+      if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
+      if (avatar.startsWith('/dev-api') || avatar.startsWith('/prod-api')) return avatar
+      const base = process.env.VUE_APP_BASE_API || ''
+      return base + avatar
+    },
+    // ✅ 修复：头像首字母（解决空白）
+    avatarInitial() {
+      const name = (this.userInfo.userName || '').trim()
+      if (!name) return '?'
+      return name.charAt(0).toUpperCase()
+    },
+    avatarBgColor() {
+      const colors = [
+        '#43a06b', '#2e7d9a', '#8e6bbf', '#c0640a',
+        '#c0392b', '#1a6b8a', '#6d8c3e', '#7b4f9e',
+        '#1a8c6b', '#e67e22'
+      ]
+      const name = (this.userInfo.userName || '').trim()
+      if (!name) return colors[0]
+      let hash = 0
+      for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i)
+      return colors[hash % colors.length]
+    }
+  },
+  watch: {
+    '$route.query.userId'(newUserId) {
+      this.infoLoaded = false
+      this.initUserInfo(newUserId)
     }
   },
   created() {
+    this.getDicts('nh_user_type').then(res => {
+      this.userTypeOptions = res.data
+    })
     const userId = this.$route.query.userId
     this.initUserInfo(userId)
   },
@@ -226,10 +269,8 @@ export default {
           intro: storeUser.remark || storeUser.intro,
           createTime: storeUser.createTime
         }
-        const userType = parseInt(storeUser.userType || 1)
-        if (userType === 0) this.identityLabel = '管理员'
-        else if (userType === 2) this.identityLabel = '鉴定者'
-        else this.identityLabel = '探索者'
+        this.applyIdentityLabel(this.$store.getters.userType)
+        this.infoLoaded = true
 
         this.recordQuery.userId = targetUserId
         this.surveyQuery.userId = targetUserId
@@ -254,12 +295,8 @@ export default {
             intro: data.remark,
             createTime: data.createTime
           }
-          const userType = parseInt(data.userType || 1)
-          if (userType === 0) this.identityLabel = '管理员'
-          else if (userType === 2) this.identityLabel = '鉴定者'
-          else this.identityLabel = '探索者'
-
-          this.recordQuery.userId = targetUserId
+          this.applyIdentityLabel(data.userType)
+          this.infoLoaded = true
           this.surveyQuery.userId = targetUserId
           this.identificationQuery.userId = targetUserId
           this.diaryQuery.userId = targetUserId
@@ -271,23 +308,36 @@ export default {
         })
       }
     },
+    applyIdentityLabel(userType) {
+      const t = String(userType ?? '1')
+      const typeMap  = { '0': 'admin',      '1': 'explorer', '2': 'identifier' }
+      const labelMap = { '0': '管理员', '1': '探索者',  '2': '鉴定者' }
+      this.identityType  = typeMap[t]  || 'explorer'
+      this.identityLabel = labelMap[t] || '探索者'
+    },
     loadMyRecords() {
-      const params = { ...this.recordQuery, isShared: 1 }
-      listRecord(params).then(res => {
+      const params = { ...this.recordQuery }
+      const fn = this.isSelf ? listRecord : listPublicRecord
+      if (!this.isSelf) params.isShared = 1
+      fn(params).then(res => {
         this.recordList = res.rows || []
         this.recordTotal = res.total || 0
       })
     },
     loadMySurveys() {
-      const params = { ...this.surveyQuery, isShared: 1 }
-      listSurvey(params).then(res => {
+      const params = { ...this.surveyQuery }
+      const fn = this.isSelf ? listSurvey : listPublicSurvey
+      if (!this.isSelf) params.isShared = 1
+      fn(params).then(res => {
         this.surveyList = res.rows || []
         this.surveyTotal = res.total || 0
       })
     },
     loadMyIdentifications() {
-      const params = { ...this.identificationQuery, isShared: 1 }
-      listIdentification(params).then(res => {
+      const params = { ...this.identificationQuery }
+      const fn = this.isSelf ? listIdentification : listPublicIdentification
+      if (!this.isSelf) params.isShared = 1
+      fn(params).then(res => {
         this.identificationList = res.rows || []
         this.identificationTotal = res.total || 0
       })
@@ -331,10 +381,11 @@ export default {
           phonenumber: data.phonenumber || '',
           email: data.email || ''
         }
-        this.userInfo.userName = data.userName || this.userInfo.userName
-        this.userInfo.nickName = data.nickName || this.userInfo.nickName
-        this.userInfo.avatar = data.avatar || this.userInfo.avatar
-        this.userInfo.createTime = data.createTime || this.userInfo.createTime
+        // 只补充 store 中缺失的字段，避免覆盖已有值造成闪烁
+        if (!this.userInfo.nickName) this.userInfo.nickName = data.nickName || ''
+        if (!this.userInfo.avatar) this.userInfo.avatar = data.avatar || ''
+        if (!this.userInfo.createTime) this.userInfo.createTime = data.createTime || ''
+        this.userInfo.intro = data.remark || this.userInfo.intro
       })
     },
     submitProfile() {
@@ -379,9 +430,8 @@ export default {
         const url = res.imgUrl || res.data || res.url
         if (url) {
           this.userInfo.avatar = url
-          if (this.$store.dispatch) {
-            this.$store.dispatch('user/setAvatar', url).catch(() => {})
-          }
+          // 同步更新 store，使导航栏头像实时刷新
+          this.$store.commit('SET_AVATAR', url)
         }
         this.$message.success('头像已更新')
       })
@@ -406,6 +456,28 @@ export default {
   align-items: center;
 }
 
+.avatar-text {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  user-select: none;
+  letter-spacing: 1px;
+}
+
+.avatar-text-sm {
+  width: 80px;
+  height: 80px;
+  font-size: 30px;
+  border-radius: 50%;
+}
+
 .profile-info {
   margin-left: 20px;
   flex: 1;
@@ -426,6 +498,30 @@ export default {
 
 .identity-tag {
   border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: none;
+
+  // 管理员：深邃蓝
+  &.identity-admin {
+    background: rgba(30, 60, 114, 0.12);
+    color: #1e3c72;
+    box-shadow: inset 0 0 0 1px rgba(30, 60, 114, 0.3);
+  }
+
+  // 探索者：自然绿（主题色）
+  &.identity-explorer {
+    background: rgba(67, 160, 71, 0.12);
+    color: #2e7d32;
+    box-shadow: inset 0 0 0 1px rgba(67, 160, 71, 0.3);
+  }
+
+  // 鉴定者：琥珀橙
+  &.identity-identifier {
+    background: rgba(230, 126, 34, 0.12);
+    color: #c0640a;
+    box-shadow: inset 0 0 0 1px rgba(230, 126, 34, 0.35);
+  }
 }
 
 .intro {

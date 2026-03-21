@@ -48,7 +48,7 @@ public class UserAuthController
     }
 
     /**
-     * 用户端注册
+     * 用户端注册，默认注册为探索者（userType='1'）
      */
     @PostMapping("/register")
     public AjaxResult register(@RequestBody RegisterBody user)
@@ -57,17 +57,10 @@ public class UserAuthController
         {
             return AjaxResult.error("当前系统没有开启注册功能！");
         }
-        
-        // 设置用户类型
-        if (user.getUserType() == null || user.getUserType().isEmpty()) {
-            user.setUserType("explorer"); // 默认为探索者
-        }
-        
-        // 验证用户类型
-        if (!"explorer".equals(user.getUserType()) && !"supervisor".equals(user.getUserType())) {
-            return AjaxResult.error("用户类型只能是explorer（探索者）或supervisor（监督者）");
-        }
-        
+
+        // 注册时统一设为探索者（字典 nh_user_type: '1'=探索者）
+        user.setUserType("1");
+
         String msg = registerService.register(user);
         return AjaxResult.success(msg);
     }

@@ -9,11 +9,11 @@
       <el-form ref="identificationForm" :model="form" :rules="rules" label-width="100px" class="identification-form">
         <!-- 基本信息 -->
         <el-divider content-position="left">基本信息</el-divider>
-        
+
         <el-form-item label="标题" prop="title">
-          <el-input 
-            v-model="form.title" 
-            placeholder="请输入求助标题，如：请帮忙鉴定这是什么植物" 
+          <el-input
+            v-model="form.title"
+            placeholder="请输入求助标题，如：请帮忙鉴定这是什么植物"
             maxlength="200"
             show-word-limit
           />
@@ -31,8 +31,8 @@
         </el-form-item>
 
         <el-form-item label="观察地点" prop="location">
-          <el-input 
-            v-model="form.location" 
+          <el-input
+            v-model="form.location"
             placeholder="请输入观察地点"
             maxlength="200"
             show-word-limit
@@ -42,8 +42,8 @@
         <el-form-item label="经纬度" prop="coordinates">
           <el-row :gutter="10">
             <el-col :span="11">
-              <el-input 
-                v-model="form.latitude" 
+              <el-input
+                v-model="form.latitude"
                 placeholder="纬度"
                 @blur="validateCoordinates"
               >
@@ -52,8 +52,8 @@
             </el-col>
             <el-col :span="2" class="text-center">-</el-col>
             <el-col :span="11">
-              <el-input 
-                v-model="form.longitude" 
+              <el-input
+                v-model="form.longitude"
                 placeholder="经度"
                 @blur="validateCoordinates"
               >
@@ -141,13 +141,13 @@
 
         <!-- 操作按钮 -->
         <el-form-item>
-          <el-button type="primary" @click="submitForReview" :loading="submitLoading">
-            <i class="el-icon-s-promotion"></i> 提交审核
-          </el-button>
-          <el-button type="info" @click="saveDraft" :loading="submitLoading">
+          <el-button type="primary" @click="saveDraft" :loading="submitLoading">
             <i class="el-icon-document"></i> 保存草稿
           </el-button>
-          <el-button @click="resetForm">
+          <el-button type="success" @click="submitForReview" :loading="submitLoading">
+            <i class="el-icon-s-promotion"></i> 提交审核
+          </el-button>
+                    <el-button @click="resetForm">
             <i class="el-icon-refresh-left"></i> 重置
           </el-button>
           <el-button @click="goBack">
@@ -171,7 +171,6 @@ import { getToken } from '@/utils/auth'
 export default {
   name: "IdentificationCreate",
   data() {
-    // 自定义验证规则
     const validateCoordinates = (rule, value, callback) => {
       if (this.form.latitude && this.form.longitude) {
         const lat = parseFloat(this.form.latitude)
@@ -189,7 +188,6 @@ export default {
     }
 
     return {
-      // 表单参数
       form: {
         identificationId: null,
         title: '',
@@ -204,7 +202,6 @@ export default {
         remark: '',
         auditStatus: 0
       },
-      // 表单校验
       rules: {
         title: [
           { required: true, message: '请输入标题', trigger: 'blur' },
@@ -222,9 +219,11 @@ export default {
         ],
         coordinates: [
           { validator: validateCoordinates, trigger: 'blur' }
+        ],
+        images: [
+          { required: true, validator: this.validateImages, trigger: 'change' }
         ]
       },
-      // 上传相关
       uploadUrl: process.env.VUE_APP_BASE_API + '/common/upload',
       uploadHeaders: {
         Authorization: 'Bearer ' + getToken()
@@ -233,7 +232,6 @@ export default {
       previewVisible: false,
       previewImageUrl: '',
       submitLoading: false,
-      // 日期选择器配置
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() > Date.now()
@@ -248,7 +246,13 @@ export default {
     }
   },
   methods: {
-    /** 加载数据 */
+    validateImages(rule, value, callback) {
+      if (!this.form.images || this.form.images.length === 0) {
+        callback(new Error('请至少上传一张鉴定图片'))
+      } else {
+        callback()
+      }
+    },
     loadData(identificationId) {
       getIdentification(identificationId).then(response => {
         const data = response.data
@@ -263,9 +267,9 @@ export default {
           latitude: data.latitude,
           longitude: data.longitude,
           remark: data.remark,
-          auditStatus: data.auditStatus
+          auditStatus: data.auditStatus,
+          images: []
         }
-        // 加载图片列表
         if (data.images) {
           const images = data.images.split(',')
           this.imageList = images.map((url, index) => ({
@@ -273,11 +277,12 @@ export default {
             url: url
           }))
           this.form.images = images
+          this.$nextTick(() => {
+            this.$refs.identificationForm.validateField('images')
+          })
         }
       })
     },
-
-    /** 获取当前位置 */
     getCurrentLocation() {
       if (navigator.geolocation) {
         this.$message.info('正在获取位置信息...')
@@ -295,17 +300,12 @@ export default {
         this.$message.error('您的浏览器不支持地理定位')
       }
     },
-
-    /** 验证坐标 */
     validateCoordinates() {
       this.$refs.identificationForm.validateField('coordinates')
     },
-
-    /** 图片上传前校验 */
     beforeImageUpload(file) {
       const isImage = file.type.startsWith('image/')
       const isLt10M = file.size / 1024 / 1024 < 10
-
       if (!isImage) {
         this.$message.error('只能上传图片文件!')
         return false
@@ -316,63 +316,50 @@ export default {
       }
       return true
     },
-
-    /** 图片上传成功 */
-    handleImageSuccess(response, file, fileList) {
+    handleImageSuccess(response) {
       if (response.code === 200) {
         this.form.images.push(response.url)
+        this.$refs.identificationForm.validateField('images')
         this.$message.success('图片上传成功')
       } else {
         this.$message.error(response.msg || '图片上传失败')
       }
     },
-
-    /** 图片移除 */
-    handleImageRemove(file, fileList) {
+    handleImageRemove(file) {
       const url = file.response ? file.response.url : file.url
       const index = this.form.images.indexOf(url)
       if (index > -1) {
         this.form.images.splice(index, 1)
+        this.$refs.identificationForm.validateField('images')
       }
     },
-
-    /** 图片预览 */
     handlePicturePreview(file) {
       this.previewImageUrl = file.url
       this.previewVisible = true
     },
-
-    /** 保存草稿 */
     saveDraft() {
-      // 草稿不验证必填项，只保存
-      this.submitLoading = true
-      this.form.auditStatus = 0
-      const submitData = {
-        ...this.form,
-        images: this.form.images.join(',')
-      }
-
-      const request = this.form.identificationId ? updateIdentification(submitData) : addIdentification(submitData)
-      
-      request.then(response => {
-        this.$message.success('保存草稿成功')
-        this.$router.push('/user/identification/list')
-      }).catch(() => {
-        this.submitLoading = false
-      }).finally(() => {
-        this.submitLoading = false
+      this.$refs.identificationForm.validate(valid => {
+        if (!valid) return
+        this.submitLoading = true
+        this.form.auditStatus = 0
+        const submitData = {
+          ...this.form,
+          images: this.form.images.join(',')
+        }
+        const request = this.form.identificationId ? updateIdentification(submitData) : addIdentification(submitData)
+        request.then(() => {
+          this.$message.success('保存草稿成功')
+          this.$router.push('/user/identification/list')
+        }).catch(() => {
+          this.submitLoading = false
+        }).finally(() => {
+          this.submitLoading = false
+        })
       })
     },
-
-    /** 提交审核 */
     submitForReview() {
       this.$refs.identificationForm.validate(valid => {
         if (valid) {
-          if (this.form.images.length === 0) {
-            this.$message.warning('请至少上传一张图片以便鉴定')
-            return
-          }
-
           this.$confirm('提交审核后将无法修改，是否继续?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
@@ -384,10 +371,8 @@ export default {
               ...this.form,
               images: this.form.images.join(',')
             }
-
             const request = this.form.identificationId ? updateIdentification(submitData) : addIdentification(submitData)
-            
-            request.then(response => {
+            request.then(() => {
               this.$message.success('提交审核成功，请等待管理员审核')
               this.$router.push('/user/identification/list')
             }).catch(() => {
@@ -399,15 +384,11 @@ export default {
         }
       })
     },
-
-    /** 重置表单 */
     resetForm() {
       this.$refs.identificationForm.resetFields()
       this.imageList = []
       this.form.images = []
     },
-
-    /** 返回 */
     goBack() {
       this.$router.go(-1)
     }
@@ -418,49 +399,49 @@ export default {
 <style lang="scss" scoped>
 .identification-create-container {
   padding: 20px;
-  
+
   .create-card {
     max-width: 1200px;
     margin: 0 auto;
-    
+
     .card-header {
       font-size: 18px;
       font-weight: bold;
-      
+
       i {
         margin-right: 8px;
         color: #E6A23C;
       }
     }
   }
-  
+
   .identification-form {
     .el-divider {
       margin: 30px 0 20px;
-      
+
       ::v-deep .el-divider__text {
         font-weight: bold;
         color: #409EFF;
       }
     }
-    
+
     .form-tip {
       font-size: 12px;
       color: #909399;
       margin-top: 5px;
     }
-    
+
     .text-center {
       text-align: center;
       line-height: 40px;
     }
   }
-  
+
   ::v-deep .el-upload-list--picture-card .el-upload-list__item {
     width: 120px;
     height: 120px;
   }
-  
+
   ::v-deep .el-upload--picture-card {
     width: 120px;
     height: 120px;
@@ -468,26 +449,25 @@ export default {
   }
 }
 
-// 移动端适配
 @media screen and (max-width: 768px) {
   .identification-create-container {
     padding: 10px;
-    
+
     .identification-form {
       ::v-deep .el-form-item__label {
         width: 80px !important;
       }
-      
+
       ::v-deep .el-form-item__content {
         margin-left: 80px !important;
       }
     }
-    
+
     ::v-deep .el-upload-list--picture-card .el-upload-list__item {
       width: 100px;
       height: 100px;
     }
-    
+
     ::v-deep .el-upload--picture-card {
       width: 100px;
       height: 100px;

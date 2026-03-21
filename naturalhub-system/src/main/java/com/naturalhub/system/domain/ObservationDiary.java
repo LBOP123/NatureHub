@@ -1,6 +1,7 @@
 package com.naturalhub.system.domain;
 
 import java.util.Date;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -74,6 +75,16 @@ public class ObservationDiary extends BaseEntity
 
     /** 关联观察记录ID（逗号分隔） */
     private String observationIds;
+
+    /** 关联的观察记录列表 */
+    private List<ObservationRecord> relatedRecords;
+
+    /** 关联的观察记录ID列表 */
+    private List<Long> recordIds;
+
+    /** 关联的观察记录数 */
+    @Excel(name = "关联记录数")
+    private Integer recordCount;
 
     public void setDiaryId(Long diaryId) 
     {
@@ -225,6 +236,36 @@ public class ObservationDiary extends BaseEntity
         return observationIds;
     }
 
+    public List<ObservationRecord> getRelatedRecords() 
+    {
+        return relatedRecords;
+    }
+
+    public void setRelatedRecords(List<ObservationRecord> relatedRecords) 
+    {
+        this.relatedRecords = relatedRecords;
+    }
+
+    public List<Long> getRecordIds() 
+    {
+        return recordIds;
+    }
+
+    public void setRecordIds(List<Long> recordIds) 
+    {
+        this.recordIds = recordIds;
+    }
+
+    public Integer getRecordCount() 
+    {
+        return recordCount;
+    }
+
+    public void setRecordCount(Integer recordCount) 
+    {
+        this.recordCount = recordCount;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -243,6 +284,9 @@ public class ObservationDiary extends BaseEntity
             .append("isArchived", getIsArchived())
             .append("tags", getTags())
             .append("observationIds", getObservationIds())
+            .append("relatedRecords", getRelatedRecords())
+            .append("recordIds", getRecordIds())
+            .append("recordCount", getRecordCount())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

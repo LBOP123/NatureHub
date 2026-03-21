@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.DiaryRecordRelationMapper">
+
+    <resultMap type="DiaryRecordRelation" id="DiaryRecordRelationResult">
+        <result property="id"           column="id"            />
+        <result property="diaryId"      column="diary_id"      />
+        <result property="recordId"     column="record_id"     />
+        <result property="createTime"   column="create_time"   />
+    </resultMap>
+
+    <resultMap type="ObservationRecord" id="ObservationRecordResult">
+        <result property="recordId"         column="record_id"         />
+        <result property="userId"           column="user_id"           />
+        <result property="title"            column="title"             />
+        <result property="observationTime"  column="observation_time"  />
+        <result property="location"         column="location"          />
+        <result property="latitude"         column="latitude"          />
+        <result property="longitude"        column="longitude"         />
+        <result property="speciesType"      column="species_type"      />
+        <result property="speciesName"      column="species_name"      />
+        <result property="habitat"          column="habitat"           />
+        <result property="description"      column="description"       />
+        <result property="images"           column="images"            />
+        <result property="videos"           column="videos"            />
+        <result property="auditStatus"      column="audit_status"      />
+        <result property="submitTime"       column="submit_time"       />
+        <result property="reviewTime"       column="review_time"       />
+        <result property="reviewerId"       column="reviewer_id"       />
+        <result property="reviewComment"    column="review_comment"    />
+        <result property="rejectReason"     column="reject_reason"     />
+        <result property="specimenId"       column="specimen_id"       />
+        <result property="isShared"         column="is_shared"         />
+        <result property="sharedTopicId"    column="shared_topic_id"   />
+        <result property="delFlag"          column="del_flag"          />
+        <result property="createBy"         column="create_by"         />
+        <result property="createTime"       column="create_time"       />
+        <result property="updateBy"         column="update_by"         />
+        <result property="updateTime"       column="update_time"       />
+        <result property="remark"           column="remark"            />
+    </resultMap>
+
+    <sql id="selectDiaryRecordRelationVo">
+        select id, diary_id, record_id, create_time from nh_diary_record_relation
+    </sql>
+
+    <!-- 查询日志关联的所有观察记录ID -->
+    <select id="selectRecordIdsByDiaryId" parameterType="Long" resultType="Long">
+        select record_id from nh_diary_record_relation where diary_id = #{diaryId}
+    </select>
+
+    <!-- 查询日志关联的所有观察记录 -->
+    <select id="selectRecordsByDiaryId" parameterType="Long" resultMap="ObservationRecordResult">
+        select r.* from nh_observation_record r
+        inner join nh_diary_record_relation d on r.record_id = d.record_id
+        where d.diary_id = #{diaryId} and r.del_flag = '0'
+        order by d.create_time desc
+    </select>
+
+    <!-- 新增关联 -->
+    <insert id="insertRelation" parameterType="DiaryRecordRelation">
+        insert into nh_diary_record_relation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="diaryId != null">diary_id,</if>
+            <if test="recordId != null">record_id,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="diaryId != null">#{diaryId},</if>
+            <if test="recordId != null">#{recordId},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <!-- 删除关联 -->
+    <delete id="deleteRelation">
+        delete from nh_diary_record_relation where diary_id = #{diaryId} and record_id = #{recordId}
+    </delete>
+
+    <!-- 删除日志的所有关联 -->
+    <delete id="deleteRelationsByDiaryId" parameterType="Long">
+        delete from nh_diary_record_relation where diary_id = #{diaryId}
+    </delete>
+
+    <!-- 批量新增关联 -->
+    <insert id="batchInsertRelations">
+        insert into nh_diary_record_relation (diary_id, record_id, create_time) values
+        <foreach collection="recordIds" item="recordId" separator=",">
+            (#{diaryId}, #{recordId}, now())
+        </foreach>
+    </insert>
+
+</mapper>

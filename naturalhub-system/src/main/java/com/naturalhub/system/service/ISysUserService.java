@@ -154,6 +154,15 @@ public interface ISysUserService
     public int updateUserProfile(SysUser user);
 
     /**
+     * 修改用户身份类型
+     *
+     * @param userId   用户ID
+     * @param userType 用户类型（'0'=管理员,'1'=探索者,'2'=鉴定者）
+     * @return 结果
+     */
+    public boolean updateUserType(Long userId, String userType);
+
+    /**
      * 修改用户头像
      * 
      * @param userId 用户ID

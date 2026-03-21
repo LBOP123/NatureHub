@@ -43,10 +43,25 @@
           <div class="empty-text">基于Wiki知识库，探索物种知识</div>
         </div>
         <div v-for="(msg, index) in messages" :key="index" :class="['message-item', msg.type]">
-          <div class="message-content" v-html="formatAnswer(msg.content)"></div>
+          <div class="message-content">
+            <div v-html="msg.html"></div>
+            <template v-if="msg.type === 'ai' && !msg.videoDismissed">
+              <div class="video-guide-section">
+                <div class="guide-divider"></div>
+                <div class="guide-content">
+                  <div class="guide-title">💡 想更直观地了解这个知识点吗？</div>
+                  <p>我可以为你生成一段讲解视频，用画面和声音帮你快速理解，需要吗？</p>
+                  <div class="guide-actions">
+                    <el-button type="success" size="small" @click="generateVideo(msg)">是的，生成视频</el-button>
+                    <el-button size="small" @click="dismissGuide(msg)">暂不需要</el-button>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
         <div v-if="loading" class="message-item ai">
-          <div class="message-content loading">
+          <div class="message-content loading-content">
             <span class="loading-dot"></span>
             <span class="loading-dot"></span>
             <span class="loading-dot"></span>
@@ -113,7 +128,8 @@ export default {
 
       this.messages.push({
         type: 'user',
-        content: userQuestion
+        html: userQuestion,
+        videoDismissed: true
       })
       this.question = ''
       this.loading = true
@@ -138,14 +154,16 @@ export default {
 
           this.messages.push({
             type: 'ai',
-            content: answer
+            html: this.formatAnswer(answer),
+            videoDismissed: false
           })
           this.loadConversations()
         } else {
           this.$message.error(response.msg || '查询失败')
           this.messages.push({
             type: 'ai',
-            content: '抱歉，查询失败：' + (response.msg || '未知错误')
+            html: '抱歉，查询失败：' + (response.msg || '未知错误'),
+            videoDismissed: true
           })
         }
       } catch (error) {
@@ -153,7 +171,8 @@ export default {
         this.$message.error('查询失败，请重试')
         this.messages.push({
           type: 'ai',
-          content: '抱歉，知识库查询失败，请稍后重试'
+          html: '抱歉，知识库查询失败，请稍后重试',
+          videoDismissed: true
         })
       } finally {
         this.loading = false
@@ -191,8 +210,8 @@ export default {
         if (response.code === 200) {
           const data = response.data || []
           this.messages = data.map(item => [
-            { type: 'user', content: item.question },
-            { type: 'ai', content: item.answer }
+            { type: 'user', html: item.question, videoDismissed: true },
+            { type: 'ai',   html: this.formatAnswer(item.answer), videoDismissed: true }
           ]).flat()
         }
       } catch (error) {
@@ -261,41 +280,25 @@ export default {
     formatAnswer(content) {
       if (!content) return ''
       try {
-        const parsedContent = marked.parse(content)
-        return this.addVideoGuide(parsedContent)
+        return marked.parse(content)
       } catch (error) {
         console.error('Markdown渲染失败:', error)
-        const formattedContent = content
+        return content
           .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
           .replace(/【(.*?)】/g, '<strong style="color: #67C23A;">$1</strong>')
           .replace(/\n/g, '<br>')
-        return this.addVideoGuide(formattedContent)
       }
     },
 
-    addVideoGuide(content) {
-      const guide = `
-        <div class="video-guide-section">
-          <div class="guide-divider"></div>
-          <div class="guide-content">
-            <div class="guide-title">💡 想更直观地了解这个知识点吗？</div>
-            <p>我可以为你生成一段讲解视频，用画面和声音帮你快速理解，需要吗？</p>
-            <div class="guide-actions">
-              <el-button type="success" size="small" @click="generateVideo">是的，生成视频</el-button>
-              <el-button size="small" @click="dismissGuide">暂不需要</el-button>
-            </div>
-          </div>
-        </div>
-      `
-      return content + guide
-    },
-
-    generateVideo() {
+    // 点击「是的，生成视频」
+    generateVideo(msg) {
+      this.$set(msg, 'videoDismissed', true)
       this.$message.info('视频生成功能开发中...')
     },
 
-    dismissGuide() {
-      this.$message.success('已关闭提示')
+    // 点击「暂不需要」
+    dismissGuide(msg) {
+      this.$set(msg, 'videoDismissed', true)
     },
 
     scrollToBottom() {
@@ -509,15 +512,23 @@ export default {
   30%{opacity:1;transform:scale(1)}
 }
 
+.loading-content {
+  display: flex;
+  gap: 4px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+/* ── 视频引导区 ── */
 .video-guide-section {
-  margin-top: 20px;
-  padding-top: 16px;
+  margin-top: 16px;
 }
 
 .guide-divider {
   height: 1px;
   background: linear-gradient(to right, transparent, #ddd, transparent);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .guide-content {
@@ -531,20 +542,19 @@ export default {
   font-size: 13px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .guide-content p {
   font-size: 13px;
   color: #666;
   line-height: 1.6;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
 }
 
 .guide-actions {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .input-area {

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="observation-detail-container">
     <el-card v-loading="loading" class="detail-card">
       <!-- 头部操作栏 -->
@@ -20,12 +20,12 @@
             @click="handleSubmitReview"
           >提交审核</el-button>
           <el-button
-            v-if="detail.auditStatus === 2"
+            v-if="detail.auditStatus === 2 && detail.isShared !== 1"
             type="success"
             icon="el-icon-share"
             size="small"
             @click="handleShare"
-          >分享到社群</el-button>
+          >分享到社区</el-button>
           <el-button
             type="danger"
             icon="el-icon-delete"
@@ -63,7 +63,7 @@
       <!-- 基本信息 -->
       <el-descriptions :column="2" border class="detail-info">
         <el-descriptions-item label="物种类型">
-          <dict-tag :options="speciesTypeOptions" :value="getSpeciesTypeText(detail.speciesType)" size="small" />
+          <dict-tag :options="speciesTypeOptions" :value="getSpeciesType(detail.speciesType)" size="small" />
         </el-descriptions-item>
         <el-descriptions-item label="物种名称">
           <span class="species-name">{{ detail.speciesName || '暂无' }}</span>
@@ -180,39 +180,21 @@
       </div>
     </el-card>
 
-    <!-- 分享对话框 -->
-    <el-dialog title="分享到社群" :visible.sync="shareDialogVisible" width="600px" append-to-body>
-      <el-form :model="shareForm" :rules="shareRules" ref="shareForm" label-width="100px">
-        <el-form-item label="选择板块" prop="topicType">
-          <el-select v-model="shareForm.topicType" placeholder="请选择板块" style="width: 100%">
-            <el-option label="观察分享" value="observation" />
-            <el-option label="物种讨论" value="species" />
-            <el-option label="经验交流" value="experience" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="分享标题" prop="title">
-          <el-input v-model="shareForm.title" placeholder="请输入分享标题" maxlength="100" show-word-limit />
-        </el-form-item>
-        <el-form-item label="分享内容" prop="content">
-          <el-input
-            v-model="shareForm.content"
-            type="textarea"
-            :rows="5"
-            placeholder="请输入分享内容"
-            maxlength="500"
-            show-word-limit
-          />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="shareDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="confirmShare" :loading="shareLoading">确 定</el-button>
-      </div>
-    </el-dialog>
+    <!-- 分享弹窗 -->
+    <share-dialog
+      :visible.sync="shareDialogVisible"
+      :source-type="1"
+      :init-title="shareForm.title"
+      :init-content="shareForm.content"
+      :loading="shareLoading"
+      @confirm="confirmShare"
+    />
+
   </div>
 </template>
 
 <script>
+import ShareDialog from '@/views/user/components/ShareDialog'
 import { getRecord, delRecord, submitForReview, shareRecordToCommunity } from '@/api/user/record'
 
 export default {
@@ -222,7 +204,6 @@ export default {
       loading: false,
       speciesTypeOptions: [],
       auditStatusOptions: [],
-      // 完全适配数据库 nh_observation_record
       detail: {
         recordId: null,
         userId: null,
@@ -237,14 +218,14 @@ export default {
         description: '',
         images: '',
         videos: '',
-        auditStatus: 'draft',
+        auditStatus: 0,
         submitTime: '',
         reviewTime: '',
         reviewerId: null,
         reviewComment: '',
         rejectReason: '',
         specimenId: null,
-        isShared: '0',
+        isShared: 0,
         delFlag: '0',
         createBy: '',
         createTime: '',
@@ -257,41 +238,27 @@ export default {
       mapDialogVisible: false,
       shareDialogVisible: false,
       shareLoading: false,
-      shareForm: {
-        recordId: null,
-        topicType: '',
-        title: '',
-        content: ''
-      },
-      shareRules: {
-        topicType: [
-          { required: true, message: '请选择板块', trigger: 'change' }
-        ],
-        title: [
-          { required: true, message: '请输入分享标题', trigger: 'blur' }
-        ],
-        content: [
-          { required: true, message: '请输入分享内容', trigger: 'blur' }
-        ]
-      }
+      shareForm: {recordId: null, topicType: '', title: '', content: ''},
     }
   },
+  components: {ShareDialog},
   created() {
-    this.getDicts('nh_species_type').then(res => { this.speciesTypeOptions = res.data || [] })
-    this.getDicts('nh_audit_status').then(res => { this.auditStatusOptions = res.data || [] })
+    this.getDicts('nh_species_type').then(res => {
+      this.speciesTypeOptions = res.data || []
+    })
+    this.getDicts('nh_audit_status').then(res => {
+      this.auditStatusOptions = res.data || []
+    })
     const recordId = this.$route.params.recordId
     if (recordId) {
       this.getDetail(recordId)
     }
   },
   methods: {
-    /** 获取详情（已修复接口+解析） */
     getDetail(recordId) {
       this.loading = true
       getRecord(recordId).then(response => {
-        this.detail = { ...this.detail, ...response.data }
-
-        // 图片解析（防报错）
+        this.detail = {...this.detail, ...response.data}
         if (this.detail.images) {
           try {
             this.imageList = JSON.parse(this.detail.images)
@@ -299,7 +266,6 @@ export default {
             this.imageList = []
           }
         }
-        // 视频解析（防报错）
         if (this.detail.videos) {
           try {
             this.videoList = JSON.parse(this.detail.videos)
@@ -311,92 +277,80 @@ export default {
         this.loading = false
       })
     },
-
-    /** 返回 */
     goBack() {
       this.$router.go(-1)
     },
-
-    /** 编辑 */
     handleEdit() {
       this.$router.push('/user/observation/upload/' + this.detail.recordId)
     },
-
-    /** 提交审核 */
     handleSubmitReview() {
-      this.$confirm('提交审核后将无法修改，是否继续?', '提示', {
+      this.$confirm('提交审核后将无法修改，是否继续？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        return submitForReview(this.detail.recordId)
-      }).then(() => {
-        this.$message.success('提交审核成功')
-        this.getDetail(this.detail.recordId)
       })
+        .then(() => submitForReview(this.detail.recordId))
+        .then(() => {
+          this.$message.success('提交审核成功');
+          this.getDetail(this.detail.recordId)
+        })
     },
-
-    /** 分享 */
     handleShare() {
       this.shareForm = {
         recordId: this.detail.recordId,
         topicType: 'observation',
-        title: this.detail.title || '观察记录分享',
+        title: this.detail.title || '',
         content: this.detail.description ? this.detail.description.substring(0, 200) : ''
       }
       this.shareDialogVisible = true
     },
-
-    /** 确认分享 */
-    confirmShare() {
-      this.$refs.shareForm.validate(valid => {
-        if (valid) {
-          this.shareLoading = true
-          shareRecordToCommunity(this.shareForm).then(() => {
-            this.$message.success('分享成功')
-            this.detail.isShared = '1'
-            this.shareDialogVisible = false
-            this.$router.push('/user/community')
-          }).finally(() => {
-            this.shareLoading = false
-          })
-        }
+    confirmShare({title, content}) {
+      this.shareLoading = true
+      shareRecordToCommunity(this.shareForm.recordId, {title, content}).then(() => {
+        this.$message.success('分享成功')
+        this.shareDialogVisible = false
+        this.$router.push('/user/community')
+      }).finally(() => {
+        this.shareLoading = false
       })
     },
-
-    /** 删除 */
     handleDelete() {
-      this.$confirm('是否确认删除该观察记录?', '警告', {
+      this.$confirm('是否确认删除该观察记录？', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        return delRecord(this.detail.recordId)
-      }).then(() => {
-        this.$message.success('删除成功')
-        this.$router.push('/user/observation/list')
       })
+        .then(() => delRecord(this.detail.recordId))
+        .then(() => {
+          this.$message.success('删除成功');
+          this.$router.push('/user/observation/list')
+        })
     },
-
+    getSpeciesType(val) {
+      const item = this.speciesTypeOptions.find(d => d.dictValue == val)
+      return item ? item.dictLabel : '未知'
+    },
     getAuditStatusText(status) {
-      const item = this.auditStatusOptions.find(d => d.dictValue == status);
-      return item ? item.dictLabel : "";
+      const item = this.auditStatusOptions.find(d => d.dictValue == status)
+      return item ? item.dictLabel : ''
     },
-    getSpeciesTypeText(type) {
-      const item = this.speciesTypeOptions.find(d => d.dictValue == type);
-      return item ? item.dictLabel : "";
-    },
-
-    /** 状态样式 */
     getAuditStatusType(status) {
       switch (status) {
-        case 0: return "";        // 未提交
-        case 1: return "warning"; // 审核中
-        case 2: return "success"; // 通过
-        case 3: return "danger";  // 驳回
-        default: return "";
+        case 0:
+          return ''
+        case 1:
+          return 'warning'
+        case 2:
+          return 'success'
+        case 3:
+          return 'danger'
+        default:
+          return ''
       }
     },
+    showMap() {
+      this.mapDialogVisible = true
+    }
   }
 }
 </script>
@@ -414,10 +368,8 @@ export default {
       justify-content: space-between;
       align-items: center;
 
-      .header-actions {
-        .el-button {
-          margin-left: 10px;
-        }
+      .header-actions .el-button {
+        margin-left: 10px;
       }
     }
 
@@ -436,7 +388,11 @@ export default {
 
     .detail-info {
       margin-bottom: 30px;
-      .species-name { font-weight: bold; color: #67C23A; }
+
+      .species-name {
+        font-weight: bold;
+        color: #67C23A;
+      }
     }
 
     .detail-section {
@@ -449,7 +405,10 @@ export default {
         padding-left: 10px;
         margin-bottom: 15px;
 
-        i { color: #409EFF; margin-right: 8px; }
+        i {
+          color: #409EFF;
+          margin-right: 8px;
+        }
       }
 
       .section-content {
@@ -487,8 +446,15 @@ export default {
 }
 
 @media screen and (max-width: 768px) {
-  .observation-detail-container { padding: 10px; }
-  .detail-card .detail-header { flex-direction: column; align-items: flex-start; }
-  .detail-title { font-size: 22px !important; }
+  .observation-detail-container {
+    padding: 10px;
+  }
+  .detail-card .detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .detail-title {
+    font-size: 22px !important;
+  }
 }
 </style>

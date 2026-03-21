@@ -63,6 +63,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectCommunityTopicVo"/>
         where topic_id = #{topicId}
     </select>
+
+    <select id="selectBySourceTypeAndSourceId" resultMap="CommunityTopicResult">
+        <include refid="selectCommunityTopicVo"/>
+        where source_type = #{sourceType} and source_id = #{sourceId}
+    </select>
         
     <insert id="insertCommunityTopic" parameterType="CommunityTopic" useGeneratedKeys="true" keyProperty="topicId">
         insert into nh_community_topic

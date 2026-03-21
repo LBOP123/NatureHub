@@ -98,8 +98,21 @@ public class SpeciesIdentificationServiceImpl implements ISpeciesIdentificationS
      * @return 结果
      */
     @Override
+    @Transactional
     public int deleteSpeciesIdentificationByIdentificationIds(Long[] identificationIds)
     {
+        // 逐个删除，每个都检查并删除关联的社群话题
+        for (Long identificationId : identificationIds) {
+            // 先查询该记录对应的社群话题
+            CommunityTopic topic = communityTopicMapper.selectBySourceTypeAndSourceId(2, identificationId);
+            
+            // 如果存在对应的话题，删除它
+            if (topic != null && topic.getTopicId() != null) {
+                communityTopicMapper.deleteCommunityTopicByTopicId(topic.getTopicId());
+            }
+        }
+        
+        // 再批量删除鉴定记录本身
         return speciesIdentificationMapper.deleteSpeciesIdentificationByIdentificationIds(identificationIds);
     }
 
@@ -110,8 +123,18 @@ public class SpeciesIdentificationServiceImpl implements ISpeciesIdentificationS
      * @return 结果
      */
     @Override
+    @Transactional
     public int deleteSpeciesIdentificationByIdentificationId(Long identificationId)
     {
+        // 先查询该记录对应的社群话题
+        CommunityTopic topic = communityTopicMapper.selectBySourceTypeAndSourceId(2, identificationId);
+        
+        // 如果存在对应的话题，删除它
+        if (topic != null && topic.getTopicId() != null) {
+            communityTopicMapper.deleteCommunityTopicByTopicId(topic.getTopicId());
+        }
+        
+        // 再删除鉴定记录本身
         return speciesIdentificationMapper.deleteSpeciesIdentificationByIdentificationId(identificationId);
     }
 
@@ -173,37 +196,41 @@ public class SpeciesIdentificationServiceImpl implements ISpeciesIdentificationS
 
     /**
      * 分享到社群
-     * 
+     *
      * @param identificationId 鉴定ID
+     * @param content          分享内容（用户填写，保存到话题 content 字段）
+     * @param createBy         当前操作用户名（保存到话题 create_by 字段）
      * @return 社群话题ID
      */
     @Override
     @Transactional
-    public Long shareToCommunity(Long identificationId)
+    public Long shareToCommunity(Long identificationId, String content, String createBy)
     {
-        SpeciesIdentification identification = speciesIdentificationMapper.selectSpeciesIdentificationByIdentificationId(identificationId);
-        
+        SpeciesIdentification identification = speciesIdentificationMapper
+                .selectSpeciesIdentificationByIdentificationId(identificationId);
+
         if (identification == null) {
             throw new RuntimeException("鉴定记录不存在");
         }
-        
+
         if (Integer.valueOf(1).equals(identification.getIsShared())) {
             throw new RuntimeException("该记录已分享到社群");
         }
-        
+
         if (!Integer.valueOf(2).equals(identification.getAuditStatus())) {
             throw new RuntimeException("只有审核通过的记录才能分享到社群");
         }
-        
-        // 创建社群话题
+
         CommunityTopic topic = new CommunityTopic();
         topic.setUserId(identification.getUserId());
-        topic.setUserName(identification.getUserName());
-        topic.setCategory(2); // 鉴定求助板块
+        topic.setUserName(createBy);
+        topic.setCategory(2); // 2=鉴定求助板块
         topic.setTitle(identification.getTitle());
-        // content 只存简介，图片和详细数据由前端按 sourceType+sourceId 动态请求原业务接口获取
-        topic.setContent("来自物种鉴定求助的分享");
-        topic.setImages(null);
+        // 使用用户填写的内容，若为空则使用描述信息
+        topic.setContent(content != null && !content.trim().isEmpty()
+                ? content : (identification.getDescription() != null ? identification.getDescription() : ""));
+        // 将鉴定图片同步到话题 images 字段
+        topic.setImages(identification.getImages());
         topic.setSourceType(2);
         topic.setSourceId(identificationId);
         topic.setViewCount(0);
@@ -214,18 +241,23 @@ public class SpeciesIdentificationServiceImpl implements ISpeciesIdentificationS
         topic.setIsTop("0");
         topic.setIsEssence("0");
         topic.setStatus("0");
-        topic.setAuditStatus(1); // 继承审核状态
+        topic.setAuditStatus(1);
+        topic.setCreateBy(createBy);
         topic.setCreateTime(new Date());
-        
+
         communityTopicMapper.insertCommunityTopic(topic);
-        
-        // 更新鉴定记录的分享状态
+
+        Long topicId = topic.getTopicId();
+        if (topicId == null || topicId <= 0) {
+            throw new RuntimeException("分享失败：无法获取话题ID");
+        }
+
         identification.setIsShared(1);
-        identification.setSharedTopicId(topic.getTopicId());
+        identification.setSharedTopicId(topicId);
         identification.setUpdateTime(new Date());
         speciesIdentificationMapper.updateSpeciesIdentification(identification);
-        
-        return topic.getTopicId();
+
+        return topicId;
     }
 
     /**

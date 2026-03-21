@@ -2,10 +2,19 @@ import request from '@/utils/request'
 
 // ==================== 观察记录相关接口 ====================
 
-// 查询观察记录列表
+// 查询观察记录列表（我的）
 export function listRecord(query) {
   return request({
     url: '/user/record/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询指定用户的公开观察记录（他人主页用�?
+export function listPublicRecord(query) {
+  return request({
+    url: '/user/record/public/list',
     method: 'get',
     params: query
   })
@@ -53,15 +62,16 @@ export function submitForReview(recordId) {
   })
 }
 
-// 分享到社群
-export function shareRecordToCommunity(recordId) {
+// 分享到社�?
+export function shareRecordToCommunity(recordId, data) {
   return request({
     url: '/user/record/' + recordId + '/share',
-    method: 'post'
+    method: 'post',
+    data: data
   })
 }
 
-// 获取审核状态
+// 获取审核状�?
 export function getReviewStatus(recordId) {
   return request({
     url: '/user/record/review/' + recordId,

@@ -6,7 +6,7 @@
         <h2>自然汇 · 用户登录</h2>
         <p class="subtitle">探索自然，记录生命</p>
       </div>
-      
+
       <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
         <el-form-item prop="username">
           <el-input
@@ -19,7 +19,7 @@
           >
           </el-input>
         </el-form-item>
-        
+
         <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
@@ -32,7 +32,7 @@
           >
           </el-input>
         </el-form-item>
-        
+
         <el-form-item prop="code" v-if="captchaEnabled">
           <el-input
             v-model="loginForm.code"
@@ -42,18 +42,18 @@
             style="width: 63%"
             @keyup.enter.native="handleLogin"
           >
-            <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
+            <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon"/>
           </el-input>
           <div class="login-code">
             <img :src="codeUrl" @click="getCode" class="login-code-img"/>
           </div>
         </el-form-item>
-        
+
         <el-form-item style="margin-bottom: 10px;">
           <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
-          <router-link to="/user/forgot" class="link-type" style="float: right;">忘记密码?</router-link>
+<!--          <router-link to="/user/forgot" class="link-type" style="float: right;">忘记密码?</router-link>-->
         </el-form-item>
-        
+
         <el-form-item style="width:100%;">
           <el-button
             :loading="loading"
@@ -66,14 +66,14 @@
             <span v-else>登 录 中...</span>
           </el-button>
         </el-form-item>
-        
+
         <div class="register-link">
           还没有账号？
           <router-link to="/user/register" class="link-type">立即注册</router-link>
         </div>
       </el-form>
     </div>
-    
+
     <div class="footer">
       <p>© 2026 NaturalHub 自然汇 · 让每一次观察都有意义</p>
     </div>
@@ -81,9 +81,9 @@
 </template>
 
 <script>
-import { getCodeImg } from "@/api/login"
+import {getCodeImg} from "@/api/login"
 import Cookies from "js-cookie"
-import { encrypt, decrypt } from '@/utils/jsencrypt'
+import {encrypt, decrypt} from '@/utils/jsencrypt'
 
 export default {
   name: "UserLogin",
@@ -99,12 +99,12 @@ export default {
       },
       loginRules: {
         username: [
-          { required: true, trigger: "blur", message: "请输入您的用户名" }
+          {required: true, trigger: "blur", message: "请输入您的用户名"}
         ],
         password: [
-          { required: true, trigger: "blur", message: "请输入您的密码" }
+          {required: true, trigger: "blur", message: "请输入您的密码"}
         ],
-        code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+        code: [{required: true, trigger: "change", message: "请输入验证码"}]
       },
       loading: false,
       captchaEnabled: true,
@@ -113,7 +113,7 @@ export default {
   },
   watch: {
     $route: {
-      handler: function(route) {
+      handler: function (route) {
         this.redirect = route.query && route.query.redirect
       },
       immediate: true
@@ -148,16 +148,17 @@ export default {
         if (valid) {
           this.loading = true
           if (this.loginForm.rememberMe) {
-            Cookies.set("username", this.loginForm.username, { expires: 30 })
-            Cookies.set("password", encrypt(this.loginForm.password), { expires: 30 })
-            Cookies.set('rememberMe', this.loginForm.rememberMe, { expires: 30 })
+            Cookies.set("username", this.loginForm.username, {expires: 30})
+            Cookies.set("password", encrypt(this.loginForm.password), {expires: 30})
+            Cookies.set('rememberMe', this.loginForm.rememberMe, {expires: 30})
           } else {
             Cookies.remove("username")
             Cookies.remove("password")
             Cookies.remove('rememberMe')
           }
           this.$store.dispatch("Login", this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || "/user/index" }).catch(()=>{})
+            this.$router.push({path: this.redirect || "/user/index"}).catch(() => {
+            })
           }).catch(() => {
             this.loading = false
             if (this.captchaEnabled) {
@@ -174,35 +175,25 @@ export default {
 <style lang="scss" scoped>
 .user-login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: url('../../../assets/loginBackground/login-background.webp') center/cover no-repeat fixed;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 20px;
   position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    pointer-events: none;
-  }
 }
 
+/* 🔥 仅登录框内部模糊 + 白边框 + 高透明 */
 .login-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  padding: 50px 40px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px); /* 只有这里模糊 */
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  padding: 35px 30px;
   width: 100%;
-  max-width: 420px;
+  max-width: 360px;
   position: relative;
   z-index: 1;
   animation: slideUp 0.5s ease-out;
@@ -221,25 +212,24 @@ export default {
 
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
-  
+  margin-bottom: 28px;
+
   .logo {
-    font-size: 56px;
-    margin-bottom: 16px;
+    font-size: 48px;
+    margin-bottom: 12px;
     animation: rotate 3s ease-in-out infinite;
   }
-  
+
   h2 {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
-    color: #2c3e50;
+    color: #000000;
     margin: 0 0 8px 0;
-    letter-spacing: 1px;
   }
-  
+
   .subtitle {
-    color: #7f8c8d;
-    font-size: 14px;
+    color: #F2F6FC;
+    font-size: 13px;
     margin: 0;
   }
 }
@@ -249,79 +239,82 @@ export default {
   50% { transform: rotate(10deg); }
 }
 
+/* 🔥 输入框透明统一 */
 .login-form {
   ::v-deep .el-input__inner {
-    height: 45px;
-    line-height: 45px;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    height: 42px;
+    line-height: 42px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #333;
     transition: all 0.3s;
-    
+
     &:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+      border-color: #4CAF50;
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
     }
   }
-  
+
   ::v-deep .el-form-item {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-  
+
   ::v-deep .el-button--primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
     border: none;
-    height: 45px;
-    border-radius: 8px;
+    height: 42px;
+    border-radius: 10px;
     font-size: 16px;
-    font-weight: 500;
     transition: all 0.3s;
-    
+
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
     }
   }
 }
 
 .login-code {
   width: 33%;
-  height: 45px;
+  height: 42px;
   float: right;
-  
+
   img {
     cursor: pointer;
     vertical-align: middle;
-    height: 45px;
+    height: 42px;
     border-radius: 8px;
   }
 }
 
 .link-type {
-  color: #667eea;
+  color: #4CAF50;
   text-decoration: none;
-  font-size: 14px;
-  
+  font-size: 13px;
+
   &:hover {
-    color: #764ba2;
+    color: #2E7D32;
     text-decoration: underline;
   }
 }
 
 .register-link {
   text-align: center;
-  margin-top: 20px;
-  color: #7f8c8d;
-  font-size: 14px;
+  margin-top: 18px;
+  color: #F2F6FC;
+  font-size: 13px;
 }
 
 .footer {
-  margin-top: 40px;
+  margin-top: 30px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
   position: relative;
   z-index: 1;
-  
+
   p {
     margin: 0;
   }
@@ -329,7 +322,8 @@ export default {
 
 @media (max-width: 768px) {
   .login-card {
-    padding: 40px 30px;
+    padding: 30px 25px;
+    max-width: 320px;
   }
 }
 </style>

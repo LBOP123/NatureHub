@@ -35,8 +35,17 @@ router.beforeEach((to, from, next) => {
     } else if (isWhiteList(to.path)) {
       next()
     } else if (isUserRoute) {
-      // 用户端路由，已登录直接放行
-      next()
+      // 用户端路由，已登录
+      // 若 userType 尚未从后端加载（仍为初始默认值且 roles 为空），先拉取用户信息
+      if (store.getters.roles.length === 0) {
+        store.dispatch('GetInfo').then(() => {
+          next()
+        }).catch(() => {
+          next()
+        })
+      } else {
+        next()
+      }
     } else {
       // 管理端路由，需要验证权限
       if (store.getters.roles.length === 0) {

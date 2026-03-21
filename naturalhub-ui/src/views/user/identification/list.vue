@@ -69,11 +69,18 @@
               <el-button v-if="item.auditStatus === 0 || item.auditStatus === 3" size="mini" type="text"
                          icon="el-icon-edit" @click.stop="handleEdit(item)">编辑
               </el-button>
-              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text" icon="el-icon-share"
-                         @click.stop="handleShare(item)">分享
+              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text"
+                         icon="el-icon-share" @click.stop="handleShare(item)">分享
               </el-button>
-              <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
-                         @click.stop="handleSubmitReview(item)">提交
+              <el-button
+                v-if="item.isShared === 1"
+                size="mini"
+                type="text"
+                icon="el-icon-share"
+                disabled
+                style="cursor: not-allowed; color: #52c41a"
+              >
+                已分享
               </el-button>
               <el-button size="mini" type="text" icon="el-icon-delete" @click.stop="handleDelete(item)">删除</el-button>
             </div>
@@ -119,11 +126,18 @@
               <el-button v-if="item.auditStatus === 0 || item.auditStatus === 3" size="mini" type="text"
                          icon="el-icon-edit" @click.stop="handleEdit(item)">编辑
               </el-button>
-              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text" icon="el-icon-share"
-                         @click.stop="handleShare(item)">分享
+              <el-button v-if="item.auditStatus === 2 && item.isShared !== 1" size="mini" type="text"
+                         icon="el-icon-share" @click.stop="handleShare(item)">分享
               </el-button>
-              <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
-                         @click.stop="handleSubmitReview(item)">提交
+              <el-button
+                v-if="item.isShared === 1"
+                size="mini"
+                type="text"
+                icon="el-icon-share"
+                disabled
+                style="cursor: not-allowed; color: #52c41a"
+              >
+                已分享
               </el-button>
               <el-button size="mini" type="text" icon="el-icon-delete" @click.stop="handleDelete(item)">删除</el-button>
             </div>
@@ -215,7 +229,7 @@ export default {
   created() {
     // 加载若依字典
     this.getDicts('nh_audit_status').then(res => { this.auditStatusOptions = res.data || [] })
-    this.getDicts('nh_identify_status').then(res => { this.identifyStatusOptions = res.data || [] })
+    this.getDicts('nh_identification_status').then(res => { this.identifyStatusOptions = res.data || [] })
     this.getList()
   },
   methods: {
@@ -262,17 +276,6 @@ export default {
     },
     handleEdit(row) {
       this.$router.push('/user/identification/create?id=' + row.identificationId)
-    },
-    handleSubmitReview(row) {
-      this.$confirm('提交审核后将无法修改，是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => updateIdentification({ identificationId: row.identificationId, auditStatus: 1 }))
-        .then(() => {
-          this.$message.success('提交审核成功')
-          this.getList()
-        })
     },
     handleShare(row) {
       this.shareForm = {
@@ -321,10 +324,20 @@ export default {
       const item = this.auditStatusOptions.find(i => i.dictValue == value)
       return item ? item.dictLabel : value
     },
-    getAuditStatusType(value) {
-      const item = this.auditStatusOptions.find(i => i.dictValue == value)
-      return item ? item.listClass : 'info'
-    }
+    getAuditStatusType(status) {
+      switch (status) {
+        case 0:
+          return ""
+        case 1:
+          return "warning"
+        case 2:
+          return "success"
+        case 3:
+          return "danger"
+        default:
+          return ""
+      }
+    },
   }
 }
 </script>

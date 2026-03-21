@@ -12,6 +12,7 @@ const getters = {
   nickName: state => state.user.nickName,
   introduction: state => state.user.introduction,
   roles: state => state.user.roles,
+  userType: state => state.user.userType,
   permissions: state => state.user.permissions,
   permission_routes: state => state.permission.routes,
   topbarRouters: state => state.permission.topbarRouters,

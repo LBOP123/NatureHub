@@ -9,6 +9,15 @@ export function listIdentification(query) {
   })
 }
 
+// 查询指定用户的公开鉴定求助记录（他人主页用）
+export function listPublicIdentification(query) {
+  return request({
+    url: '/user/identification/public/list',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询鉴定求助列表（广场）
 export function listIdentificationSquare(query) {
   return request({
@@ -87,10 +96,11 @@ export function setBestAnswer(identificationId, answerId) {
 }
 
 // 分享到社群
-export function shareIdentification(identificationId) {
+export function shareIdentification(identificationId, data) {
   return request({
     url: '/user/identification/' + identificationId + '/share',
-    method: 'post'
+    method: 'post',
+    data: data
   })
 }
 

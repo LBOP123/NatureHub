@@ -177,6 +177,14 @@
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="关联记录数" align="center" prop="recordCount" width="100">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.recordCount > 0" type="primary">
+            {{ scope.row.recordCount }} 条
+          </el-tag>
+          <span v-else style="color: #999">-</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="250" fixed="right">
         <template slot-scope="scope">
           <el-button
@@ -232,6 +240,12 @@
             {{ detail.isArchived === '1' ? '已归档' : '活跃' }}
           </el-tag>
         </el-descriptions-item>
+        <el-descriptions-item label="关联记录数">
+          <el-tag v-if="detail.recordCount > 0" type="primary">
+            {{ detail.recordCount }} 条
+          </el-tag>
+          <span v-else>暂无关联</span>
+        </el-descriptions-item>
         <el-descriptions-item label="路线信息" :span="2" v-if="detail.routeInfo">{{ detail.routeInfo }}</el-descriptions-item>
         <el-descriptions-item label="发现物种" :span="2" v-if="detail.speciesFound">
           <pre style="white-space: pre-wrap; margin: 0;">{{ detail.speciesFound }}</pre>
@@ -239,6 +253,28 @@
         <el-descriptions-item label="日志内容" :span="2">
           <div style="white-space: pre-wrap;">{{ detail.content }}</div>
         </el-descriptions-item>
+      </el-descriptions>
+      <!-- 关联的观察记录 -->
+      <div v-if="relatedRecords && relatedRecords.length > 0" style="margin-top: 20px;">
+        <h4 style="margin-bottom: 10px; color: #303133;">
+          <i class="el-icon-link"></i> 关联的观察记录 ({{ relatedRecords.length }})
+        </h4>
+        <el-table :data="relatedRecords" stripe style="width: 100%" size="small">
+          <el-table-column label="缩略图" width="70" align="center">
+            <template slot-scope="scope">
+              <el-image v-if="scope.row.images" :src="getFirstImage(scope.row.images)" style="width: 50px; height: 50px; border-radius: 4px;" fit="cover" :preview-src-list="[getFirstImage(scope.row.images)]" />
+              <span v-else style="color: #909399; font-size: 12px;">无图片</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="title" label="标题" min-width="120" :show-overflow-tooltip="true" />
+          <el-table-column prop="speciesName" label="物种名称" min-width="100" />
+          <el-table-column prop="location" label="地点" min-width="100" :show-overflow-tooltip="true" />
+          <el-table-column prop="observationTime" label="观察时间" width="150">
+            <template slot-scope="scope">{{ scope.row.observationTime ? scope.row.observationTime.substring(0, 16) : '-' }}</template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <el-descriptions v-if="detail.tags || detail.remark || detail.viewCount !== undefined" :column="2" border style="margin-top: 20px;">
         <el-descriptions-item label="标签" :span="2" v-if="detail.tags">
           <el-tag
             v-for="tag in getTags(detail.tags)"
@@ -274,7 +310,7 @@
 </template>
 
 <script>
-import { listDiary, getDiary, delDiary, archiveDiary, getStatistics } from "@/api/admin/diary";
+import { listDiary, getDiary, delDiary, archiveDiary, getStatistics, getRelatedRecords } from "@/api/admin/diary";
 
 export default {
   name: "DiaryAdmin",
@@ -297,6 +333,7 @@ export default {
       // 详情对话框
       detailOpen: false,
       detail: {},
+      relatedRecords: [],
       // 日期范围
       dateRange: [],
       // 查询参数
@@ -372,17 +409,30 @@ export default {
       // 先打开弹窗，保证一定能弹出
       this.detailOpen = true;
       this.detail = row;
+      this.relatedRecords = [];
 
       // 再加载数据
       getDiary(row.diaryId).then(res => {
         this.detail = res.data || res || {};
+        // 加载关联的观察记录
+        if (this.detail.recordCount > 0) {
+          this.loadRelatedRecords(row.diaryId);
+        }
+      });
+    },
+    /** 加载关联的观察记录 */
+    loadRelatedRecords(diaryId) {
+      getRelatedRecords(diaryId).then(res => {
+        this.relatedRecords = res.data || res || [];
+      }).catch(() => {
+        this.relatedRecords = [];
       });
     },
     /** 归档/取消归档按钮 */
     handleArchive(row) {
       const isArchived = row.isArchived === '1' ? '0' : '1';
       const text = isArchived === '1' ? '归档' : '取消归档';
-      
+
       this.$modal.confirm('是否确认' + text + '该日志？').then(() => {
         return archiveDiary(row.diaryId, isArchived);
       }).then(() => {
@@ -423,6 +473,16 @@ export default {
     getTags(tags) {
       if (!tags) return [];
       return tags.split(',').filter(tag => tag.trim());
+    },
+    /** 获取第一张图片 */
+    getFirstImage(images) {
+      if (!images) return '';
+      try {
+        const imageArray = typeof images === 'string' ? JSON.parse(images) : images;
+        return imageArray && imageArray.length > 0 ? imageArray[0] : '';
+      } catch (e) {
+        return '';
+      }
     }
   }
 };

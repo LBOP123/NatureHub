@@ -15,18 +15,18 @@
 
         <el-form-item label="调查日期" prop="surveyDate">
           <el-date-picker v-model="form.surveyDate" type="date" placeholder="选择调查日期"
-            value-format="yyyy-MM-dd" :picker-options="pickerOptions" style="width:100%" />
+                          value-format="yyyy-MM-dd" :picker-options="pickerOptions" style="width:100%" />
         </el-form-item>
 
-        <el-form-item label="调查时间">
-          <el-row :gutter="10">
-            <el-col :span="12">
+        <el-form-item label="调查时间" prop="surveyTimeRange">
+          <el-row :gutter="20">
+            <el-col :span="10">
               <el-date-picker v-model="form.startTime" type="datetime" placeholder="开始时间"
-                value-format="yyyy-MM-dd HH:mm:ss" :picker-options="pickerOptions" style="width:100%" />
+                              value-format="yyyy-MM-dd HH:mm:ss" :picker-options="pickerOptions" style="width:100%" />
             </el-col>
-            <el-col :span="12">
+            <el-col :span="10">
               <el-date-picker v-model="form.endTime" type="datetime" placeholder="结束时间"
-                value-format="yyyy-MM-dd HH:mm:ss" :picker-options="pickerOptions" style="width:100%" />
+                              value-format="yyyy-MM-dd HH:mm:ss" :picker-options="pickerOptions" style="width:100%" />
             </el-col>
           </el-row>
         </el-form-item>
@@ -41,7 +41,7 @@
         <el-form-item label="生境类型" prop="habitatType">
           <el-select v-model="form.habitatType" placeholder="请选择生境类型" style="width:100%">
             <el-option v-for="dict in habitatTypeOptions" :key="dict.dictValue"
-              :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
+                       :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
           </el-select>
         </el-form-item>
 
@@ -49,13 +49,13 @@
         <el-form-item label="调查方法" prop="surveyMethod">
           <el-select v-model="form.surveyMethod" placeholder="请选择调查方法" style="width:100%">
             <el-option v-for="dict in surveyMethodOptions" :key="dict.dictValue"
-              :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
+                       :label="dict.dictLabel" :value="parseInt(dict.dictValue)" />
           </el-select>
         </el-form-item>
 
         <el-form-item label="天气情况">
           <el-row :gutter="10">
-            <el-col :span="16">
+            <el-col :span="12">
               <el-input v-model="form.weather" placeholder="请输入天气情况，如：晴、多云、小雨">
                 <template slot="prepend"><i class="el-icon-sunny"></i></template>
               </el-input>
@@ -76,7 +76,7 @@
 
         <el-form-item label="发现物种数">
           <el-input-number v-model="form.speciesCount" :min="0" :max="9999"
-            controls-position="right" style="width:200px" />
+                           controls-position="right" style="width:200px" />
           <span style="margin-left:10px;font-size:12px;color:#909399">种</span>
         </el-form-item>
 
@@ -84,21 +84,22 @@
 
         <el-form-item label="调查描述" prop="description">
           <el-input v-model="form.description" type="textarea" :rows="5"
-            placeholder="请描述调查的目的、过程、方法等详细信息" maxlength="2000" show-word-limit />
+                    placeholder="请描述调查的目的、过程、方法等详细信息" maxlength="2000" show-word-limit />
         </el-form-item>
 
         <el-form-item label="主要发现">
           <el-input v-model="form.findings" type="textarea" :rows="4"
-            placeholder="请描述调查的主要发现和结论" maxlength="1000" show-word-limit />
+                    placeholder="请描述调查的主要发现和结论" maxlength="1000" show-word-limit />
         </el-form-item>
 
         <el-divider content-position="left">多媒体资料</el-divider>
 
-        <el-form-item label="图片上传">
+        <!-- 图片改为必填项 -->
+        <el-form-item label="图片上传" prop="images">
           <el-upload ref="imageUpload" :action="uploadUrl" :headers="uploadHeaders"
-            list-type="picture-card" :on-preview="handlePicturePreview"
-            :on-remove="handleImageRemove" :on-success="handleImageSuccess"
-            :before-upload="beforeImageUpload" :file-list="imageList" :limit="9" accept="image/*">
+                     list-type="picture-card" :on-preview="handlePicturePreview"
+                     :on-remove="handleImageRemove" :on-success="handleImageSuccess"
+                     :before-upload="beforeImageUpload" :file-list="imageList" :limit="9" accept="image/*">
             <i class="el-icon-plus"></i>
             <div slot="tip" class="el-upload__tip">支持jpg/png格式，单张不超过10MB，最多上传9张</div>
           </el-upload>
@@ -106,15 +107,15 @@
 
         <el-form-item label="备注">
           <el-input v-model="form.remark" type="textarea" :rows="2"
-            placeholder="其他补充信息" maxlength="500" show-word-limit />
+                    placeholder="其他补充信息" maxlength="500" show-word-limit />
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="submitForReview" :loading="submitLoading">
-            <i class="el-icon-s-promotion"></i> 提交审核
-          </el-button>
-          <el-button type="info" @click="saveDraft" :loading="submitLoading">
+          <el-button type="primary" @click="saveDraft" :loading="submitLoading">
             <i class="el-icon-document"></i> 保存草稿
+          </el-button>
+          <el-button type="success" @click="submitForReview" :loading="submitLoading">
+            <i class="el-icon-s-promotion"></i> 提交审核
           </el-button>
           <el-button @click="resetForm"><i class="el-icon-refresh-left"></i> 重置</el-button>
           <el-button @click="goBack"><i class="el-icon-back"></i> 返回</el-button>
@@ -146,7 +147,11 @@ export default {
         title:       [{ required: true, message: '请输入调查标题', trigger: 'blur' }, { min: 5, max: 200, message: '标题长度在5到200个字符', trigger: 'blur' }],
         surveyDate:  [{ required: true, message: '请选择调查日期', trigger: 'change' }],
         location:    [{ required: true, message: '请输入调查地点', trigger: 'blur' }],
-        description: [{ required: true, message: '请输入调查描述', trigger: 'blur' }, { min: 10, max: 2000, message: '描述长度在10到2000个字符', trigger: 'blur' }]
+        description: [{ required: true, message: '请输入调查描述', trigger: 'blur' }, { min: 10, max: 2000, message: '描述长度在10到2000个字符', trigger: 'blur' }],
+        // 图片必填校验
+        images: [{ required: true, validator: this.validateImages, trigger: 'change' }],
+        // 调查时间必填校验
+        surveyTimeRange: [{ required: true, validator: this.validateSurveyTime, trigger: 'change' }]
       },
       uploadUrl: process.env.VUE_APP_BASE_API + '/common/upload',
       uploadHeaders: { Authorization: 'Bearer ' + getToken() },
@@ -155,26 +160,41 @@ export default {
       previewImageUrl: '',
       submitLoading: false,
       pickerOptions: { disabledDate(time) { return time.getTime() > Date.now() } },
-      // 【改造点】字典数据
       habitatTypeOptions: [],
       surveyMethodOptions: []
     }
   },
   created() {
-    // 【改造点】加载字典
     this.getDicts('nh_habitat_type').then(res => { this.habitatTypeOptions = res.data })
     this.getDicts('nh_survey_method').then(res => { this.surveyMethodOptions = res.data })
     const surveyId = this.$route.query.id || this.$route.params.surveyId
     if (surveyId) { this.loadData(surveyId) }
   },
   methods: {
+    // 图片必填校验
+    validateImages(rule, value, callback) {
+      if (!this.form.images || this.form.images.length === 0) {
+        callback(new Error('请至少上传一张调查图片'))
+      } else {
+        callback()
+      }
+    },
+    // 调查时间校验（必须选择开始和结束时间）
+    validateSurveyTime(rule, value, callback) {
+      if (!this.form.startTime) {
+        callback(new Error('请选择调查开始时间'))
+      } else if (!this.form.endTime) {
+        callback(new Error('请选择调查结束时间'))
+      } else {
+        callback()
+      }
+    },
     loadData(surveyId) {
       getSurvey(surveyId).then(response => {
         const data = response.data
         this.form = {
           surveyId: data.surveyId, title: data.title, surveyDate: data.surveyDate,
           startTime: data.startTime, endTime: data.endTime, location: data.location,
-          // 【改造点】habitatType / surveyMethod 直接赋数字
           habitatType: data.habitatType, surveyMethod: data.surveyMethod,
           weather: data.weather, temperature: data.temperature,
           teamMembers: data.teamMembers, speciesCount: data.speciesCount || 0,
@@ -185,6 +205,10 @@ export default {
           const images = data.images.split(',')
           this.imageList = images.map((url, index) => ({ name: 'image_' + index, url }))
           this.form.images = images
+          // 修复：编辑回显图片后，手动触发表单校验
+          this.$nextTick(() => {
+            this.$refs.surveyForm.validateField('images')
+          })
         }
       })
     },
@@ -198,6 +222,8 @@ export default {
     handleImageSuccess(response) {
       if (response.code === 200) {
         this.form.images.push(response.url)
+        // 触发表单校验
+        this.$refs.surveyForm.validateField('images')
         this.$message.success('图片上传成功')
       } else {
         this.$message.error(response.msg || '图片上传失败')
@@ -206,26 +232,34 @@ export default {
     handleImageRemove(file) {
       const url = file.response ? file.response.url : file.url
       const index = this.form.images.indexOf(url)
-      if (index > -1) { this.form.images.splice(index, 1) }
+      if (index > -1) {
+        this.form.images.splice(index, 1)
+        // 触发校验
+        this.$refs.surveyForm.validateField('images')
+      }
     },
     handlePicturePreview(file) { this.previewImageUrl = file.url; this.previewVisible = true },
     saveDraft() {
-      this.submitLoading = true
-      // 【改造点】auditStatus 数字：0=草稿
-      this.form.auditStatus = 0
-      const submitData = { ...this.form, images: this.form.images.join(',') }
-      const request = this.form.surveyId ? updateSurvey(submitData) : addSurvey(submitData)
-      request.then(() => {
-        this.$message.success('保存草稿成功')
-        this.$router.push('/user/survey/list')
-      }).finally(() => { this.submitLoading = false })
+      this.$refs.surveyForm.validate(valid => {
+        if (!valid) return
+
+        this.submitLoading = true
+        this.form.auditStatus = 0
+        const submitData = { ...this.form, images: this.form.images.join(',') }
+        const request = this.form.surveyId ? updateSurvey(submitData) : addSurvey(submitData)
+        request.then(() => {
+          this.$message.success('保存草稿成功')
+          this.$router.push('/user/survey/list')
+        }).finally(() => {
+          this.submitLoading = false
+        })
+      })
     },
     submitForReview() {
       this.$refs.surveyForm.validate(valid => {
         if (valid) {
           this.$confirm('提交审核后将无法修改，是否继续?', '提示', { type: 'warning' }).then(() => {
             this.submitLoading = true
-            // 【改造点】auditStatus 数字：1=待审核
             this.form.auditStatus = 1
             const submitData = { ...this.form, images: this.form.images.join(',') }
             const request = this.form.surveyId ? updateSurvey(submitData) : addSurvey(submitData)
@@ -237,7 +271,14 @@ export default {
         }
       })
     },
-    resetForm() { this.$refs.surveyForm.resetFields(); this.imageList = []; this.form.images = [] },
+    resetForm() {
+      this.$refs.surveyForm.resetFields();
+      this.imageList = [];
+      this.form.images = [];
+      // 清空时间
+      this.form.startTime = ''
+      this.form.endTime = ''
+    },
     goBack() { this.$router.go(-1) }
   }
 }

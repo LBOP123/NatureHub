@@ -12,6 +12,7 @@ const user = {
     name: '',
     nickName: '',
     avatar: '',
+    userType: '1',
     roles: [],
     permissions: []
   },
@@ -31,6 +32,9 @@ const user = {
     },
     SET_AVATAR: (state, avatar) => {
       state.avatar = avatar
+    },
+    SET_USER_TYPE: (state, userType) => {
+      state.userType = userType
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
@@ -64,10 +68,11 @@ const user = {
         getInfo().then(res => {
           const user = res.user
           let avatar = user.avatar || ""
-          if (!isHttp(avatar)) {
-            avatar = (isEmpty(avatar)) ? defAva : process.env.VUE_APP_BASE_API + avatar
+          if (!isHttp(avatar) && !isEmpty(avatar)) {
+            avatar = process.env.VUE_APP_BASE_API + avatar
           }
-          if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
+          // avatar 为空时保持空字符串，由前端文字头像降级显示
+          if (res.roles && res.roles.length > 0) {
             commit('SET_ROLES', res.roles)
             commit('SET_PERMISSIONS', res.permissions)
           } else {
@@ -77,6 +82,7 @@ const user = {
           commit('SET_NAME', user.userName)
           commit('SET_NICK_NAME', user.nickName)
           commit('SET_AVATAR', avatar)
+          commit('SET_USER_TYPE', user.userType || '1')
           /* 初始密码提示 */
           if(res.isDefaultModifyPwd) {
             MessageBox.confirm('您的密码还是初始密码，请修改密码！',  '安全提示', {  confirmButtonText: '确定',  cancelButtonText: '取消',  type: 'warning' }).then(() => {
