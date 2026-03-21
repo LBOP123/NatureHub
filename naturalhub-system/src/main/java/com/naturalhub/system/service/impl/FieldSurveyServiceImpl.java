@@ -61,14 +61,37 @@ public class FieldSurveyServiceImpl implements IFieldSurveyService
     }
 
     @Override
+    @Transactional
     public int deleteFieldSurveyBySurveyIds(Long[] surveyIds)
     {
+        // 逐个删除，每个都检查并删除关联的社群话题
+        for (Long surveyId : surveyIds) {
+            // 先查询该记录对应的社群话题
+            CommunityTopic topic = communityTopicMapper.selectBySourceTypeAndSourceId(3, surveyId);
+            
+            // 如果存在对应的话题，删除它
+            if (topic != null && topic.getTopicId() != null) {
+                communityTopicMapper.deleteCommunityTopicByTopicId(topic.getTopicId());
+            }
+        }
+        
+        // 再批量删除野外调查记录本身
         return fieldSurveyMapper.deleteFieldSurveyBySurveyIds(surveyIds);
     }
 
     @Override
+    @Transactional
     public int deleteFieldSurveyBySurveyId(Long surveyId)
     {
+        // 先查询该记录对应的社群话题
+        CommunityTopic topic = communityTopicMapper.selectBySourceTypeAndSourceId(3, surveyId);
+        
+        // 如果存在对应的话题，删除它
+        if (topic != null && topic.getTopicId() != null) {
+            communityTopicMapper.deleteCommunityTopicByTopicId(topic.getTopicId());
+        }
+        
+        // 再删除野外调查记录本身
         return fieldSurveyMapper.deleteFieldSurveyBySurveyId(surveyId);
     }
 
@@ -115,11 +138,15 @@ public class FieldSurveyServiceImpl implements IFieldSurveyService
 
     /**
      * 分享到社群
-     * 【改造点】isShared / auditStatus 判断和赋值均改为数字
+     *
+     * @param surveyId  野外调查主键
+     * @param content   分享内容（用户填写，保存到话题 content 字段）
+     * @param createBy  当前操作用户名（保存到话题 create_by 字段）
+     * @return 社群话题ID
      */
     @Override
     @Transactional
-    public Long shareToCommunity(Long surveyId)
+    public Long shareToCommunity(Long surveyId, String content, String createBy)
     {
         FieldSurvey survey = fieldSurveyMapper.selectFieldSurveyBySurveyId(surveyId);
 
@@ -138,11 +165,14 @@ public class FieldSurveyServiceImpl implements IFieldSurveyService
         // 创建社群话题
         CommunityTopic topic = new CommunityTopic();
         topic.setUserId(survey.getUserId());
-        topic.setUserName(survey.getUserName());
-        topic.setCategory(3);
+        topic.setUserName(createBy);
+        topic.setCategory(3);         // 3=野外调查板块
         topic.setTitle(survey.getTitle());
-        topic.setContent("来自野外调查记录的分享");
-        topic.setImages(null);
+        // 使用用户填写的内容，若为空则回退到调查描述
+        topic.setContent(content != null && !content.trim().isEmpty()
+                ? content : (survey.getDescription() != null ? survey.getDescription() : ""));
+        // 将野外调查图片同步到话题 images 字段
+        topic.setImages(survey.getImages());
         topic.setSourceType(3);
         topic.setSourceId(surveyId);
         topic.setViewCount(0);
@@ -154,16 +184,21 @@ public class FieldSurveyServiceImpl implements IFieldSurveyService
         topic.setIsEssence("0");
         topic.setStatus("0");
         topic.setAuditStatus(1);
+        topic.setCreateBy(createBy);
         topic.setCreateTime(new Date());
 
         communityTopicMapper.insertCommunityTopic(topic);
 
-        // 【改造点】"1" -> 1
+        Long topicId = topic.getTopicId();
+        if (topicId == null || topicId <= 0) {
+            throw new RuntimeException("分享失败：无法获取话题ID");
+        }
+
         survey.setIsShared(1);
-        survey.setSharedTopicId(topic.getTopicId());
+        survey.setSharedTopicId(topicId);
         survey.setUpdateTime(new Date());
         fieldSurveyMapper.updateFieldSurvey(survey);
 
-        return topic.getTopicId();
+        return topicId;
     }
 }

@@ -76,9 +76,11 @@ public interface IObservationRecordService
 
     /**
      * 分享到社群
-     * 
+     *
      * @param recordId 观察记录主键
+     * @param content  用户填写的分享内容
+     * @param createBy 当前操作用户名
      * @return 社群话题ID
      */
-    public Long shareToCommunity(Long recordId);
+    public Long shareToCommunity(Long recordId, String content, String createBy);
 }

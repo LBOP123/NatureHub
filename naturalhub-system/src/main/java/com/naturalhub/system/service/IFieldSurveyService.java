@@ -78,9 +78,11 @@ public interface IFieldSurveyService
 
     /**
      * 分享到社群
-     * 
-     * @param surveyId 调查ID
+     *
+     * @param surveyId  调查ID
+     * @param content   用户填写的分享内容
+     * @param createBy  当前操作用户名
      * @return 社群话题ID
      */
-    public Long shareToCommunity(Long surveyId);
+    public Long shareToCommunity(Long surveyId, String content, String createBy);
 }

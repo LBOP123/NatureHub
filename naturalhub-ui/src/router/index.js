@@ -257,6 +257,12 @@ export const constantRoutes = [
         component: () => import('@/views/user/profile/detail'),
         name: 'UserDetail',
         meta: { title: '内容详情' }
+      },
+      {
+        path: 'applyIdentifier',
+        component: () => import('@/views/user/applyIdentifier/index'),
+        name: 'ApplyIdentifier',
+        meta: { title: '申请成为鉴定者' }
       }
     ]
   }

@@ -20,6 +20,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="isArchived"    column="is_archived"    />
         <result property="tags"    column="tags"    />
         <result property="observationIds"    column="observation_ids"    />
+        <result property="recordCount"    column="record_count"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
@@ -28,7 +29,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectObservationDiaryVo">
-        select diary_id, user_id, title, observation_date, location, route_info, weather, temperature, species_found, content, images, visibility, is_archived, tags, observation_ids, create_by, create_time, update_by, update_time, remark from nh_observation_diary
+        select diary_id, user_id, title, observation_date, location, route_info, weather, temperature, species_found, content, images, visibility, is_archived, tags, observation_ids, record_count, create_by, create_time, update_by, update_time, remark from nh_observation_diary
     </sql>
 
     <select id="selectObservationDiaryList" parameterType="ObservationDiary" resultMap="ObservationDiaryResult">
@@ -69,6 +70,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="isArchived != null">is_archived,</if>
             <if test="tags != null">tags,</if>
             <if test="observationIds != null">observation_ids,</if>
+            <if test="recordCount != null">record_count,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateBy != null">update_by,</if>
@@ -90,6 +92,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="isArchived != null">#{isArchived},</if>
             <if test="tags != null">#{tags},</if>
             <if test="observationIds != null">#{observationIds},</if>
+            <if test="recordCount != null">#{recordCount},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
@@ -115,6 +118,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="isArchived != null">is_archived = #{isArchived},</if>
             <if test="tags != null">tags = #{tags},</if>
             <if test="observationIds != null">observation_ids = #{observationIds},</if>
+            <if test="recordCount != null">record_count = #{recordCount},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
@@ -134,4 +138,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{diaryId}
         </foreach>
     </delete>
+
+    <update id="updateRecordCount" parameterType="ObservationDiary">
+        UPDATE nh_observation_diary 
+        SET record_count = #{recordCount}
+        WHERE diary_id = #{diaryId}
+    </update>
 </mapper>

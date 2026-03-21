@@ -49,3 +49,11 @@ export function getStatistics() {
     method: 'get'
   })
 }
+
+// 获取日志关联的观察记录列表
+export function getRelatedRecords(diaryId) {
+  return request({
+    url: '/admin/diary/' + diaryId + '/records',
+    method: 'get'
+  })
+}

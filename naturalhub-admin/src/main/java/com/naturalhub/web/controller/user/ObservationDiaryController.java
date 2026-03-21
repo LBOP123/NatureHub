@@ -17,7 +17,9 @@ import com.naturalhub.common.core.controller.BaseController;
 import com.naturalhub.common.core.domain.AjaxResult;
 import com.naturalhub.common.enums.BusinessType;
 import com.naturalhub.system.domain.ObservationDiary;
+import com.naturalhub.system.domain.ObservationRecord;
 import com.naturalhub.system.service.IObservationDiaryService;
+import com.naturalhub.system.service.IDiaryRecordRelationService;
 import com.naturalhub.common.utils.poi.ExcelUtil;
 import com.naturalhub.common.core.page.TableDataInfo;
 import com.naturalhub.common.utils.SecurityUtils;
@@ -34,6 +36,9 @@ public class ObservationDiaryController extends BaseController
 {
     @Autowired
     private IObservationDiaryService observationDiaryService;
+
+    @Autowired
+    private IDiaryRecordRelationService diaryRecordRelationService;
 
     /**
      * 查询个人观察日志列表（用户端）
@@ -74,7 +79,7 @@ public class ObservationDiaryController extends BaseController
     }
 
     /**
-     * 获取个人观察日志详细信息
+     * 获取个人观察日志详细信息（包含关联的观察记录）
      */
     @GetMapping(value = "/{diaryId}")
     public AjaxResult getInfo(@PathVariable("diaryId") Long diaryId)
@@ -90,11 +95,16 @@ public class ObservationDiaryController extends BaseController
         {
             return error("无权访问该日志");
         }
+        
+        // 加载关联的观察记录
+        List<ObservationRecord> relatedRecords = diaryRecordRelationService.getRecordsByDiaryId(diaryId);
+        diary.setRelatedRecords(relatedRecords);
+        
         return success(diary);
     }
 
     /**
-     * 新增个人观察日志
+     * 新增个人观察日志（包含关联的观察记录）
      */
     @Log(title = "个人观察日志", businessType = BusinessType.INSERT)
     @PostMapping
@@ -103,11 +113,19 @@ public class ObservationDiaryController extends BaseController
         // 设置当前登录用户ID
         observationDiary.setUserId(SecurityUtils.getUserId());
         observationDiary.setCreateBy(SecurityUtils.getUsername());
-        return toAjax(observationDiaryService.insertObservationDiary(observationDiary));
+        
+        int result = observationDiaryService.insertObservationDiary(observationDiary);
+        
+        // 处理关联的观察记录
+        if (result > 0 && observationDiary.getRecordIds() != null && !observationDiary.getRecordIds().isEmpty()) {
+            diaryRecordRelationService.updateRelations(observationDiary.getDiaryId(), observationDiary.getRecordIds());
+        }
+        
+        return result > 0 ? AjaxResult.success(observationDiary) : AjaxResult.error("新增失败");
     }
 
     /**
-     * 修改个人观察日志
+     * 修改个人观察日志（包含关联的观察记录）
      */
     @Log(title = "个人观察日志", businessType = BusinessType.UPDATE)
     @PutMapping
@@ -119,14 +137,21 @@ public class ObservationDiaryController extends BaseController
             return error("无权修改该日志");
         }
         observationDiary.setUpdateBy(SecurityUtils.getUsername());
-        return toAjax(observationDiaryService.updateObservationDiary(observationDiary));
+        int result = observationDiaryService.updateObservationDiary(observationDiary);
+        
+        // 更新关联的观察记录
+        if (result > 0 && observationDiary.getRecordIds() != null) {
+            diaryRecordRelationService.updateRelations(observationDiary.getDiaryId(), observationDiary.getRecordIds());
+        }
+        
+        return toAjax(result);
     }
 
     /**
-     * 删除个人观察日志
+     * 删除个人观察日志（同时删除关联关系）
      */
     @Log(title = "个人观察日志", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{diaryIds}")
+    @DeleteMapping("/{diaryIds}")
     public AjaxResult remove(@PathVariable Long[] diaryIds)
     {
         // 验证所有日志是否属于当前用户
@@ -136,6 +161,8 @@ public class ObservationDiaryController extends BaseController
             if (diary == null || !diary.getUserId().equals(userId)) {
                 return error("无权删除该日志");
             }
+            // 删除关联关系
+            diaryRecordRelationService.deleteRelationsByDiaryId(diaryId);
         }
         return toAjax(observationDiaryService.deleteObservationDiaryByDiaryIds(diaryIds));
     }
@@ -170,5 +197,40 @@ public class ObservationDiaryController extends BaseController
         diary.setVisibility(visibility);
         diary.setUpdateBy(SecurityUtils.getUsername());
         return toAjax(observationDiaryService.updateObservationDiary(diary));
+    }
+
+    /**
+     * 获取日志关联的观察记录列表
+     */
+    @GetMapping("/{diaryId}/records")
+    public AjaxResult getRelatedRecords(@PathVariable Long diaryId)
+    {
+        ObservationDiary diary = observationDiaryService.selectObservationDiaryByDiaryId(diaryId);
+        if (diary == null) {
+            return error("日志不存在");
+        }
+        
+        Long currentUserId = SecurityUtils.getUserId();
+        if (!currentUserId.equals(diary.getUserId()) && !"1".equals(diary.getVisibility())) {
+            return error("无权访问该日志");
+        }
+        
+        List<ObservationRecord> records = diaryRecordRelationService.getRecordsByDiaryId(diaryId);
+        return success(records);
+    }
+
+    /**
+     * 更新日志的关联观察记录
+     */
+    @Log(title = "更新日志关联记录", businessType = BusinessType.UPDATE)
+    @PutMapping("/{diaryId}/records")
+    public AjaxResult updateRelatedRecords(@PathVariable Long diaryId, @RequestBody List<Long> recordIds)
+    {
+        ObservationDiary diary = observationDiaryService.selectObservationDiaryByDiaryId(diaryId);
+        if (diary == null || !diary.getUserId().equals(SecurityUtils.getUserId())) {
+            return error("无权操作该日志");
+        }
+        
+        return toAjax(diaryRecordRelationService.updateRelations(diaryId, recordIds));
     }
 }

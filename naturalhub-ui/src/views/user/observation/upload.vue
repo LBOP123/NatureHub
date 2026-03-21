@@ -9,11 +9,11 @@
       <el-form ref="observationForm" :model="form" :rules="rules" label-width="100px" class="observation-form">
         <!-- 基本信息 -->
         <el-divider content-position="left">基本信息</el-divider>
-        
+
         <el-form-item label="标题" prop="title">
-          <el-input 
-            v-model="form.title" 
-            placeholder="请输入观察记录标题" 
+          <el-input
+            v-model="form.title"
+            placeholder="请输入观察记录标题"
             maxlength="100"
             show-word-limit
           />
@@ -31,8 +31,8 @@
         </el-form-item>
 
         <el-form-item label="观察地点" prop="location">
-          <el-input 
-            v-model="form.location" 
+          <el-input
+            v-model="form.location"
             placeholder="请输入观察地点（如：北京市海淀区颐和园）"
             maxlength="200"
             show-word-limit
@@ -42,8 +42,8 @@
         <el-form-item label="经纬度" prop="coordinates">
           <el-row :gutter="10">
             <el-col :span="11">
-              <el-input 
-                v-model="form.latitude" 
+              <el-input
+                v-model="form.latitude"
                 placeholder="纬度"
                 @blur="validateCoordinates"
               >
@@ -52,8 +52,8 @@
             </el-col>
             <el-col :span="2" class="text-center">-</el-col>
             <el-col :span="11">
-              <el-input 
-                v-model="form.longitude" 
+              <el-input
+                v-model="form.longitude"
                 placeholder="经度"
                 @blur="validateCoordinates"
               >
@@ -78,8 +78,8 @@
         </el-form-item>
 
         <el-form-item label="物种名称" prop="speciesName">
-          <el-input 
-            v-model="form.speciesName" 
+          <el-input
+            v-model="form.speciesName"
             placeholder="请输入物种名称（中文名或学名）"
             maxlength="100"
             show-word-limit
@@ -187,7 +187,6 @@ import { getToken } from '@/utils/auth'
 export default {
   name: 'ObservationUpload',
   data() {
-    // 自定义验证规则
     const validateCoordinates = (rule, value, callback) => {
       if (this.form.latitude && this.form.longitude) {
         const lat = parseFloat(this.form.latitude)
@@ -205,7 +204,6 @@ export default {
     }
 
     return {
-      // 表单数据
       form: {
         recordId: null,
         title: '',
@@ -220,34 +218,35 @@ export default {
         images: [],
         videos: []
       },
-      // 表单验证规则
       rules: {
         title: [
-          { required: true, message: '请输入标题', trigger: 'blur' },
-          { min: 2, max: 100, message: '标题长度在2到100个字符', trigger: 'blur' }
+          {required: true, message: '请输入标题', trigger: 'blur'},
+          {min: 2, max: 100, message: '标题长度在2到100个字符', trigger: 'blur'}
         ],
         observationTime: [
-          { required: true, message: '请选择观察时间', trigger: 'change' }
+          {required: true, message: '请选择观察时间', trigger: 'change'}
         ],
         location: [
-          { required: true, message: '请输入观察地点', trigger: 'blur' },
-          { min: 2, max: 200, message: '地点长度在2到200个字符', trigger: 'blur' }
+          {required: true, message: '请输入观察地点', trigger: 'blur'},
+          {min: 2, max: 200, message: '地点长度在2到200个字符', trigger: 'blur'}
         ],
         coordinates: [
-          { validator: validateCoordinates, trigger: 'blur' }
+          {validator: validateCoordinates, trigger: 'blur'}
         ],
         speciesType: [
-          { required: true, message: '请选择物种类型', trigger: 'change' }
+          {required: true, message: '请选择物种类型', trigger: 'change'}
         ],
         speciesName: [
-          { required: true, message: '请输入物种名称', trigger: 'blur' }
+          {required: true, message: '请输入物种名称', trigger: 'blur'}
         ],
         description: [
-          { required: true, message: '请输入观察描述', trigger: 'blur' },
-          { min: 10, max: 2000, message: '描述长度在10到2000个字符', trigger: 'blur' }
+          {required: true, message: '请输入观察描述', trigger: 'blur'},
+          {min: 10, max: 2000, message: '描述长度在10到2000个字符', trigger: 'blur'}
+        ],
+        images: [
+          {required: true, validator: this.validateImages, trigger: 'change'}
         ]
       },
-      // 上传相关
       uploadUrl: process.env.VUE_APP_BASE_API + '/common/upload',
       uploadHeaders: {
         Authorization: 'Bearer ' + getToken()
@@ -258,7 +257,6 @@ export default {
       previewImageUrl: '',
       submitLoading: false,
       speciesTypeOptions: [],
-      // 日期选择器配置
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() > Date.now()
@@ -267,15 +265,22 @@ export default {
     }
   },
   created() {
-    this.getDicts('nh_species_type').then(res => { this.speciesTypeOptions = res.data || [] })
-    // 如果是编辑模式，加载数据
+    this.getDicts('nh_species_type').then(res => {
+      this.speciesTypeOptions = res.data || []
+    })
     const recordId = this.$route.params.recordId
     if (recordId) {
       this.loadRecordData(recordId)
     }
   },
   methods: {
-    /** 加载记录数据 */
+    validateImages(rule, value, callback) {
+      if (!this.form.images || this.form.images.length === 0) {
+        callback(new Error('请至少上传一张观察图片'))
+      } else {
+        callback()
+      }
+    },
     loadRecordData(recordId) {
       getRecord(recordId).then(response => {
         const data = response.data
@@ -289,17 +294,20 @@ export default {
           speciesType: data.speciesType,
           speciesName: data.speciesName,
           habitat: data.habitat,
-          description: data.description
+          description: data.description,
+          images: [],
+          videos: []
         }
-        // 加载图片列表
         if (data.images) {
           this.imageList = JSON.parse(data.images).map((url, index) => ({
             name: 'image_' + index,
             url: url
           }))
           this.form.images = JSON.parse(data.images)
+          this.$nextTick(() => {
+            this.$refs.observationForm.validateField('images')
+          })
         }
-        // 加载视频列表
         if (data.videos) {
           this.videoList = JSON.parse(data.videos).map((url, index) => ({
             name: 'video_' + index,
@@ -309,8 +317,6 @@ export default {
         }
       })
     },
-
-    /** 获取当前位置 */
     getCurrentLocation() {
       if (navigator.geolocation) {
         this.$message.info('正在获取位置信息...')
@@ -328,17 +334,12 @@ export default {
         this.$message.error('您的浏览器不支持地理定位')
       }
     },
-
-    /** 验证坐标 */
     validateCoordinates() {
       this.$refs.observationForm.validateField('coordinates')
     },
-
-    /** 图片上传前校验 */
     beforeImageUpload(file) {
       const isImage = file.type.startsWith('image/')
       const isLt10M = file.size / 1024 / 1024 < 10
-
       if (!isImage) {
         this.$message.error('只能上传图片文件!')
         return false
@@ -349,37 +350,30 @@ export default {
       }
       return true
     },
-
-    /** 图片上传成功 */
-    handleImageSuccess(response, file, fileList) {
+    handleImageSuccess(response) {
       if (response.code === 200) {
         this.form.images.push(response.url)
+        this.$refs.observationForm.validateField('images')
         this.$message.success('图片上传成功')
       } else {
         this.$message.error(response.msg || '图片上传失败')
       }
     },
-
-    /** 图片移除 */
-    handleImageRemove(file, fileList) {
+    handleImageRemove(file) {
       const url = file.response ? file.response.url : file.url
       const index = this.form.images.indexOf(url)
       if (index > -1) {
         this.form.images.splice(index, 1)
+        this.$refs.observationForm.validateField('images')
       }
     },
-
-    /** 图片预览 */
     handlePicturePreview(file) {
       this.previewImageUrl = file.url
       this.previewVisible = true
     },
-
-    /** 视频上传前校验 */
     beforeVideoUpload(file) {
       const isVideo = file.type.startsWith('video/')
       const isLt100M = file.size / 1024 / 1024 < 100
-
       if (!isVideo) {
         this.$message.error('只能上传视频文件!')
         return false
@@ -390,9 +384,7 @@ export default {
       }
       return true
     },
-
-    /** 视频上传成功 */
-    handleVideoSuccess(response, file, fileList) {
+    handleVideoSuccess(response) {
       if (response.code === 200) {
         this.form.videos.push(response.url)
         this.$message.success('视频上传成功')
@@ -400,17 +392,13 @@ export default {
         this.$message.error(response.msg || '视频上传失败')
       }
     },
-
-    /** 视频移除 */
-    handleVideoRemove(file, fileList) {
+    handleVideoRemove(file) {
       const url = file.response ? file.response.url : file.url
       const index = this.form.videos.indexOf(url)
       if (index > -1) {
         this.form.videos.splice(index, 1)
       }
     },
-
-    /** 提交表单 */
     submitForm() {
       this.$refs.observationForm.validate(valid => {
         if (valid) {
@@ -420,10 +408,8 @@ export default {
             images: JSON.stringify(this.form.images),
             videos: JSON.stringify(this.form.videos)
           }
-
           const request = this.form.recordId ? updateRecord(submitData) : addRecord(submitData)
-          
-          request.then(response => {
+          request.then(() => {
             this.$message.success(this.form.recordId ? '修改成功' : '保存成功')
             this.$router.push('/user/observation/list')
           }).catch(() => {
@@ -434,8 +420,6 @@ export default {
         }
       })
     },
-
-    /** 提交审核 */
     submitForReview() {
       this.$refs.observationForm.validate(valid => {
         if (valid) {
@@ -450,14 +434,10 @@ export default {
               images: JSON.stringify(this.form.images),
               videos: JSON.stringify(this.form.videos)
             }
-
             const request = this.form.recordId ? updateRecord(submitData) : addRecord(submitData)
-            
             request.then(response => {
-              // 获取记录ID（新增时从response.data获取，编辑时使用form.recordId）
               const recordId = this.form.recordId || (response.data && response.data.recordId)
               if (recordId) {
-                // 保存成功后提交审核
                 return submitReviewApi(recordId)
               } else {
                 throw new Error('无法获取记录ID')
@@ -474,8 +454,6 @@ export default {
         }
       })
     },
-
-    /** 重置表单 */
     resetForm() {
       this.$refs.observationForm.resetFields()
       this.imageList = []
@@ -483,8 +461,6 @@ export default {
       this.form.images = []
       this.form.videos = []
     },
-
-    /** 返回 */
     goBack() {
       this.$router.go(-1)
     }
@@ -495,49 +471,49 @@ export default {
 <style lang="scss" scoped>
 .observation-upload-container {
   padding: 20px;
-  
+
   .upload-card {
     max-width: 1200px;
     margin: 0 auto;
-    
+
     .card-header {
       font-size: 18px;
       font-weight: bold;
-      
+
       i {
         margin-right: 8px;
         color: #67C23A;
       }
     }
   }
-  
+
   .observation-form {
     .el-divider {
       margin: 30px 0 20px;
-      
+
       ::v-deep .el-divider__text {
         font-weight: bold;
         color: #409EFF;
       }
     }
-    
+
     .form-tip {
       font-size: 12px;
       color: #909399;
       margin-top: 5px;
     }
-    
+
     .text-center {
       text-align: center;
       line-height: 40px;
     }
   }
-  
+
   ::v-deep .el-upload-list--picture-card .el-upload-list__item {
     width: 120px;
     height: 120px;
   }
-  
+
   ::v-deep .el-upload--picture-card {
     width: 120px;
     height: 120px;
@@ -545,26 +521,25 @@ export default {
   }
 }
 
-// 移动端适配
 @media screen and (max-width: 768px) {
   .observation-upload-container {
     padding: 10px;
-    
+
     .observation-form {
       ::v-deep .el-form-item__label {
         width: 80px !important;
       }
-      
+
       ::v-deep .el-form-item__content {
         margin-left: 80px !important;
       }
     }
-    
+
     ::v-deep .el-upload-list--picture-card .el-upload-list__item {
       width: 100px;
       height: 100px;
     }
-    
+
     ::v-deep .el-upload--picture-card {
       width: 100px;
       height: 100px;

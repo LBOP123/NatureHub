@@ -29,6 +29,15 @@ public interface CommunityTopicMapper
     public List<CommunityTopic> selectCommunityTopicList(CommunityTopic communityTopic);
 
     /**
+     * 按来源类型和来源ID查询社群话题
+     * 
+     * @param sourceType 来源类型（1=观察记录, 2=物种鉴定, 3=野外调查）
+     * @param sourceId 来源记录ID
+     * @return 社群话题
+     */
+    public CommunityTopic selectBySourceTypeAndSourceId(@Param("sourceType") Integer sourceType, @Param("sourceId") Long sourceId);
+
+    /**
      * 新增社群话题
      * 
      * @param communityTopic 社群话题

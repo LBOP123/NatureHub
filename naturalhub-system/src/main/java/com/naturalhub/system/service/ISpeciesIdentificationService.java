@@ -95,9 +95,11 @@ public interface ISpeciesIdentificationService
 
     /**
      * 分享到社群
-     * 
+     *
      * @param identificationId 鉴定ID
+     * @param content          用户填写的分享内容
+     * @param createBy         当前操作用户名
      * @return 社群话题ID
      */
-    public Long shareToCommunity(Long identificationId);
+    public Long shareToCommunity(Long identificationId, String content, String createBy);
 }

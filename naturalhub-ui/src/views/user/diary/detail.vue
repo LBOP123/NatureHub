@@ -119,6 +119,32 @@
         </div>
       </div>
 
+      <!-- 关联的观察记录 -->
+      <div v-if="diary.relatedRecords && diary.relatedRecords.length > 0" class="detail-section">
+        <h3 class="section-title">
+          <i class="el-icon-link"></i> 关联的观察记录 ({{ diary.relatedRecords.length }})
+        </h3>
+        <el-table :data="diary.relatedRecords" stripe style="width: 100%">
+          <el-table-column label="缩略图" width="80">
+            <template slot-scope="scope">
+              <el-image v-if="scope.row.images" :src="getFirstImage(scope.row.images)" style="width: 60px; height: 60px" fit="cover" />
+              <span v-else>无图片</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="title" label="标题" min-width="120" />
+          <el-table-column prop="speciesName" label="物种名称" min-width="120" />
+          <el-table-column prop="location" label="地点" min-width="120" />
+          <el-table-column prop="observationTime" label="观察时间" min-width="100">
+            <template slot-scope="scope">{{ scope.row.observationTime ? scope.row.observationTime.substring(0, 16) : '-' }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="140">
+            <template slot-scope="scope">
+              <el-button type="text" size="small" @click="goToRecord(scope.row.recordId)">查看详情</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
       <!-- 标签 -->
       <div v-if="diary.tags" class="detail-section">
         <h3 class="section-title">
@@ -260,6 +286,15 @@ export default {
     this.getDetail();
   },
   methods: {
+    getFirstImage(images) {
+      if (!images) return '';
+      try {
+        const imageArray = typeof images === 'string' ? JSON.parse(images) : images;
+        return imageArray && imageArray.length > 0 ? imageArray[0] : '';
+      } catch (e) {
+        return '';
+      }
+    },
     getDetail() {
       const diaryId = this.$route.query.id;
       if (!diaryId) {
@@ -267,15 +302,15 @@ export default {
         this.goBack();
         return;
       }
-      
+
       getDiary(diaryId).then(response => {
         this.diary = response.data;
-        
+
         // 处理图片列表
         if (this.diary.images) {
           this.imageList = this.diary.images.split(',');
         }
-        
+
         this.loading = false;
       }).catch(() => {
         this.loading = false;
@@ -297,7 +332,7 @@ export default {
     handleArchive() {
       const isArchived = this.diary.isArchived === '1' ? '0' : '1';
       const text = isArchived === '1' ? '归档' : '取消归档';
-      
+
       this.$modal.confirm('是否确认' + text + '该日志？').then(() => {
         return archiveDiary(this.diary.diaryId, isArchived);
       }).then(() => {
@@ -321,6 +356,11 @@ export default {
       this.download('user/diary/export', {
         diaryId: this.diary.diaryId
       }, `diary_${this.diary.diaryId}_${new Date().getTime()}.pdf`);
+    },
+    goToRecord(recordId) {
+      this.$router.push({
+        path: `/user/observation/detail/${recordId}`
+      });
     },
     getTags(tags) {
       if (!tags) return [];

@@ -37,7 +37,7 @@
           <a @click.prevent="$router.push('/user/community')" :class="{ active: isActive('/user/community') }">
             <i class="el-icon-chat-dot-round"></i> 社群
           </a>
-          <a @click.prevent="$router.push('/user/myProfile')" :class="{ active: isActive('/user/myProfile') }">
+          <a @click.prevent="$router.push({ path: '/user/myProfile' })" :class="{ active: isActive('/user/myProfile') && !$route.query.userId }">
             <i class="el-icon-user"></i> 个人中心
           </a>
         </nav>
@@ -45,7 +45,8 @@
         <div class="user-actions">
           <el-dropdown v-if="isLoggedIn" @command="handleCommand">
             <span class="user-info">
-              <el-avatar :size="32" :src="userAvatar" icon="el-icon-user-solid"></el-avatar>
+              <el-avatar v-if="userAvatarUrl" :size="32" :src="userAvatarUrl" />
+              <div v-else class="header-avatar-text" :style="{ background: userAvatarColor }">{{ userAvatarInitial }}</div>
               <span class="username">{{ userName }}</span>
               <i class="el-icon-arrow-down"></i>
             </span>
@@ -55,6 +56,10 @@
               </el-dropdown-item>
               <el-dropdown-item command="settings">
                 <i class="el-icon-setting"></i> 设置
+              </el-dropdown-item>
+              <el-dropdown-item command="applyIdentifier" :disabled="isIdentifier">
+                <i class="el-icon-s-custom"></i>
+                {{ isIdentifier ? '已是鉴定者' : '申请成为鉴定者' }}
               </el-dropdown-item>
               <el-dropdown-item divided command="logout">
                 <i class="el-icon-switch-button"></i> 退出登录
@@ -120,6 +125,34 @@ export default {
     },
     userAvatar() {
       return this.$store.getters.avatar
+    },
+    userAvatarUrl() {
+      const avatar = this.$store.getters.avatar
+      if (!avatar) return ''
+      if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
+      if (avatar.startsWith('/dev-api') || avatar.startsWith('/prod-api')) return avatar
+      return (process.env.VUE_APP_BASE_API || '') + avatar
+    },
+    userAvatarInitial() {
+      const name = (this.$store.getters.name || '').trim()
+      return name.charAt(0).toUpperCase() || '?'
+    },
+    userAvatarColor() {
+      const colors = [
+        '#43a06b', '#2e7d9a', '#8e6bbf', '#c0640a',
+        '#c0392b', '#1a6b8a', '#6d8c3e', '#7b4f9e',
+        '#1a8c6b', '#e67e22'
+      ]
+      const name = (this.$store.getters.name || '').trim()
+      if (!name) return colors[0]
+      let hash = 0
+      for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i)
+      return colors[hash % colors.length]
+    },
+    // 当前用户是否已有 identifier 角色（前端通过 roles 数组判断）
+    isIdentifier() {
+      const roles = this.$store.getters.roles || []
+      return roles.includes('identifier')
     }
   },
   methods: {
@@ -138,10 +171,13 @@ export default {
     handleCommand(command) {
       switch (command) {
         case 'profile':
-          this.$router.push({ path: '/user/myProfile'})
+          this.$router.push({ path: '/user/myProfile' })
           break
         case 'settings':
           this.$router.push('/user/settings')
+          break
+        case 'applyIdentifier':
+          this.$router.push('/user/applyIdentifier')
           break
         case 'logout':
           this.$confirm('确定要退出登录吗?', '提示', {
@@ -324,6 +360,20 @@ export default {
       color: #606266;
       font-weight: 500;
     }
+  }
+
+  .header-avatar-text {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    user-select: none;
   }
 
   .auth-buttons {

@@ -33,7 +33,7 @@
         class="search-input"
       />
       <el-button type="primary" @click="handleQuery" class="search-btn">搜索</el-button>
-      <el-button type="success" icon="el-icon-plus" @click="handleAdd" class="add-btn">创建调查</el-button>
+      <el-button type="success" icon="el-icon-plus" @click="handleAdd" class="add-btn">新增调查记录</el-button>
     </div>
 
     <!-- 内容区域 -->
@@ -74,9 +74,9 @@
                          icon="el-icon-share"
                          @click.stop="handleShare(item)">分享
               </el-button>
-              <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
+<!--              <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
                          @click.stop="handleSubmitReview(item)">提交
-              </el-button>
+              </el-button>-->
               <el-button size="mini" type="text" icon="el-icon-delete" @click.stop="handleDelete(item)">删除</el-button>
             </div>
           </div>
@@ -128,9 +128,9 @@
                          icon="el-icon-share"
                          @click.stop="handleShare(item)">分享
               </el-button>
-              <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
+<!--              <el-button v-if="item.auditStatus === 0" size="mini" type="text" icon="el-icon-s-promotion"
                          @click.stop="handleSubmitReview(item)">提交
-              </el-button>
+              </el-button>-->
               <el-button size="mini" type="text" icon="el-icon-delete" @click.stop="handleDelete(item)">删除</el-button>
             </div>
           </div>
@@ -154,32 +154,20 @@
     </div>
 
     <!-- 分享弹窗 -->
-    <el-dialog title="分享到社群" :visible.sync="shareDialogVisible" width="600px" append-to-body>
-      <el-form :model="shareForm" :rules="shareRules" ref="shareForm" label-width="100px">
-        <el-form-item label="选择板块" prop="topicType">
-          <el-select v-model="shareForm.topicType" placeholder="请选择板块" style="width: 100%">
-            <el-option label="调查分享" value="survey"/>
-            <el-option label="物种讨论" value="species"/>
-            <el-option label="经验交流" value="experience"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="分享标题" prop="title">
-          <el-input v-model="shareForm.title" placeholder="请输入分享标题" maxlength="100" show-word-limit/>
-        </el-form-item>
-        <el-form-item label="分享内容" prop="content">
-          <el-input v-model="shareForm.content" type="textarea" :rows="5" placeholder="请输入分享内容" maxlength="500"
-                    show-word-limit/>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="shareDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmShare" :loading="shareLoading">确定</el-button>
-      </div>
-    </el-dialog>
+    <share-dialog
+      :visible.sync="shareDialogVisible"
+      :source-type="3"
+      :init-title="shareForm.title"
+      :init-content="shareForm.content"
+      :loading="shareLoading"
+      @confirm="confirmShare"
+    />
   </div>
 </template>
 
 <script>
+
+import ShareDialog from '@/views/user/components/ShareDialog'
 import {listSurvey, delSurvey, shareSurvey, updateSurvey} from '@/api/user/survey'
 
 export default {
@@ -198,12 +186,10 @@ export default {
       shareDialogVisible: false,
       shareLoading: false,
       shareForm: {surveyId: null, topicType: '', title: '', content: ''},
-      shareRules: {
-        topicType: [{required: true, message: '请选择板块', trigger: 'change'}],
-        title: [{required: true, message: '请输入分享标题', trigger: 'blur'}],
-        content: [{required: true, message: '请输入分享内容', trigger: 'blur'}]
-      }
     }
+  },
+  components: {
+    ShareDialog
   },
   created() {
     this.getDicts('nh_audit_status').then(res => {
@@ -305,39 +291,22 @@ export default {
     handleEdit(row) {
       this.$router.push('/user/survey/create?id=' + row.surveyId)
     },
-    handleSubmitReview(row) {
-      this.$confirm('提交审核后将无法修改，是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        return updateSurvey({surveyId: row.surveyId, auditStatus: 1})
-      }).then(() => {
-        this.$message.success('提交审核成功')
-        this.getList()
-      })
-    },
     handleShare(row) {
       this.shareForm = {
         surveyId: row.surveyId,
-        topicType: 'survey',
-        title: row.title,
-        content: '本次调查发现' + (row.speciesCount || 0) + '个物种'
+        title: row.title || '',
+        content: row.description ? row.description.substring(0, 200) : ''
       }
       this.shareDialogVisible = true
     },
-    confirmShare() {
-      this.$refs.shareForm.validate(valid => {
-        if (valid) {
-          this.shareLoading = true
-          shareSurvey(this.shareForm.surveyId).then(() => {
-            this.$message.success('分享成功')
-            this.shareDialogVisible = false
-            this.getList()
-          }).catch(() => {
-            this.shareLoading = false
-          })
-        }
+    confirmShare({title, content}) {
+      this.shareLoading = true
+      shareSurvey(this.shareForm.surveyId, {title, content}).then(() => {
+        this.$message.success('分享成功')
+        this.shareDialogVisible = false
+        this.$router.push('/user/community')
+      }).finally(() => {
+        this.shareLoading = false
       })
     },
     handleDelete(row) {

@@ -91,8 +91,21 @@ public class ObservationRecordServiceImpl implements IObservationRecordService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deleteObservationRecordByRecordIds(Long[] recordIds)
     {
+        // 逐个删除，每个都检查并删除关联的社群话题
+        for (Long recordId : recordIds) {
+            // 先查询该记录对应的社群话题
+            CommunityTopic topic = communityTopicMapper.selectBySourceTypeAndSourceId(1, recordId);
+            
+            // 如果存在对应的话题，删除它
+            if (topic != null && topic.getTopicId() != null) {
+                communityTopicMapper.deleteCommunityTopicByTopicId(topic.getTopicId());
+            }
+        }
+        
+        // 再批量删除观察记录本身
         return observationRecordMapper.deleteObservationRecordByRecordIds(recordIds);
     }
 
@@ -103,8 +116,18 @@ public class ObservationRecordServiceImpl implements IObservationRecordService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deleteObservationRecordByRecordId(Long recordId)
     {
+        // 先查询该记录对应的社群话题
+        CommunityTopic topic = communityTopicMapper.selectBySourceTypeAndSourceId(1, recordId);
+        
+        // 如果存在对应的话题，删除它
+        if (topic != null && topic.getTopicId() != null) {
+            communityTopicMapper.deleteCommunityTopicByTopicId(topic.getTopicId());
+        }
+        
+        // 再删除观察记录本身
         return observationRecordMapper.deleteObservationRecordByRecordId(recordId);
     }
 
@@ -128,35 +151,40 @@ public class ObservationRecordServiceImpl implements IObservationRecordService
 
     /**
      * 分享到社群
-     * 
-     * @param recordId 观察记录主键
+     *
+     * @param recordId  观察记录主键
+     * @param content   分享内容（用户填写，保存到话题 content 字段）
+     * @param createBy  当前操作用户名（保存到话题 create_by 字段）
      * @return 社群话题ID
      */
     @Override
     @Transactional
-    public Long shareToCommunity(Long recordId)
+    public Long shareToCommunity(Long recordId, String content, String createBy)
     {
         ObservationRecord record = observationRecordMapper.selectObservationRecordByRecordId(recordId);
-        
+
         if (record == null) {
             throw new RuntimeException("观察记录不存在");
         }
-        
+
         if (Integer.valueOf(1).equals(record.getIsShared())) {
             throw new RuntimeException("该记录已分享到社群");
         }
-        
+
         if (!Integer.valueOf(2).equals(record.getAuditStatus())) {
             throw new RuntimeException("只有审核通过的记录才能分享到社群");
         }
-        
+
         CommunityTopic topic = new CommunityTopic();
         topic.setUserId(record.getUserId());
-        topic.setUserName(record.getCreateBy());
-        topic.setCategory(1);
+        topic.setUserName(createBy);
+        topic.setCategory(1);         // 1=观察记录板块
         topic.setTitle(record.getTitle());
-        topic.setContent("来自观察记录的分享");
-        topic.setImages(null);
+        // 使用用户填写的内容，若为空则使用观察描述
+        topic.setContent(content != null && !content.trim().isEmpty()
+                ? content : (record.getDescription() != null ? record.getDescription() : ""));
+        // 将观察记录图片同步到话题 images 字段
+        topic.setImages(record.getImages());
         topic.setSourceType(1);
         topic.setSourceId(recordId);
         topic.setViewCount(0);
@@ -168,25 +196,22 @@ public class ObservationRecordServiceImpl implements IObservationRecordService
         topic.setIsEssence("0");
         topic.setStatus("0");
         topic.setAuditStatus(1);
+        topic.setCreateBy(createBy);
         topic.setCreateTime(new Date());
-        
+
         communityTopicMapper.insertCommunityTopic(topic);
-        
-        // 获取插入后的 topicId
+
         Long topicId = topic.getTopicId();
-        System.out.println("topicId: " + topicId);
         if (topicId == null || topicId <= 0) {
             throw new RuntimeException("分享失败：无法获取话题ID");
         }
-        
-        // 更新观察记录，保存 topicId
+
         record.setIsShared(1);
         record.setTopicId(topicId);
         record.setSharedTopicId(topicId);
         observationRecordMapper.updateObservationRecord(record);
-        
+
         return topicId;
     }
-
 
 }

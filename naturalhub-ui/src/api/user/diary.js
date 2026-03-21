@@ -102,3 +102,21 @@ export function uploadFile(data) {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
+
+// 获取日志关联的观察记录列表
+export function getRelatedRecords(diaryId) {
+  return request({
+    url: '/user/diary/' + diaryId + '/records',
+    method: 'get'
+  })
+}
+
+// 更新日志的关联观察记录
+export function updateRelatedRecords(diaryId, recordIds) {
+  return request({
+    url: '/user/diary/' + diaryId + '/records',
+    method: 'put',
+    data: recordIds
+  })
+}
+

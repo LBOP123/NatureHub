@@ -15,7 +15,7 @@
           <el-tag v-if="topic.isTop === '1'" type="danger" size="small" effect="dark">置顶</el-tag>
           <el-tag v-if="topic.isEssence === '1'" type="warning" size="small" effect="dark">精华</el-tag>
 <!--          <dict-tag :options="categoryTypeOptions" :value="getCategoryName(topic.category)" />-->
-          <dict-tag :options="categoryTypeOptions" :value="topic.category" />
+<!--          <dict-tag :options="categoryTypeOptions" :value="topic.category" />-->
           <el-tag v-if="topic.sourceType === 1" type="success" size="small">观察记录</el-tag>
           <el-tag v-else-if="topic.sourceType === 2" type="warning" size="small">物种鉴定</el-tag>
           <el-tag v-else-if="topic.sourceType === 3" type="primary" size="small">野外调查</el-tag>
@@ -32,13 +32,35 @@
       <div v-if="hasSource" class="source-panel">
         <div v-loading="sourceLoading" class="source-inner">
           <div class="source-images">
-            <el-carousel v-if="sourceImages.length > 1" :interval="4000" height="340px" indicator-position="outside">
-              <el-carousel-item v-for="(img, idx) in sourceImages" :key="idx">
-                <el-image :src="img" fit="cover" style="width:100%;height:100%" :preview-src-list="sourceImages" />
-              </el-carousel-item>
-            </el-carousel>
-            <el-image v-else-if="sourceImages.length === 1" :src="sourceImages[0]" fit="cover"
-              style="width:100%;height:340px;display:block" :preview-src-list="sourceImages" />
+            <div v-if="sourceImages.length > 0" class="image-viewer">
+              <!-- 主图区域（占满，缩略图叠在上面） -->
+              <div class="main-image">
+                <transition name="img-fade">
+                  <el-image
+                    :key="activeImageIdx"
+                    :src="sourceImages[activeImageIdx]"
+                    fit="cover"
+                    class="main-img-el"
+                    :preview-src-list="sourceImages"
+                  />
+                </transition>
+                <!-- 多图时显示计数角标 -->
+                <span v-if="sourceImages.length > 1" class="image-counter">
+                  {{ activeImageIdx + 1 }} / {{ sourceImages.length }}
+                </span>
+                <!-- 缩略图横向条，叠在主图底部 -->
+                <div v-if="sourceImages.length > 1" class="thumb-strip">
+                  <div
+                    v-for="(img, idx) in sourceImages"
+                    :key="idx"
+                    :class="['thumb-item', { active: activeImageIdx === idx }]"
+                    @click.stop="activeImageIdx = idx"
+                  >
+                    <el-image :src="img" fit="cover" style="width:100%;height:100%" />
+                  </div>
+                </div>
+              </div>
+            </div>
             <div v-else class="no-image"><i class="el-icon-picture-outline"></i><p>暂无图片</p></div>
           </div>
           <div class="source-info">
@@ -72,7 +94,8 @@
 
       <comment-section
         :comment-list="commentList" :current-user-id="currentUserId"
-        @add-comment="handleAddComment" @like-comment="handleLikeComment"
+        @add-comment="handleAddComment" @add-reply="handleAddReply"
+        @like-comment="handleLikeComment"
         @delete-comment="handleDeleteComment" @report-comment="openReport"
         @go-profile="goToUserProfile"
       />
@@ -115,6 +138,7 @@ export default {
       currentUserId: this.$store.getters.userId,
       sourceLoading: false,
       sourceData: null,
+      activeImageIdx: 0,
       reportVisible: false,
       categoryTypeOptions: [],
       reportForm: {
@@ -142,14 +166,19 @@ export default {
       if (!raw) return []
       try {
         let arr = raw
-        // 如果是字符串，尝试解析为 JSON
+        // 如果是字符串，尝试解析
         if (typeof raw === 'string') {
           // 先尝试作为 JSON 数组解析
-          try {
-            arr = JSON.parse(raw)
-          } catch (e) {
-            // 如果不是 JSON 数组，则作为单个 URL 处理
-            arr = [raw]
+          if (raw.startsWith('[')) {
+            try {
+              arr = JSON.parse(raw)
+            } catch (e) {
+              // JSON 解析失败，尝试逗号分割
+              arr = raw.split(',').map(s => s.trim()).filter(Boolean)
+            }
+          } else {
+            // 不是 JSON，直接用逗号分割
+            arr = raw.split(',').map(s => s.trim()).filter(Boolean)
           }
         }
         if (!Array.isArray(arr)) {
@@ -203,6 +232,7 @@ export default {
     loadSourceDetail() {
       this.sourceLoading = true
       this.sourceData = null
+      this.activeImageIdx = 0
       getSourceDetail(this.topic.sourceType, this.topic.sourceId)
         .then(r => { this.sourceData = r.data })
         .catch(() => { this.sourceData = null })
@@ -248,6 +278,13 @@ export default {
     handleAddComment(content) {
       addComment({ topicId: this.topic.topicId, content, parentId: 0 }).then(() => {
         this.$message.success('评论成功')
+        this.loadComments(this.topic.topicId)
+        this.topic.commentCount = (this.topic.commentCount || 0) + 1
+      })
+    },
+    handleAddReply({ content, parentId, replyToUserId }) {
+      addComment({ topicId: this.topic.topicId, content, parentId, replyToUserId }).then(() => {
+        this.$message.success('回复成功')
         this.loadComments(this.topic.topicId)
         this.topic.commentCount = (this.topic.commentCount || 0) + 1
       })
@@ -306,9 +343,75 @@ export default {
 .meta-item { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #909399; }
 .source-panel { margin-bottom: 24px; border: 1px solid #ebeef5; border-radius: 8px; overflow: hidden; }
 .source-inner { display: flex; align-items: flex-start; }
-.source-images { width: 45%; min-width: 260px; height: 340px; flex-shrink: 0; background: #f5f7fa; overflow: hidden; }
+.source-images { width: 45%; min-width: 260px; flex-shrink: 0; overflow: hidden; display: flex; flex-direction: column; }
+.image-viewer { height: 100%; margin-top: 15px;}
+.main-image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+.image-counter {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.50);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  z-index: 10;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+.thumb-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 10px 8px;
+  overflow-x: auto;
+  background: linear-gradient(to top, rgba(0,0,0,0.60) 0%, transparent 100%);
+  z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.4) transparent;
+  &::-webkit-scrollbar { height: 3px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 2px; }
+}
+.thumb-item {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.3);
+  transition: border-color 0.2s, transform 0.2s;
+  opacity: 0.75;
+  &.active { border-color: #fff; opacity: 1; transform: scale(1.08); }
+  &:hover { opacity: 1; border-color: rgba(255,255,255,0.8); }
+}
+/* 主图切换淡入淡出动画 */
+.main-img-el {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* 主图切换淡入淡出动画 */
+.img-fade-enter-active { transition: opacity 0.28s ease; }
+.img-fade-leave-active { transition: opacity 0.28s ease; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.img-fade-enter { opacity: 0; }
+.img-fade-leave-to { opacity: 0; }
 .source-images ::v-deep .el-image, .source-images ::v-deep img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-.source-images ::v-deep .el-carousel, .source-images ::v-deep .el-carousel__container, .source-images ::v-deep .el-carousel__item { height: 100% !important; }
+.main-image ::v-deep .el-image { width: 100% !important; height: 100% !important; }
 .no-image { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #c0c4cc; }
 .source-info { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; max-height: 400px; }
 .source-link-row { padding-top: 4px; }

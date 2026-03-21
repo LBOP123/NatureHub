@@ -47,6 +47,18 @@ public class CommunityComment extends BaseEntity
     /** 当前用户是否点赞 */
     private Boolean isLiked;
 
+    /** 评论用户类型（0=管理员 1=探索者 2=鉴定者）*/
+    private String userType;
+
+    /** 评论用户头像 */
+    private String avatar;
+
+    public String getUserType() { return userType; }
+    public void setUserType(String userType) { this.userType = userType; }
+
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
+
     public void setCommentId(Long commentId) 
     {
         this.commentId = commentId;

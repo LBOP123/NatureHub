@@ -19,7 +19,9 @@ import com.naturalhub.common.enums.BusinessType;
 import com.naturalhub.common.utils.poi.ExcelUtil;
 import com.naturalhub.common.core.page.TableDataInfo;
 import com.naturalhub.system.domain.ObservationDiary;
+import com.naturalhub.system.domain.ObservationRecord;
 import com.naturalhub.system.service.IObservationDiaryService;
+import com.naturalhub.system.service.IDiaryRecordRelationService;
 
 /**
  * 个人观察日志管理端Controller
@@ -33,6 +35,9 @@ public class ObservationDiaryAdminController extends BaseController
 {
     @Autowired
     private IObservationDiaryService observationDiaryService;
+
+    @Autowired
+    private IDiaryRecordRelationService diaryRecordRelationService;
 
     /**
      * 查询个人观察日志列表（管理端）
@@ -60,23 +65,36 @@ public class ObservationDiaryAdminController extends BaseController
     }
 
     /**
-     * 获取个人观察日志详细信息
+     * 获取个人观察日志详细信息（包含关联的观察记录）
      */
     @PreAuthorize("@ss.hasPermi('admin:diary:query')")
     @GetMapping(value = "/{diaryId}")
     public AjaxResult getInfo(@PathVariable("diaryId") Long diaryId)
     {
-        return success(observationDiaryService.selectObservationDiaryByDiaryId(diaryId));
+        ObservationDiary diary = observationDiaryService.selectObservationDiaryByDiaryId(diaryId);
+        if (diary == null) {
+            return error("日志不存在");
+        }
+        
+        // 加载关联的观察记录
+        List<ObservationRecord> relatedRecords = diaryRecordRelationService.getRecordsByDiaryId(diaryId);
+        diary.setRelatedRecords(relatedRecords);
+        
+        return success(diary);
     }
 
     /**
-     * 删除个人观察日志
+     * 删除个人观察日志（同时删除关联关系）
      */
     @PreAuthorize("@ss.hasPermi('admin:diary:remove')")
     @Log(title = "个人观察日志", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{diaryIds}")
+    @DeleteMapping("/{diaryIds}")
     public AjaxResult remove(@PathVariable Long[] diaryIds)
     {
+        // 删除关联关系
+        for (Long diaryId : diaryIds) {
+            diaryRecordRelationService.deleteRelationsByDiaryId(diaryId);
+        }
         return toAjax(observationDiaryService.deleteObservationDiaryByDiaryIds(diaryIds));
     }
 
@@ -98,6 +116,22 @@ public class ObservationDiaryAdminController extends BaseController
             }
         }
         return toAjax(count);
+    }
+
+    /**
+     * 获取日志关联的观察记录列表
+     */
+    @PreAuthorize("@ss.hasPermi('admin:diary:query')")
+    @GetMapping("/{diaryId}/records")
+    public AjaxResult getRelatedRecords(@PathVariable Long diaryId)
+    {
+        ObservationDiary diary = observationDiaryService.selectObservationDiaryByDiaryId(diaryId);
+        if (diary == null) {
+            return error("日志不存在");
+        }
+        
+        List<ObservationRecord> records = diaryRecordRelationService.getRecordsByDiaryId(diaryId);
+        return success(records);
     }
 
     /**

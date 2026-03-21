@@ -369,10 +369,6 @@ export default {
       const d = (this.surveyMethodOptions || []).find(d => parseInt(d.dictValue) === val)
       return d ? d.dictLabel : (val || '-')
     },
-    getSurveyTypeTag(type) {
-      const m = {1: 'success', 2: 'warning', 3: 'primary', 10: 'info'}
-      return m[type] || ''
-    },
     getHabitatTypeText(val) {
       const d = (this.habitatTypeOptions || []).find(d => parseInt(d.dictValue) === val)
       return d ? d.dictLabel : (val || '-')

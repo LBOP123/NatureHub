@@ -9,6 +9,15 @@ export function listSurvey(query) {
   })
 }
 
+// 查询指定用户的公开野外调查记录（他人主页用）
+export function listPublicSurvey(query) {
+  return request({
+    url: '/user/survey/public/list',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询调查记录列表（广场）
 export function listSurveySquare(query) {
   return request({
@@ -53,10 +62,11 @@ export function delSurvey(surveyId) {
 }
 
 // 分享到社群
-export function shareSurvey(surveyId) {
+export function shareSurvey(surveyId, data) {
   return request({
     url: '/user/survey/' + surveyId + '/share',
-    method: 'post'
+    method: 'post',
+    data: data
   })
 }
 

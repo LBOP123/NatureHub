@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.IdentifierApplicationMapper">
+
+    <resultMap type="com.naturalhub.system.domain.IdentifierApplication" id="ApplicationResult">
+        <result property="id"            column="id"            />
+        <result property="userId"         column="user_id"       />
+        <result property="userName"       column="user_name"     />
+        <result property="nickName"       column="nick_name"     />
+        <result property="realName"       column="real_name"     />
+        <result property="expertise"      column="expertise"     />
+        <result property="bio"            column="bio"           />
+        <result property="qualification"  column="qualification" />
+        <result property="experience"     column="experience"    />
+        <result property="status"         column="status"        />
+        <result property="rejectReason"   column="reject_reason" />
+        <result property="reviewTime"     column="review_time"   />
+        <result property="reviewBy"       column="review_by"     />
+        <result property="createTime"     column="create_time"   />
+        <result property="updateTime"     column="update_time"   />
+    </resultMap>
+
+    <sql id="selectVo">
+        select id, user_id, user_name, nick_name, real_name, expertise, bio, qualification,
+               experience, status, reject_reason, review_time, review_by, create_time, update_time
+        from nh_identifier_application
+    </sql>
+
+    <insert id="insertApplication" parameterType="com.naturalhub.system.domain.IdentifierApplication"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO nh_identifier_application
+        (user_id, user_name, nick_name, real_name, expertise, bio, qualification, experience,
+         status, create_time, update_time)
+        VALUES
+        (#{userId}, #{userName}, #{nickName}, #{realName}, #{expertise}, #{bio}, #{qualification}, #{experience},
+         0, NOW(), NOW())
+    </insert>
+
+    <select id="selectApplicationById" parameterType="Long" resultMap="ApplicationResult">
+        <include refid="selectVo"/>
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectLatestByUserId" parameterType="Long" resultMap="ApplicationResult">
+        <include refid="selectVo"/>
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectApplicationList" parameterType="com.naturalhub.system.domain.IdentifierApplication"
+            resultMap="ApplicationResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="userName != null and userName != ''">AND user_name LIKE CONCAT('%', #{userName}, '%')</if>
+            <if test="status != null">AND status = #{status}</if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <update id="updateApplication" parameterType="com.naturalhub.system.domain.IdentifierApplication">
+        UPDATE nh_identifier_application
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            <if test="reviewBy != null and reviewBy != ''">review_by = #{reviewBy},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

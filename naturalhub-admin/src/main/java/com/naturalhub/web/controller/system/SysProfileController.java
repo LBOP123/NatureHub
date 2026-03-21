@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.naturalhub.common.annotation.Log;
-import com.naturalhub.common.config.RuoYiConfig;
 import com.naturalhub.common.core.controller.BaseController;
 import com.naturalhub.common.core.domain.AjaxResult;
 import com.naturalhub.common.core.domain.entity.SysUser;
@@ -20,9 +19,7 @@ import com.naturalhub.common.enums.BusinessType;
 import com.naturalhub.common.utils.DateUtils;
 import com.naturalhub.common.utils.SecurityUtils;
 import com.naturalhub.common.utils.StringUtils;
-import com.naturalhub.common.utils.file.FileUploadUtils;
-import com.naturalhub.common.utils.file.FileUtils;
-import com.naturalhub.common.utils.file.MimeTypeUtils;
+import com.naturalhub.common.utils.qiniu.QiniuUtil;
 import com.naturalhub.framework.web.service.TokenService;
 import com.naturalhub.system.service.ISysUserService;
 
@@ -40,6 +37,9 @@ public class SysProfileController extends BaseController
 
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private QiniuUtil qiniuUtil;
 
     /**
      * 个人信息
@@ -68,6 +68,7 @@ public class SysProfileController extends BaseController
         currentUser.setEmail(user.getEmail());
         currentUser.setPhonenumber(user.getPhonenumber());
         currentUser.setSex(user.getSex());
+        currentUser.setRemark(user.getRemark());
         if (StringUtils.isNotEmpty(user.getPhonenumber()) && !userService.checkPhoneUnique(currentUser))
         {
             return error("修改用户'" + loginUser.getUsername() + "'失败，手机号码已存在");
@@ -78,7 +79,6 @@ public class SysProfileController extends BaseController
         }
         if (userService.updateUserProfile(currentUser) > 0)
         {
-            // 更新缓存用户信息
             tokenService.setLoginUser(loginUser);
             return success();
         }
@@ -108,7 +108,6 @@ public class SysProfileController extends BaseController
         newPassword = SecurityUtils.encryptPassword(newPassword);
         if (userService.resetUserPwd(userId, newPassword) > 0)
         {
-            // 更新缓存用户密码&密码最后更新时间
             loginUser.getUser().setPwdUpdateDate(DateUtils.getNowDate());
             loginUser.getUser().setPassword(newPassword);
             tokenService.setLoginUser(loginUser);
@@ -118,7 +117,7 @@ public class SysProfileController extends BaseController
     }
 
     /**
-     * 头像上传
+     * 头像上传（七牛云）
      */
     @Log(title = "用户头像", businessType = BusinessType.UPDATE)
     @PostMapping("/avatar")
@@ -127,17 +126,12 @@ public class SysProfileController extends BaseController
         if (!file.isEmpty())
         {
             LoginUser loginUser = getLoginUser();
-            String avatar = FileUploadUtils.upload(RuoYiConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION, true);
+            // 上传到七牛云
+            String avatar = qiniuUtil.uploadFile(file);
             if (userService.updateUserAvatar(loginUser.getUserId(), avatar))
             {
-                String oldAvatar = loginUser.getUser().getAvatar();
-                if (StringUtils.isNotEmpty(oldAvatar))
-                {
-                    FileUtils.deleteFile(RuoYiConfig.getProfile() + FileUtils.stripPrefix(oldAvatar));
-                }
                 AjaxResult ajax = AjaxResult.success();
                 ajax.put("imgUrl", avatar);
-                // 更新缓存用户头像
                 loginUser.getUser().setAvatar(avatar);
                 tokenService.setLoginUser(loginUser);
                 return ajax;

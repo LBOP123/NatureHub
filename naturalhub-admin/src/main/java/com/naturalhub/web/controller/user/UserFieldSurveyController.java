@@ -24,7 +24,7 @@ import com.naturalhub.common.core.page.TableDataInfo;
 
 /**
  * 野外调查记录用户端Controller
- * 
+ *
  * @author NaturalHub
  * @date 2026-03-09
  */
@@ -36,14 +36,25 @@ public class UserFieldSurveyController extends BaseController
     private IFieldSurveyService fieldSurveyService;
 
     /**
-     * 查询野外调查记录列表（所有记录）
+     * 查询野外调查记录列表（当前用户）
      */
     @GetMapping("/list")
     public TableDataInfo list(FieldSurvey fieldSurvey)
     {
         startPage();
-        // 查询当前用户的所有记录
         fieldSurvey.setUserId(SecurityUtils.getUserId());
+        List<FieldSurvey> list = fieldSurveyService.selectFieldSurveyList(fieldSurvey);
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询指定用户的公开野外调查记录（用于他人主页展示）
+     */
+    @GetMapping("/public/list")
+    public TableDataInfo publicList(FieldSurvey fieldSurvey)
+    {
+        startPage();
+        fieldSurvey.setIsShared(1);
         List<FieldSurvey> list = fieldSurveyService.selectFieldSurveyList(fieldSurvey);
         return getDataTable(list);
     }
@@ -55,7 +66,6 @@ public class UserFieldSurveyController extends BaseController
     public TableDataInfo square(FieldSurvey fieldSurvey)
     {
         startPage();
-        // 只查询审核通过且已分享的记录
         fieldSurvey.setAuditStatus(1);
         fieldSurvey.setIsShared(1);
         List<FieldSurvey> list = fieldSurveyService.selectFieldSurveyList(fieldSurvey);
@@ -90,12 +100,10 @@ public class UserFieldSurveyController extends BaseController
     @PutMapping
     public AjaxResult edit(@RequestBody FieldSurvey fieldSurvey)
     {
-        // 验证是否是本人的记录
         FieldSurvey original = fieldSurveyService.selectFieldSurveyBySurveyId(fieldSurvey.getSurveyId());
         if (original == null || !original.getUserId().equals(SecurityUtils.getUserId())) {
             return AjaxResult.error("无权修改此记录");
         }
-        
         fieldSurvey.setUpdateBy(SecurityUtils.getUsername());
         return toAjax(fieldSurveyService.updateFieldSurvey(fieldSurvey));
     }
@@ -104,17 +112,15 @@ public class UserFieldSurveyController extends BaseController
      * 删除野外调查记录
      */
     @Log(title = "野外调查记录", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{surveyIds}")
+    @DeleteMapping("/{surveyIds}")
     public AjaxResult remove(@PathVariable Long[] surveyIds)
     {
-        // 验证是否是本人的记录
         for (Long id : surveyIds) {
             FieldSurvey survey = fieldSurveyService.selectFieldSurveyBySurveyId(id);
             if (survey == null || !survey.getUserId().equals(SecurityUtils.getUserId())) {
                 return AjaxResult.error("无权删除此记录");
             }
         }
-        
         return toAjax(fieldSurveyService.deleteFieldSurveyBySurveyIds(surveyIds));
     }
 
@@ -123,16 +129,16 @@ public class UserFieldSurveyController extends BaseController
      */
     @Log(title = "分享调查记录到社群", businessType = BusinessType.UPDATE)
     @PostMapping("/{surveyId}/share")
-    public AjaxResult shareToCommunity(@PathVariable Long surveyId)
+    public AjaxResult shareToCommunity(@PathVariable Long surveyId,
+                                       @RequestBody(required = false) java.util.Map<String, String> body)
     {
         try {
-            // 验证是否是本人的记录
             FieldSurvey survey = fieldSurveyService.selectFieldSurveyBySurveyId(surveyId);
             if (survey == null || !survey.getUserId().equals(SecurityUtils.getUserId())) {
                 return AjaxResult.error("只能分享自己的记录");
             }
-            
-            Long topicId = fieldSurveyService.shareToCommunity(surveyId);
+            String content = body != null ? body.get("content") : null;
+            Long topicId = fieldSurveyService.shareToCommunity(surveyId, content, SecurityUtils.getUsername());
             return AjaxResult.success("分享成功", topicId);
         } catch (Exception e) {
             return AjaxResult.error(e.getMessage());
@@ -146,7 +152,6 @@ public class UserFieldSurveyController extends BaseController
     @PostMapping("/export")
     public void export(HttpServletResponse response, FieldSurvey fieldSurvey)
     {
-        // 只导出当前用户的记录
         fieldSurvey.setUserId(SecurityUtils.getUserId());
         List<FieldSurvey> list = fieldSurveyService.selectFieldSurveyList(fieldSurvey);
         ExcelUtil<FieldSurvey> util = new ExcelUtil<FieldSurvey>(FieldSurvey.class);
