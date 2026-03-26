@@ -146,4 +146,8 @@
         delete from qa_history where conversation_id = #{conversationId}
     </delete>
 
+    <update id="updateAnswerById">
+        update qa_history set answer = #{answer} where id = #{id}
+    </update>
+
 </mapper>

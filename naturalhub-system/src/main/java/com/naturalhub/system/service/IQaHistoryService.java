@@ -28,4 +28,9 @@ public interface IQaHistoryService {
     List<QaHistory> getConversationMessages(Long conversationId);
     
     int deleteConversation(Long conversationId);
+
+    /**
+     * 更新 answer 字段（视频生成完成/失败后回填）
+     */
+    int updateAnswerById(Long id, String answer);
 }

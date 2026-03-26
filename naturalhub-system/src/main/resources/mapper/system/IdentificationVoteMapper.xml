@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.IdentificationVoteMapper">
+
+    <resultMap type="IdentificationVote" id="IdentificationVoteResult">
+        <result property="voteId" column="vote_id"/>
+        <result property="identificationId" column="identification_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userType" column="user_type"/>
+        <result property="voteType" column="vote_type"/>
+        <result property="voteWeight" column="vote_weight"/>
+        <result property="voteTime" column="vote_time"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <sql id="selectIdentificationVoteVo">
+        select vote_id, identification_id, user_id, user_name, user_type, vote_type, vote_weight, vote_time, del_flag
+        from nh_identification_vote
+    </sql>
+
+    <select id="selectIdentificationVoteList" parameterType="IdentificationVote" resultMap="IdentificationVoteResult">
+        <include refid="selectIdentificationVoteVo"/>
+        <where>
+            del_flag = '0'
+            <if test="identificationId != null">and identification_id = #{identificationId}</if>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="voteType != null and voteType != ''">and vote_type = #{voteType}</if>
+        </where>
+        order by vote_time desc
+    </select>
+
+    <select id="selectByIdentificationId" parameterType="Long" resultMap="IdentificationVoteResult">
+        <include refid="selectIdentificationVoteVo"/>
+        where identification_id = #{identificationId}
+    </select>
+
+    <select id="selectByUserAndId" parameterType="Long" resultMap="IdentificationVoteResult">
+        <include refid="selectIdentificationVoteVo"/>
+        where identification_id = #{identificationId} and user_id = #{userId} and del_flag = '0'
+    </select>
+
+    <select id="countByIdentificationId" parameterType="Long" resultType="Long">
+        select count(*)
+        from nh_identification_vote
+        where identification_id = #{identificationId} and del_flag = '0'
+    </select>
+
+    <insert id="insertIdentificationVote" parameterType="IdentificationVote" useGeneratedKeys="true" keyProperty="voteId">
+        insert into nh_identification_vote (identification_id, user_id, user_name, user_type, vote_type, vote_weight, vote_time, del_flag)
+        values (#{identificationId}, #{userId}, #{userName}, #{userType}, #{voteType}, #{voteWeight}, #{voteTime}, '0')
+    </insert>
+
+    <insert id="batchInsertIdentificationVote" parameterType="java.util.List">
+        insert into nh_identification_vote (identification_id, user_id, user_name, user_type, vote_type, vote_weight, vote_time, del_flag)
+        values
+        <foreach collection="list" item="vote" separator=",">
+            (#{vote.identificationId}, #{vote.userId}, #{vote.userName}, #{vote.userType}, #{vote.voteType}, #{vote.voteWeight}, NOW(), '0')
+        </foreach>
+    </insert>
+
+    <delete id="deleteIdentificationVote" parameterType="Long">
+        update nh_identification_vote set del_flag = '2' where vote_id = #{voteId}
+    </delete>
+
+    <delete id="deleteIdentificationVoteByIds" parameterType="Long">
+        update nh_identification_vote set del_flag = '2' where vote_id in
+        <foreach item="voteId" collection="array" open="(" separator="," close=")">
+            #{voteId}
+        </foreach>
+    </delete>
+
+    <update id="endVoting">
+        update nh_species_identification
+        set vote_status = '2',
+            vote_result = #{voteResult}
+        where identification_id = #{identificationId}
+    </update>
+</mapper>

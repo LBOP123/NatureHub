@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
@@ -22,6 +22,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="submitTime"       column="submit_time"     />
         <result property="reviewTime"       column="review_time"     />
         <result property="reviewerId"       column="reviewer_id"     />
+        <result property="reviewerName"     column="reviewer_name"   />
         <result property="reviewComment"    column="review_comment"  />
         <result property="rejectReason"     column="reject_reason"   />
         <result property="specimenId"       column="specimen_id"     />
@@ -37,38 +38,41 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectObservationRecordVo">
-        select record_id, user_id, title, observation_time, location, latitude, longitude,
-               species_type, species_name, habitat, description, images, videos,
-               audit_status, submit_time, review_time, reviewer_id, review_comment,
-               reject_reason, specimen_id, is_shared, shared_topic_id, topic_id, del_flag,
-               create_by, create_time, update_by, update_time, remark
-        from nh_observation_record
+        select r.record_id, r.user_id, r.title, r.observation_time, r.location, r.latitude, r.longitude,
+               r.species_type, r.species_name, r.habitat, r.description, r.images, r.videos,
+               r.audit_status, r.submit_time, r.review_time, r.reviewer_id,
+               u.user_name as reviewer_name,
+               r.review_comment, r.reject_reason, r.specimen_id, r.is_shared,
+               r.shared_topic_id, r.topic_id, r.del_flag,
+               r.create_by, r.create_time, r.update_by, r.update_time, r.remark
+        from nh_observation_record r
+        left join sys_user u on r.reviewer_id = u.user_id
     </sql>
 
     <select id="selectObservationRecordList" parameterType="ObservationRecord" resultMap="ObservationRecordResult">
         <include refid="selectObservationRecordVo"/>
         <where>
-            del_flag = '0'
-            <if test="userId != null"> and user_id = #{userId}</if>
-            <if test="title != null and title != ''"> and title like concat('%', #{title}, '%')</if>
-            <if test="location != null and location != ''"> and location like concat('%', #{location}, '%')</if>
-            <if test="speciesType != null"> and species_type = #{speciesType}</if>
-            <if test="speciesName != null and speciesName != ''"> and species_name like concat('%', #{speciesName}, '%')</if>
-            <if test="auditStatus != null"> and audit_status = #{auditStatus}</if>
-            <if test="isShared != null"> and is_shared = #{isShared}</if>
+            r.del_flag = '0'
+            <if test="userId != null"> and r.user_id = #{userId}</if>
+            <if test="title != null and title != ''"> and r.title like concat('%', #{title}, '%')</if>
+            <if test="location != null and location != ''"> and r.location like concat('%', #{location}, '%')</if>
+            <if test="speciesType != null"> and r.species_type = #{speciesType}</if>
+            <if test="speciesName != null and speciesName != ''"> and r.species_name like concat('%', #{speciesName}, '%')</if>
+            <if test="auditStatus != null"> and r.audit_status = #{auditStatus}</if>
+            <if test="isShared != null"> and r.is_shared = #{isShared}</if>
             <if test="params.beginTime != null and params.beginTime != ''">
-                and date_format(observation_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+                and date_format(r.observation_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
             </if>
             <if test="params.endTime != null and params.endTime != ''">
-                and date_format(observation_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+                and date_format(r.observation_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
             </if>
         </where>
-        order by create_time desc
+        order by r.create_time desc
     </select>
 
     <select id="selectObservationRecordByRecordId" parameterType="Long" resultMap="ObservationRecordResult">
         <include refid="selectObservationRecordVo"/>
-        where record_id = #{recordId}
+        where r.record_id = #{recordId} and r.del_flag = '0'
     </select>
 
     <insert id="insertObservationRecord" parameterType="ObservationRecord" useGeneratedKeys="true" keyProperty="recordId">

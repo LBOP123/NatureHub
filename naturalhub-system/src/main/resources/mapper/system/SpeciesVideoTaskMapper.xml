@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.SpeciesVideoTaskMapper">
+
+  <resultMap id="SpeciesVideoTaskResult" type="com.naturalhub.system.domain.SpeciesVideoTask">
+    <id     property="id"           column="id" />
+    <result property="userId"        column="user_id" />
+    <result property="username"      column="username" />
+    <result property="content"       column="content" />
+    <result property="taskStatus"    column="task_status" />
+    <result property="videoUrl"      column="video_url" />
+    <result property="errorMessage"  column="error_message" />
+    <result property="remark"        column="remark" />
+    <result property="createTime"    column="create_time" />
+    <result property="updateTime"    column="update_time" />
+  </resultMap>
+
+  <sql id="selectVo">
+    select id, user_id, username, content, task_status, video_url, error_message, remark, create_time, update_time
+    from species_video_task
+  </sql>
+
+  <insert id="insertSpeciesVideoTask" parameterType="com.naturalhub.system.domain.SpeciesVideoTask"
+          useGeneratedKeys="true" keyProperty="id">
+    insert into species_video_task
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId      != null">user_id,</if>
+      <if test="username    != null">username,</if>
+      <if test="content     != null">content,</if>
+      task_status,
+      <if test="remark      != null">remark,</if>
+      create_time
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId      != null">#{userId},</if>
+      <if test="username    != null">#{username},</if>
+      <if test="content     != null">#{content},</if>
+      #{taskStatus},
+      <if test="remark      != null">#{remark},</if>
+      NOW()
+    </trim>
+  </insert>
+
+  <select id="selectSpeciesVideoTaskById" parameterType="Long" resultMap="SpeciesVideoTaskResult">
+    <include refid="selectVo"/> where id = #{id}
+  </select>
+
+  <select id="selectSpeciesVideoTaskList" parameterType="com.naturalhub.system.domain.SpeciesVideoTask"
+          resultMap="SpeciesVideoTaskResult">
+    <include refid="selectVo"/>
+    <where>
+      <if test="userId     != null"> and user_id = #{userId}</if>
+      <if test="username   != null and username != ''"> and username like concat('%', #{username}, '%')</if>
+      <if test="taskStatus != null and taskStatus != ''"> and task_status = #{taskStatus}</if>
+    </where>
+    order by create_time desc
+  </select>
+
+  <update id="updateSpeciesVideoTask" parameterType="com.naturalhub.system.domain.SpeciesVideoTask">
+    update species_video_task
+    <trim prefix="SET" suffixOverrides=",">
+      <if test="taskStatus   != null">task_status   = #{taskStatus},</if>
+      <if test="videoUrl     != null">video_url     = #{videoUrl},</if>
+      <if test="errorMessage != null">error_message = #{errorMessage},</if>
+      update_time = NOW()
+    </trim>
+    where id = #{id}
+  </update>
+
+  <delete id="deleteSpeciesVideoTaskByIds" parameterType="Long">
+    delete from species_video_task where id in
+    <foreach collection="array" item="id" open="(" separator="," close=")">#{id}</foreach>
+  </delete>
+
+</mapper>

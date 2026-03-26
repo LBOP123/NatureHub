@@ -66,7 +66,7 @@ public class UserFieldSurveyController extends BaseController
     public TableDataInfo square(FieldSurvey fieldSurvey)
     {
         startPage();
-        fieldSurvey.setAuditStatus(1);
+        fieldSurvey.setAuditStatus(2);
         fieldSurvey.setIsShared(1);
         List<FieldSurvey> list = fieldSurveyService.selectFieldSurveyList(fieldSurvey);
         return getDataTable(list);

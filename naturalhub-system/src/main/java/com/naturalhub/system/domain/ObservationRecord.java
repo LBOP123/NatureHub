@@ -82,6 +82,9 @@ public class ObservationRecord extends BaseEntity
 
     /** 审核人ID */
     private Long reviewerId;
+    private String reviewerName;
+    /** 审核人名称（非数据库字段，关联查询） */
+
 
     /** 审核意见 */
     private String reviewComment;
@@ -154,6 +157,8 @@ public class ObservationRecord extends BaseEntity
 
     public void setReviewerId(Long reviewerId) { this.reviewerId = reviewerId; }
     public Long getReviewerId() { return reviewerId; }
+    public String getReviewerName() { return reviewerName; }
+    public void setReviewerName(String reviewerName) { this.reviewerName = reviewerName; }
 
     public void setReviewComment(String reviewComment) { this.reviewComment = reviewComment; }
     public String getReviewComment() { return reviewComment; }

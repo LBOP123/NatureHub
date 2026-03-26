@@ -80,4 +80,9 @@ public class QaHistoryServiceImpl implements IQaHistoryService {
         qaHistoryMapper.deleteConversationMessages(conversationId);
         return qaHistoryMapper.deleteConversation(conversationId);
     }
+
+    @Override
+    public int updateAnswerById(Long id, String answer) {
+        return qaHistoryMapper.updateAnswerById(id, answer);
+    }
 }

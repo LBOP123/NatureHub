@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-container identification-square">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
       <el-form-item label="关键词" prop="title">
@@ -11,9 +11,9 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
-          <el-option label="待鉴定" value="pending" />
-          <el-option label="已回答" value="answered" />
-          <el-option label="已解决" value="resolved" />
+          <el-option label="待鉴定" :value="0" />
+          <el-option label="鉴定中" :value="1" />
+          <el-option label="已鉴定" :value="2" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -37,9 +37,9 @@
             <img v-if="item.images" :src="getFirstImage(item.images)" class="image">
             <img v-else src="@/assets/images/profile.jpg" class="image">
             <div class="status-badge">
-              <el-tag v-if="item.status === 'pending'" type="warning" size="small">待鉴定</el-tag>
-              <el-tag v-else-if="item.status === 'answered'" type="primary" size="small">已回答</el-tag>
-              <el-tag v-else-if="item.status === 'resolved'" type="success" size="small">已解决</el-tag>
+              <el-tag v-if="item.status === 0" type="info" size="small">待鉴定</el-tag>
+              <el-tag v-else-if="item.status === 1" type="primary" size="small">鉴定中</el-tag>
+              <el-tag v-else-if="item.status === 2" type="success" size="small">已鉴定</el-tag>
             </div>
           </div>
           <div class="card-content">

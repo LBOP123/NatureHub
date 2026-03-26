@@ -15,7 +15,7 @@
         <!-- 物种库 -->
         <div class="feature-card" @click="navigateTo('/user/knowledge')">
           <div class="card-header">
-            <h3 class="card-title">物种百科</h3>
+            <h3 class="card-title">自然知识库</h3>
             <div class="title-underline"></div>
           </div>
           <p class="card-desc">基于知识图谱和RAG检索技术构建的物种信息库，智能匹配相关内容，让你快速找到所需的物种知识。</p>
@@ -30,7 +30,7 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=150&fit=crop" alt="species1">
+            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/VCG211475337255.jpg" alt="species1">
           </div>
         </div>
 
@@ -48,7 +48,7 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=300&h=150&fit=crop"
+            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/%E8%87%AA%E7%84%B6%E5%AF%B9%E8%AF%9D.jpg"
                  alt="knowledge1">
           </div>
         </div>
@@ -67,12 +67,12 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=150&fit=crop" alt="term1">
+            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/%E7%94%9F%E7%89%A9%E8%AF%86%E5%88%AB.jpg" alt="term1">
           </div>
         </div>
 
         <!-- 图像库 -->
-        <div class="feature-card" @click="navigateTo('/user/bioRecognition')">
+        <div class="feature-card" @click="navigateTo('/user/mark3D')">
           <div class="card-header">
             <h3 class="card-title">3D标本库</h3>
             <div class="title-underline"></div>
@@ -85,7 +85,7 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="https://images.unsplash.com/photo-1469022563149-aa64dbd37dae?w=300&h=150&fit=crop" alt="image1">
+            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/3D%E6%A0%87%E6%9C%AC%E5%BA%93.jpg" alt="image1">
           </div>
         </div>
       </div>
@@ -99,11 +99,10 @@ export default {
   data() {
     return {
       backgroundImages: [
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop',
-        'https://images.unsplash.com/photo-1469022563149-aa64dbd37dae?w=1920&h=1080&fit=crop',
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop',
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop',
-        'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=1920&h=1080&fit=crop'
+        'http://tbazebjur.hn-bkt.clouddn.com/background/%E6%98%A5.JPG',
+        'http://tbazebjur.hn-bkt.clouddn.com/background/%E5%A4%8F.jpg',
+        'http://tbazebjur.hn-bkt.clouddn.com/background/%E7%A7%8B.jpg',
+        'http://tbazebjur.hn-bkt.clouddn.com/background/%E5%86%AC.jpg'
       ],
       currentBgIndex: 0,
       currentBgImage: '',

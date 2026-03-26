@@ -37,4 +37,9 @@ public interface QaHistoryMapper {
     int deleteConversation(@Param("conversationId") Long conversationId);
     
     int deleteConversationMessages(@Param("conversationId") Long conversationId);
+
+    /**
+     * 根据 ID 更新 answer 字段（用于视频生成完成/失败后回填）
+     */
+    int updateAnswerById(@Param("id") Long id, @Param("answer") String answer);
 }

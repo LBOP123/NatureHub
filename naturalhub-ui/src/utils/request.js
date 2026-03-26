@@ -84,10 +84,14 @@ service.interceptors.response.use(res => {
     if (code === 401) {
       if (!isRelogin.show) {
         isRelogin.show = true
-        MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', { confirmButtonText: '重新登录', cancelButtonText: '取消', type: 'warning' }).then(() => {
+        // 根据当前页面路径判断跳转到用户端还是管理端登录页
+        const isUserPage = location.pathname.startsWith('/user')
+        const loginPage = isUserPage ? '/user/login' : '/index'
+        const confirmMsg = isUserPage ? '登录已过期，请重新登录' : '登录状态已过期，您可以继续留在该页面，或者重新登录'
+        MessageBox.confirm(confirmMsg, '系统提示', { confirmButtonText: '重新登录', cancelButtonText: '取消', type: 'warning' }).then(() => {
           isRelogin.show = false
           store.dispatch('LogOut').then(() => {
-            location.href = '/index'
+            location.href = loginPage
           })
       }).catch(() => {
         isRelogin.show = false

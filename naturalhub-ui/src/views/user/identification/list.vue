@@ -33,7 +33,7 @@
         class="search-input"
       />
       <el-button type="primary" @click="handleQuery" class="search-btn">搜索</el-button>
-      <el-button type="success" icon="el-icon-plus" @click="handleAdd" class="add-btn">发起鉴定</el-button>
+      <el-button v-if="isIdentifier" type="success" icon="el-icon-plus" @click="handleAdd" class="add-btn">发起鉴定</el-button>
     </div>
 
     <!-- 内容区域 -->
@@ -145,13 +145,15 @@
         </div>
 
         <el-empty v-if="identificationList.length === 0" description="暂无鉴定记录" class="empty-state">
-          <el-button type="primary" @click="handleAdd">立即发起</el-button>
+          <el-button v-if="isIdentifier" type="primary" @click="handleAdd">立即发起</el-button>
+          <span v-else class="identifier-tip">仅鉴定者可发起物种鉴定</span>
         </el-empty>
       </div>
 
       <!-- 卡片空状态 -->
       <el-empty v-if="viewMode === 'card' && identificationList.length === 0" description="暂无鉴定记录" class="empty-state">
-        <el-button type="primary" @click="handleAdd">立即发起</el-button>
+        <el-button v-if="isIdentifier" type="primary" @click="handleAdd">立即发起</el-button>
+        <span v-else class="identifier-tip">仅鉴定者可发起物种鉴定</span>
       </el-empty>
     </div>
 
@@ -231,6 +233,11 @@ export default {
     this.getDicts('nh_audit_status').then(res => { this.auditStatusOptions = res.data || [] })
     this.getDicts('nh_identification_status').then(res => { this.identifyStatusOptions = res.data || [] })
     this.getList()
+  },
+  computed: {
+    isIdentifier() {
+      return this.$store.getters.userType === '2'
+    }
   },
   methods: {
     async getList() {
@@ -593,6 +600,11 @@ export default {
   .empty-state {
     padding: 60px 0;
     text-align: center;
+
+    .identifier-tip {
+      font-size: 13px;
+      color: #909399;
+    }
   }
 }
 

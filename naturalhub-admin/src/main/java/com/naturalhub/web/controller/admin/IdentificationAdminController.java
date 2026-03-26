@@ -151,27 +151,64 @@ public class IdentificationAdminController extends BaseController
         SpeciesIdentification pending = new SpeciesIdentification();
         pending.setAuditStatus(1); // 1=待审核
         int pendingCount = speciesIdentificationService.selectSpeciesIdentificationList(pending).size();
-        
+
         // 待鉴定数量
         SpeciesIdentification pendingIdentify = new SpeciesIdentification();
         pendingIdentify.setStatus(0); // 0=待鉴定
         pendingIdentify.setAuditStatus(2); // 2=已通过
         int pendingIdentifyCount = speciesIdentificationService.selectSpeciesIdentificationList(pendingIdentify).size();
-        
+
         // 已解决数量
         SpeciesIdentification resolved = new SpeciesIdentification();
         resolved.setStatus(2); // 2=已解决
         int resolvedCount = speciesIdentificationService.selectSpeciesIdentificationList(resolved).size();
-        
+
         // 总数
         int totalCount = speciesIdentificationService.selectSpeciesIdentificationList(new SpeciesIdentification()).size();
-        
+
         AjaxResult result = AjaxResult.success();
         result.put("pendingCount", pendingCount);
         result.put("pendingIdentifyCount", pendingIdentifyCount);
         result.put("resolvedCount", resolvedCount);
         result.put("totalCount", totalCount);
         return result;
+    }
+
+    /**
+     * 获取投票状态
+     */
+    @PreAuthorize("@ss.hasPermi('admin:identification:query')")
+    @GetMapping("/{identificationId}/vote/status")
+    public AjaxResult getVoteStatus(@PathVariable Long identificationId)
+    {
+        ISpeciesIdentificationService.VoteStatusInfo status = speciesIdentificationService.getVoteStatus(identificationId);
+        return AjaxResult.success(status);
+    }
+
+    /**
+     * 获取投票详情列表
+     */
+    @PreAuthorize("@ss.hasPermi('admin:identification:query')")
+    @GetMapping("/{identificationId}/vote/details")
+    public AjaxResult getVoteDetails(@PathVariable Long identificationId)
+    {
+        java.util.List<com.naturalhub.system.domain.IdentificationVote> votes = speciesIdentificationService.getVoteDetails(identificationId);
+        return AjaxResult.success(votes);
+    }
+
+    /**
+     * 结束投票（管理员）
+     */
+    @PreAuthorize("@ss.hasPermi('admin:identification:edit')")
+    @Log(title = "结束投票", businessType = BusinessType.UPDATE)
+    @PostMapping("/{identificationId}/vote/end")
+    public AjaxResult endVoting(@PathVariable Long identificationId)
+    {
+        try {
+            return toAjax(speciesIdentificationService.endVoting(identificationId));
+        } catch (Exception e) {
+            return AjaxResult.error(e.getMessage());
+        }
     }
 
     /**

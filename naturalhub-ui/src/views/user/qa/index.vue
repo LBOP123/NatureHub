@@ -31,13 +31,13 @@
 
     <div class="chat-area">
       <div class="chat-header">
-        <h3>AI科普问答</h3>
+        <h3>自然对话</h3>
       </div>
 
       <div class="messages" ref="messagesContainer">
         <div v-if="messages.length === 0" class="empty-state">
           <div class="empty-icon">💬</div>
-          <div class="empty-text">开始新的对话吧</div>
+          <div class="empty-text">基于（通义千问 Plus）回答问题</div>
         </div>
         <div v-for="(msg, index) in messages" :key="index" :class="['message-item', msg.type]">
           <div class="message-content" v-html="formatAnswer(msg.content)"></div>
