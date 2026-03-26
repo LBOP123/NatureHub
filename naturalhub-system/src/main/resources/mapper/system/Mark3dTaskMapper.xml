@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naturalhub.system.mapper.Mark3dTaskMapper">
+
+    <resultMap id="Mark3dTaskResult" type="com.naturalhub.system.domain.Mark3dTask">
+        <id     property="id"                column="id"/>
+        <result property="userId"            column="user_id"/>
+        <result property="username"          column="username"/>
+        <result property="taskName"          column="task_name"/>
+        <result property="frontImageUrl"     column="front_image_url"/>
+        <result property="backImageUrl"      column="back_image_url"/>
+        <result property="topImageUrl"       column="top_image_url"/>
+        <result property="sideImageUrl"      column="side_image_url"/>
+        <result property="meshyTaskId"       column="meshy_task_id"/>
+        <result property="taskStatus"        column="task_status"/>
+        <result property="progress"          column="progress"/>
+        <result property="modelUrlGlb"       column="model_url_glb"/>
+        <result property="modelUrlGlbQiniu"  column="model_url_glb_qiniu"/>
+        <result property="modelUrlObj"       column="model_url_obj"/>
+        <result property="modelUrlUsdz"      column="model_url_usdz"/>
+        <result property="modelUrlFbx"       column="model_url_fbx"/>
+        <result property="thumbnailUrl"      column="thumbnail_url"/>
+        <result property="thumbnailQiniu"    column="thumbnail_qiniu"/>
+        <result property="errorMessage"      column="error_message"/>
+        <result property="remark"            column="remark"/>
+        <result property="isPublic"          column="is_public"/>
+        <result property="createTime"        column="create_time"/>
+        <result property="updateTime"        column="update_time"/>
+    </resultMap>
+
+    <sql id="selectMark3dTaskVo">
+        select id, user_id, username, task_name,
+               front_image_url, back_image_url, top_image_url, side_image_url,
+               meshy_task_id, task_status, progress,
+               model_url_glb, model_url_glb_qiniu, model_url_obj,
+               thumbnail_url, thumbnail_qiniu, error_message, remark, is_public, create_time, update_time
+        from mark3d_task
+    </sql>
+
+    <!-- 查询指定用户公开展示的已完成模型列表 -->
+    <select id="selectPublicTasksByUserId" resultMap="Mark3dTaskResult">
+        <include refid="selectMark3dTaskVo"/>
+        where user_id = #{userId}
+          and task_status = '3'
+          and is_public = 1
+          and model_url_glb_qiniu is not null
+          and model_url_glb_qiniu != ''
+        order by create_time desc
+    </select>
+
+    <!-- 更新公开状态 -->
+    <update id="updateTaskPublic">
+        update mark3d_task set is_public = #{isPublic}, update_time = now()
+        where id = #{id}
+    </update>
+
+    <insert id="insertMark3dTask" parameterType="com.naturalhub.system.domain.Mark3dTask"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into mark3d_task
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="username != null">username,</if>
+            <if test="taskName != null">task_name,</if>
+            front_image_url,
+            <if test="backImageUrl != null">back_image_url,</if>
+            <if test="topImageUrl != null">top_image_url,</if>
+            <if test="sideImageUrl != null">side_image_url,</if>
+            <if test="meshyTaskId != null">meshy_task_id,</if>
+            task_status, progress,
+            <if test="remark != null">remark,</if>
+            is_public,
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="username != null">#{username},</if>
+            <if test="taskName != null">#{taskName},</if>
+            #{frontImageUrl},
+            <if test="backImageUrl != null">#{backImageUrl},</if>
+            <if test="topImageUrl != null">#{topImageUrl},</if>
+            <if test="sideImageNode != null">#{sideImageUrl},</if>
+            <if test="meshyTaskId != null">#{meshyTaskId},</if>
+            #{taskStatus}, #{progress},
+            <if test="remark != null">#{remark},</if>
+            0,
+            now()
+        </trim>
+    </insert>
+
+    <select id="selectMark3dTaskById" resultMap="Mark3dTaskResult">
+        <include refid="selectMark3dTaskVo"/> where id = #{id}
+    </select>
+
+    <select id="selectMark3dTaskByMeshyTaskId" resultMap="Mark3dTaskResult">
+        <include refid="selectMark3dTaskVo"/> where meshy_task_id = #{meshyTaskId}
+    </select>
+
+    <select id="selectMark3dTaskList" resultMap="Mark3dTaskResult">
+        <include refid="selectMark3dTaskVo"/>
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="username != null and username != ''">and username like concat('%', #{username}, '%')</if>
+            <if test="taskName != null and taskName != ''">and task_name like concat('%', #{taskName}, '%')</if>
+            <if test="taskStatus != null and taskStatus != ''">and task_status = #{taskStatus}</if>
+            <if test="isPublic != null">and is_public = #{isPublic}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <update id="updateMark3dTask" parameterType="com.naturalhub.system.domain.Mark3dTask">
+        update mark3d_task
+        <trim prefix="set" suffixOverrides=",">
+            <if test="meshyTaskId != null">meshy_task_id = #{meshyTaskId},</if>
+            <if test="taskStatus != null">task_status = #{taskStatus},</if>
+            <if test="progress != null">progress = #{progress},</if>
+            <if test="modelUrlGlb != null">model_url_glb = #{modelUrlGlb},</if>
+            <if test="modelUrlGlbQiniu != null">model_url_glb_qiniu = #{modelUrlGlbQiniu},</if>
+            <if test="modelUrlObj != null">model_url_obj = #{modelUrlObj},</if>
+            <if test="modelUrlUsdz != null">model_url_usdz = #{modelUrlUsdz},</if>
+            <if test="modelUrlFbx != null">model_url_fbx = #{modelUrlFbx},</if>
+            <if test="thumbnailUrl != null">thumbnail_url = #{thumbnailUrl},</if>
+            <if test="thumbnailQiniu != null">thumbnail_qiniu = #{thumbnailQiniu},</if>
+            <if test="errorMessage != null">error_message = #{errorMessage},</if>
+            <if test="taskName != null">task_name = #{taskName},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="isPublic != null">is_public = #{isPublic},</if>
+            update_time = now(),
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMark3dTaskById">
+        delete from mark3d_task where id = #{id}
+    </delete>
+
+    <delete id="deleteMark3dTaskByIds">
+        delete from mark3d_task where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">#{id}</foreach>
+    </delete>
+
+    <select id="countTotal" resultType="int">select count(*) from mark3d_task</select>
+    <select id="countToday" resultType="int">select count(*) from mark3d_task where DATE(create_time) = CURDATE()</select>
+    <select id="countByStatus" resultType="map">
+        select task_status as status, count(*) as cnt from mark3d_task group by task_status
+    </select>
+
+</mapper>

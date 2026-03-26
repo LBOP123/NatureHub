@@ -5,7 +5,7 @@
         <span class="species-name">{{ data.speciesName }}</span>
       </el-descriptions-item>
       <el-descriptions-item v-if="data.speciesType" label="物种类型">
-        <el-tag type="success" size="small">{{ speciesTypeMap[data.speciesType] || data.speciesType }}</el-tag>
+        <el-tag type="success" size="small">{{ getSpeciesType(data.speciesType) }}</el-tag>
       </el-descriptions-item>
       <el-descriptions-item v-if="data.observationTime" label="观察时间">
         <i class="el-icon-time"></i> {{ parseTime(data.observationTime, '{y}-{m}-{d} {h}:{i}') }}
@@ -30,7 +30,18 @@ export default {
   },
   data() {
     return {
-      speciesTypeMap: { plant: '植物', animal: '动物', fungi: '真菌', other: '其他' }
+      speciesTypeOptions: []
+    }
+  },
+  created() {
+    this.getDicts('nh_species_type').then(res => {
+      this.speciesTypeOptions = res.data || []
+    })
+  },
+  methods: {
+    getSpeciesType(val) {
+      const item = this.speciesTypeOptions.find(d => d.dictValue == val)
+      return item ? item.dictLabel : '未知'
     }
   }
 }

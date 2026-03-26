@@ -112,6 +112,49 @@ export function likeAnswer(answerId) {
   })
 }
 
+// ==================== 投票相关接口 ====================
+
+// 获取投票状态
+export function getVoteStatus(identificationId) {
+  return request({
+    url: '/user/identification/' + identificationId + '/vote/status',
+    method: 'get'
+  })
+}
+
+// 提交投票
+export function submitVote(identificationId, data) {
+  return request({
+    url: '/user/identification/' + identificationId + '/vote',
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取投票详情
+export function getVoteDetails(identificationId) {
+  return request({
+    url: '/user/identification/' + identificationId + '/vote/details',
+    method: 'get'
+  })
+}
+
+// 获取投票数量
+export function getVoteCount(identificationId) {
+  return request({
+    url: '/user/identification/' + identificationId + '/vote/count',
+    method: 'get'
+  })
+}
+
+// 结束投票（提问者）
+export function endVoting(identificationId) {
+  return request({
+    url: '/user/identification/' + identificationId + '/vote/end',
+    method: 'post'
+  })
+}
+
 // ==================== 管理端接口 ====================
 
 // 查询鉴定求助列表（管理端）
@@ -171,5 +214,31 @@ export function getIdentificationStats() {
   return request({
     url: '/admin/identification/stats',
     method: 'get'
+  })
+}
+
+// ==================== 管理端投票接口 ====================
+
+// 获取投票状态（管理端）
+export function getVoteStatusAdmin(identificationId) {
+  return request({
+    url: '/admin/identification/' + identificationId + '/vote/status',
+    method: 'get'
+  })
+}
+
+// 获取投票详情（管理端）
+export function getVoteDetailsAdmin(identificationId) {
+  return request({
+    url: '/admin/identification/' + identificationId + '/vote/details',
+    method: 'get'
+  })
+}
+
+// 结束投票（管理端）
+export function endVotingAdmin(identificationId) {
+  return request({
+    url: '/admin/identification/' + identificationId + '/vote/end',
+    method: 'post'
   })
 }

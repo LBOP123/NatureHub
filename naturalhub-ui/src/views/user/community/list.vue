@@ -11,7 +11,7 @@
     <!-- 搜索+筛选栏（简约风格） -->
     <div class="search-filter-bar">
       <div class="search-box">
-        <input type="text" v-model="queryParams.title" placeholder="搜索话题标题..." @keyup.enter.native="handleQuery">
+        <input type="text" v-model="queryParams.title" placeholder="搜索话题标题..." @keyup.enter="handleQuery">
       </div>
       <div class="filter-options">
         <label class="filter-item">
@@ -44,7 +44,7 @@
           <div class="badge-group" v-if="topic.isTop === '1' || topic.isEssence === '1' || topic.sourceType">
             <span class="badge badge-top" v-if="topic.isTop === '1'">置顶</span>
             <span class="badge badge-good" v-if="topic.isEssence === '1'">精华</span>
-            <span class="badge badge-source" v-if="topic.sourceType">{{ getSourceName(topic.sourceType) }}</span>
+            <span class="badge badge-source" :class="'badge-source--' + getSourceClass(topic.sourceType)" v-if="topic.sourceType">{{ getSourceName(topic.sourceType) }}</span>
           </div>
 
           <h3 class="topic-title">{{ topic.title }}</h3>
@@ -91,12 +91,14 @@ export default {
       filterOptions: [],
       topicList: [],
       communityCategoryOptions: [],
+      sourceTypeOptions: [],
       categoryList: [],
       total: 0
     }
   },
   created() {
     this.getDicts('nh_community_category_type').then(res => { this.communityCategoryOptions = res.data || [] })
+    this.getDicts('nh_community_source_type').then(res => { this.sourceTypeOptions = res.data || [] })
     this.getList()
     this.getCategoryList()
   },
@@ -208,13 +210,13 @@ export default {
     },
     // 获取来源类型名称
     getSourceName(type) {
-      const map = {
-        1: '观察记录',
-        2: '物种鉴定',
-        3: '野外调查',
-        4: '观察日志'
-      }
-      return map[type] || ''
+      const item = this.sourceTypeOptions.find(d => d.dictValue == type)
+      return item ? item.dictLabel : ''
+    },
+    // 获取来源类型颜色class
+    getSourceClass(type) {
+      const item = this.sourceTypeOptions.find(d => d.dictValue == type)
+      return item ? (item.listClass || 'default') : 'default'
     }
   }
 }
@@ -369,6 +371,12 @@ export default {
 
     &.badge-source {
       background: #86909c;
+      &--primary   { background: #409EFF; }
+      &--success   { background: #67C23A; }
+      &--warning   { background: #E6A23C; }
+      &--danger    { background: #F56C6C; }
+      &--info      { background: #909399; }
+      &--default   { background: #86909c; }
     }
   }
 }

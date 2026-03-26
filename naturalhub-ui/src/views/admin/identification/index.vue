@@ -216,72 +216,6 @@
       @pagination="getList"
     />
 
-    <!-- 查看详情对话框 -->
-    <el-dialog :title="'鉴定求助详情'" :visible.sync="detailOpen" width="900px" append-to-body>
-      <el-descriptions :column="2" border>
-        <el-descriptions-item label="记录ID">{{ detail.identificationId }}</el-descriptions-item>
-        <el-descriptions-item label="发布人">{{ detail.createBy }}</el-descriptions-item>
-        <el-descriptions-item label="标题" :span="2">{{ detail.title }}</el-descriptions-item>
-        <el-descriptions-item label="观察时间">{{ parseTime(detail.observationTime) }}</el-descriptions-item>
-        <el-descriptions-item label="观察地点">{{ detail.location }}</el-descriptions-item>
-        <el-descriptions-item label="经纬度" v-if="detail.latitude && detail.longitude">
-          {{ detail.latitude }}, {{ detail.longitude }}
-        </el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <dict-tag :options="identificationStatusOptions" :value="String(detail.status)"/>
-        </el-descriptions-item>
-        <el-descriptions-item label="审核状态">
-          <dict-tag :options="auditStatusOptions" :value="String(detail.auditStatus)"/>
-        </el-descriptions-item>
-        <el-descriptions-item label="回答数">{{ detail.answerCount || 0 }}</el-descriptions-item>
-        <el-descriptions-item label="特征描述" :span="2" v-if="detail.features">{{
-            detail.features
-          }}
-        </el-descriptions-item>
-        <el-descriptions-item label="生境描述" :span="2" v-if="detail.habitat">{{
-            detail.habitat
-          }}
-        </el-descriptions-item>
-        <el-descriptions-item label="详细描述" :span="2">
-          <div style="white-space: pre-wrap;">{{ detail.description }}</div>
-        </el-descriptions-item>
-        <el-descriptions-item label="图片" :span="2" v-if="detailImages.length > 0">
-          <el-image
-            v-for="(url, index) in detailImages"
-            :key="index"
-            :src="url"
-            :preview-src-list="detailImages"
-            style="width: 100px; height: 100px; margin-right: 10px;"
-            fit="cover"
-          />
-        </el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ parseTime(detail.createTime) }}</el-descriptions-item>
-        <el-descriptions-item label="审核时间" v-if="detail.auditTime">
-          {{ parseTime(detail.auditTime) }}
-        </el-descriptions-item>
-        <el-descriptions-item label="审核意见" :span="2" v-if="detail.auditRemark">
-          {{ detail.auditRemark }}
-        </el-descriptions-item>
-      </el-descriptions>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="detailOpen = false">关 闭</el-button>
-        <el-button
-          v-if="detail.auditStatus === 1"
-          type="success"
-          @click="handleApprove(detail)"
-          v-hasPermi="['identification:admin:approve']"
-        >审核通过
-        </el-button>
-        <el-button
-          v-if="detail.auditStatus === 1"
-          type="danger"
-          @click="handleReject(detail)"
-          v-hasPermi="['identification:admin:reject']"
-        >审核驳回
-        </el-button>
-      </div>
-    </el-dialog>
-
     <!-- 审核通过对话框 -->
     <el-dialog title="审核通过" :visible.sync="approveOpen" width="500px" append-to-body>
       <el-form ref="approveForm" :model="approveForm" label-width="100px">
@@ -327,7 +261,6 @@
 <script>
 import {
   listIdentification,
-  getIdentification,
   delIdentification,
   auditIdentification,
   batchApproveIdentification,
@@ -345,9 +278,6 @@ export default {
       showSearch: true,
       total: 0,
       identificationList: [],
-      detailOpen: false,
-      detail: {},
-      detailImages: [],
       approveOpen: false,
       approveForm: {},
       rejectOpen: false,
@@ -437,16 +367,7 @@ export default {
       this.multiple = !selection.length;
     },
     handleView(row) {
-      this.detailOpen = true;
-      this.detail = row;
-      this.detailImages = [];
-
-      getIdentification(row.identificationId).then(res => {
-        this.detail = res.data || res || {};
-        if (this.detail.images) {
-          this.detailImages = this.detail.images.split(',');
-        }
-      });
+      this.$router.push({ path: '/admin/identification/detail/' + row.identificationId });
     },
     handleApprove(row) {
       this.approveForm = {

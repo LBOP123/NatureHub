@@ -18,10 +18,19 @@ export function getIdentification(identificationId) {
 }
 
 // 删除鉴定求助（管理端）
-export function delIdentification(identificationIds) {
+export function delIdentificationAdmin(identificationIds) {
   return request({
     url: '/admin/identification/' + identificationIds,
     method: 'delete'
+  })
+}
+
+// 修改鉴定求助（管理端）
+export function updateIdentification(data) {
+  return request({
+    url: '/admin/identification',
+    method: 'put',
+    data: data
   })
 }
 
@@ -57,5 +66,31 @@ export function getIdentificationStats() {
   return request({
     url: '/admin/identification/stats',
     method: 'get'
+  })
+}
+
+// ==================== 投票相关接口 ====================
+
+// 获取投票状态（管理端）
+export function getVoteStatusAdmin(identificationId) {
+  return request({
+    url: '/admin/identification/' + identificationId + '/vote/status',
+    method: 'get'
+  })
+}
+
+// 获取投票详情（管理端）
+export function getVoteDetailsAdmin(identificationId) {
+  return request({
+    url: '/admin/identification/' + identificationId + '/vote/details',
+    method: 'get'
+  })
+}
+
+// 结束投票（管理端）
+export function endVotingAdmin(identificationId) {
+  return request({
+    url: '/admin/identification/' + identificationId + '/vote/end',
+    method: 'post'
   })
 }

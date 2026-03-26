@@ -4,7 +4,7 @@
       <div class="header-content">
         <div class="header-icon">🔍</div>
         <div class="header-text">
-          <h2>AI生物识别</h2>
+          <h2>生物识别</h2>
           <p>上传图片，智能识别动物、植物与生物信息</p>
         </div>
       </div>
@@ -60,8 +60,9 @@
           </div>
 
           <!-- 分页 -->
-          <div v-if="historyTotal > 0" class="history-pagination">
+          <div class="history-pagination">
             <el-pagination
+              v-show="historyTotal > historyPageSize"
               :current-page="historyPage"
               :page-size="historyPageSize"
               :total="historyTotal"
@@ -250,7 +251,7 @@
               <span class="score-label">置信度</span>
               <el-progress
                 :percentage="Math.round(selectedHistory.confidence * 100)"
-                :color="getScoreColor(selectedHistory.confidence / 100)"
+                :color="getScoreColor(selectedHistory.confidence)"
                 :stroke-width="12"
               ></el-progress>
             </div>
@@ -689,6 +690,7 @@ export default {
       .history-list {
         flex: 1;
         overflow-y: auto;
+        min-height: 280px;
         max-height: 350px;
         padding-right: 5px;
 
@@ -775,10 +777,11 @@ export default {
       }
 
       .history-pagination {
-        margin-top: 10px;
+        margin-top: auto;
         text-align: center;
         padding-top: 10px;
         border-top: 1px solid #EBEEF5;
+        min-height: 40px;
 
         ::v-deep .el-pagination {
           justify-content: center;

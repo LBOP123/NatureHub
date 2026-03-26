@@ -21,7 +21,9 @@ import com.naturalhub.system.domain.SpeciesIdentification;
 import com.naturalhub.system.domain.IdentificationAnswer;
 import com.naturalhub.system.service.ISpeciesIdentificationService;
 import com.naturalhub.system.service.IIdentificationAnswerService;
+import com.naturalhub.system.service.ISysUserService;
 import com.naturalhub.common.core.page.TableDataInfo;
+import com.naturalhub.common.core.domain.entity.SysUser;
 
 /**
  * 物种鉴定求助用户端Controller
@@ -38,6 +40,9 @@ public class UserIdentificationController extends BaseController
 
     @Autowired
     private IIdentificationAnswerService identificationAnswerService;
+
+    @Autowired
+    private ISysUserService userService;
 
     /**
      * 查询物种鉴定求助列表（当前用户）
@@ -97,6 +102,11 @@ public class UserIdentificationController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SpeciesIdentification speciesIdentification)
     {
+        AjaxResult check = requireIdentifier();
+        if (check != null)
+        {
+            return check;
+        }
         speciesIdentification.setUserId(SecurityUtils.getUserId());
         speciesIdentification.setCreateBy(SecurityUtils.getUsername());
         return toAjax(speciesIdentificationService.insertSpeciesIdentification(speciesIdentification));
@@ -140,6 +150,11 @@ public class UserIdentificationController extends BaseController
     @PostMapping("/{identificationId}/answer")
     public AjaxResult submitAnswer(@PathVariable Long identificationId, @RequestBody IdentificationAnswer answer)
     {
+        AjaxResult check = requireIdentifier();
+        if (check != null)
+        {
+            return check;
+        }
         SpeciesIdentification identification = speciesIdentificationService.selectSpeciesIdentificationByIdentificationId(identificationId);
         if (identification == null) {
             return AjaxResult.error("鉴定记录不存在");
@@ -196,6 +211,92 @@ public class UserIdentificationController extends BaseController
         } catch (Exception e) {
             return AjaxResult.error(e.getMessage());
         }
+    }
+
+    /**
+     * 获取投票状态
+     */
+    @GetMapping("/{identificationId}/vote/status")
+    public AjaxResult getVoteStatus(@PathVariable Long identificationId)
+    {
+        ISpeciesIdentificationService.VoteStatusInfo status = speciesIdentificationService.getVoteStatus(identificationId);
+        return AjaxResult.success(status);
+    }
+
+    /**
+     * 提交投票
+     */
+    @Log(title = "提交投票", businessType = BusinessType.INSERT)
+    @PostMapping("/{identificationId}/vote")
+    public AjaxResult submitVote(@PathVariable Long identificationId,
+                                 @RequestBody java.util.Map<String, String> body)
+    {
+        try {
+            String voteType = body.get("voteType");
+            if (voteType == null || (!"0".equals(voteType) && !"1".equals(voteType))) {
+                return AjaxResult.error("投票类型必须是 0(同意) 或 1(不同意)");
+            }
+            Long userId = SecurityUtils.getUserId();
+            String userName = SecurityUtils.getUsername();
+            return toAjax(speciesIdentificationService.submitVote(identificationId, userId, userName, voteType));
+        } catch (Exception e) {
+            return AjaxResult.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 获取投票详情列表
+     */
+    @GetMapping("/{identificationId}/vote/details")
+    public AjaxResult getVoteDetails(@PathVariable Long identificationId)
+    {
+        java.util.List<com.naturalhub.system.domain.IdentificationVote> votes = speciesIdentificationService.getVoteDetails(identificationId);
+        return AjaxResult.success(votes);
+    }
+
+    /**
+     * 获取投票数量
+     */
+    @GetMapping("/{identificationId}/vote/count")
+    public AjaxResult getVoteCount(@PathVariable Long identificationId)
+    {
+        int count = speciesIdentificationService.getVoteCount(identificationId);
+        return AjaxResult.success(count);
+    }
+
+    /**
+     * 结束投票（提问者）
+     */
+    @Log(title = "结束投票", businessType = BusinessType.UPDATE)
+    @PostMapping("/{identificationId}/vote/end")
+    public AjaxResult endVoting(@PathVariable Long identificationId)
+    {
+        try {
+            SpeciesIdentification identification = speciesIdentificationService.selectSpeciesIdentificationByIdentificationId(identificationId);
+            if (identification == null || !identification.getUserId().equals(SecurityUtils.getUserId())) {
+                return AjaxResult.error("只有提问者才能结束投票");
+            }
+            return toAjax(speciesIdentificationService.endVoting(identificationId));
+        } catch (Exception e) {
+            return AjaxResult.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 校验当前用户是否为鉴定者
+     */
+    private AjaxResult requireIdentifier()
+    {
+        SysUser user = userService.selectUserById(SecurityUtils.getUserId());
+        if (user == null)
+        {
+            return AjaxResult.error("用户不存在");
+        }
+        if (!"2".equals(user.getUserType()))
+        {
+            return AjaxResult.error("仅鉴定者可以执行该操作");
+        }
+        return null;
     }
 
     /**

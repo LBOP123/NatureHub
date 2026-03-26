@@ -32,6 +32,15 @@ public class IdentificationAnswer extends BaseEntity
     @Excel(name = "回答用户名")
     private String userName;
 
+    /** 回答用户昵称 */
+    private String nickName;
+
+    /** 回答用户头像 */
+    private String userAvatar;
+
+    /** 回答用户类型 */
+    private String userType;
+
     /** 回答内容 */
     @Excel(name = "回答内容")
     private String content;
@@ -108,6 +117,36 @@ public class IdentificationAnswer extends BaseEntity
     public String getUserName() 
     {
         return userName;
+    }
+
+    public String getNickName()
+    {
+        return nickName;
+    }
+
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+    public String getUserAvatar()
+    {
+        return userAvatar;
+    }
+
+    public void setUserAvatar(String userAvatar)
+    {
+        this.userAvatar = userAvatar;
+    }
+
+    public String getUserType()
+    {
+        return userType;
+    }
+
+    public void setUserType(String userType)
+    {
+        this.userType = userType;
     }
 
     public void setContent(String content) 
@@ -221,6 +260,9 @@ public class IdentificationAnswer extends BaseEntity
             .append("identificationId", getIdentificationId())
             .append("userId", getUserId())
             .append("userName", getUserName())
+            .append("nickName", getNickName())
+            .append("userAvatar", getUserAvatar())
+            .append("userType", getUserType())
             .append("content", getContent())
             .append("speciesName", getSpeciesName())
             .append("confidence", getConfidence())

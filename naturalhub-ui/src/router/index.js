@@ -76,7 +76,7 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/user',
+    path: '/admin/user',
     component: Layout,
     hidden: true,
     redirect: 'noredirect',
@@ -167,13 +167,13 @@ export const constantRoutes = [
         path: 'qa',
         component: () => import('@/views/user/qa/index'),
         name: 'UserQA',
-        meta: { title: 'AI科普问答' }
+        meta: { title: '自然对话' }
       },
       {
         path: 'knowledge',
         component: () => import('@/views/user/knowledge/index'),
         name: 'UserKnowledge',
-        meta: { title: '物种知识图谱' }
+        meta: { title: '自然知识库' }
       },
       {
         path: 'community',
@@ -263,6 +263,18 @@ export const constantRoutes = [
         component: () => import('@/views/user/applyIdentifier/index'),
         name: 'ApplyIdentifier',
         meta: { title: '申请成为鉴定者' }
+      },
+      {
+        path: 'gallery',
+        component: () => import('@/views/user/gallery/index'),
+        name: 'My3DGallery',
+        meta: { title: '我的3D展馆' }
+      },
+      {
+        path: 'mark3D',
+        component: () => import('@/views/user/mark3D/index'),
+        name: 'Mark3D',
+        meta: { title: '3D标本库' }
       }
     ]
   }
@@ -270,6 +282,20 @@ export const constantRoutes = [
 
 // 动态路由，基于用户权限动态去加载
 export const dynamicRoutes = [
+  {
+    path: '/admin/identification',
+    component: Layout,
+    hidden: true,
+    permissions: ['admin:identification:query'],
+    children: [
+      {
+        path: 'detail/:id',
+        component: () => import('@/views/admin/identification/detail'),
+        name: 'IdentificationAdminDetail',
+        meta: { title: '鉴定求助详情', activeMenu: '/admin/identification' }
+      }
+    ]
+  },
   {
     path: '/system/user-auth',
     component: Layout,

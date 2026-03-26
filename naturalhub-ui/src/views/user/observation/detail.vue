@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="observation-detail-container">
     <el-card v-loading="loading" class="detail-card">
       <!-- 头部操作栏 -->
@@ -164,7 +164,7 @@
             color="#67C23A"
           >
             <p>审核时间：{{ detail.reviewTime || '暂无' }}</p>
-            <p v-if="detail.reviewerId">审核人ID：{{ detail.reviewerId }}</p>
+            <p v-if="detail.reviewerName || detail.reviewerId">审核人：{{ detail.reviewerName || detail.reviewerId }}</p>
             <p v-if="detail.reviewComment">审核意见：{{ detail.reviewComment }}</p>
           </el-timeline-item>
           <el-timeline-item
@@ -173,7 +173,7 @@
             color="#F56C6C"
           >
             <p>驳回时间：{{ detail.reviewTime || '暂无' }}</p>
-            <p v-if="detail.reviewerId">审核人ID：{{ detail.reviewerId }}</p>
+            <p v-if="detail.reviewerName || detail.reviewerId">审核人：{{ detail.reviewerName || detail.reviewerId }}</p>
             <p v-if="detail.rejectReason">驳回原因：{{ detail.rejectReason }}</p>
           </el-timeline-item>
         </el-timeline>

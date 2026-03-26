@@ -1,76 +1,157 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.naturalhub.system.mapper.SpeciesIdentificationMapper">
-    
+
     <resultMap type="SpeciesIdentification" id="SpeciesIdentificationResult">
-        <result property="identificationId"    column="identification_id"    />
-        <result property="userId"    column="user_id"    />
-        <result property="userName"    column="user_name"    />
-        <result property="title"    column="title"    />
-        <result property="description"    column="description"    />
-        <result property="images"    column="images"    />
-        <result property="observationTime"    column="observation_time"    />
-        <result property="location"    column="location"    />
-        <result property="latitude"    column="latitude"    />
-        <result property="longitude"    column="longitude"    />
-        <result property="habitat"    column="habitat"    />
-        <result property="features"    column="features"    />
-        <result property="status"    column="status"    />
-        <result property="bestAnswerId"    column="best_answer_id"    />
-        <result property="answerCount"    column="answer_count"    />
-        <result property="viewCount"    column="view_count"    />
-        <result property="isShared"    column="is_shared"    />
-        <result property="sharedTopicId"    column="shared_topic_id"    />
-        <result property="auditStatus"    column="audit_status"    />
-        <result property="auditTime"    column="audit_time"    />
-        <result property="auditBy"    column="audit_by"    />
-        <result property="auditRemark"    column="audit_remark"    />
-        <result property="delFlag"    column="del_flag"    />
-        <result property="createBy"    column="create_by"    />
-        <result property="createTime"    column="create_time"    />
-        <result property="updateBy"    column="update_by"    />
-        <result property="updateTime"    column="update_time"    />
-        <result property="remark"    column="remark"    />
+        <result property="identificationId" column="identification_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="images" column="images"/>
+        <result property="observationTime" column="observation_time"/>
+        <result property="location" column="location"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="habitat" column="habitat"/>
+        <result property="features" column="features"/>
+        <result property="status" column="status"/>
+        <result property="bestAnswerId" column="best_answer_id"/>
+        <result property="answerCount" column="answer_count"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="isShared" column="is_shared"/>
+        <result property="sharedTopicId" column="shared_topic_id"/>
+        <result property="auditStatus" column="audit_status"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditRemark" column="audit_remark"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="aiSpeciesName" column="ai_species_name"/>
+        <result property="aiScore" column="ai_score"/>
+        <result property="aiType" column="ai_type"/>
+        <result property="baikeUrl" column="baike_url"/>
+        <result property="baikeImageUrl" column="baike_image_url"/>
+        <result property="baikeDescription" column="baike_description"/>
+        <result property="voteAgreeScore" column="vote_agree_score"/>
+        <result property="voteDisagreeScore" column="vote_disagree_score"/>
+        <result property="voteStatus" column="vote_status"/>
+        <result property="voteResult" column="vote_result"/>
     </resultMap>
 
     <sql id="selectSpeciesIdentificationVo">
-        select si.identification_id, si.user_id, u.user_name, si.title, si.description, si.images, 
-               si.observation_time, si.location, si.latitude, si.longitude, si.habitat, si.features, 
-               si.status, si.best_answer_id, si.answer_count, si.view_count, si.is_shared, si.shared_topic_id,
-               si.audit_status, si.audit_time, si.audit_by, si.audit_remark, si.del_flag,
-               si.create_by, si.create_time, si.update_by, si.update_time, si.remark
+        select si.identification_id,
+               si.user_id,
+               u.user_name,
+               si.title,
+               si.description,
+               si.images,
+               si.observation_time,
+               si.location,
+               si.latitude,
+               si.longitude,
+               si.habitat,
+               si.features,
+               si.status,
+               si.best_answer_id,
+               si.answer_count,
+               si.view_count,
+               si.is_shared,
+               si.shared_topic_id,
+               si.audit_status,
+               si.audit_time,
+               si.audit_by,
+               si.audit_remark,
+               si.del_flag,
+               si.create_by,
+               si.create_time,
+               si.update_by,
+               si.update_time,
+               si.remark,
+               si.ai_species_name,
+               si.ai_score,
+               si.ai_type,
+               si.baike_url,
+               si.baike_image_url,
+               si.baike_description,
+               si.vote_agree_score,
+               si.vote_disagree_score,
+               si.vote_status,
+               si.vote_result
         from nh_species_identification si
-        left join sys_user u on si.user_id = u.user_id
+                 left join sys_user u on si.user_id = u.user_id
     </sql>
 
-    <select id="selectSpeciesIdentificationList" parameterType="SpeciesIdentification" resultMap="SpeciesIdentificationResult">
+    <select id="selectSpeciesIdentificationList" parameterType="SpeciesIdentification"
+            resultMap="SpeciesIdentificationResult">
         <include refid="selectSpeciesIdentificationVo"/>
-        <where>  
+        <where>
             si.del_flag = '0'
-            <if test="userId != null "> and si.user_id = #{userId}</if>
-            <if test="isShared != null"> and si.is_shared = #{isShared}</if>
-            <if test="title != null  and title != ''"> and si.title like concat('%', #{title}, '%')</if>
-            <if test="status != null"> and si.status = #{status}</if>
-            <if test="auditStatus != null"> and si.audit_status = #{auditStatus}</if>
-            <if test="location != null  and location != ''"> and si.location like concat('%', #{location}, '%')</if>
-            <if test="params.beginObservationTime != null and params.beginObservationTime != ''"><!-- 开始时间检索 -->
-                and date_format(si.observation_time,'%y%m%d') &gt;= date_format(#{params.beginObservationTime},'%y%m%d')
-            </if>
-            <if test="params.endObservationTime != null and params.endObservationTime != ''"><!-- 结束时间检索 -->
-                and date_format(si.observation_time,'%y%m%d') &lt;= date_format(#{params.endObservationTime},'%y%m%d')
-            </if>
+            <if test="userId != null">AND si.user_id = #{userId}</if>
+            <if test="title != null and title != ''">AND si.title LIKE CONCAT('%', #{title}, '%')</if>
+            <if test="status != null">AND si.status = #{status}</if>
+            <if test="auditStatus != null">AND si.audit_status = #{auditStatus}</if>
+            <if test="isShared != null">AND si.is_shared = #{isShared}</if>
         </where>
         order by si.create_time desc
     </select>
-    
-    <select id="selectSpeciesIdentificationByIdentificationId" parameterType="Long" resultMap="SpeciesIdentificationResult">
+
+    <select id="selectSpeciesIdentificationByIdentificationId" parameterType="Long"
+            resultMap="SpeciesIdentificationResult">
         <include refid="selectSpeciesIdentificationVo"/>
         where si.identification_id = #{identificationId} and si.del_flag = '0'
     </select>
-        
-    <insert id="insertSpeciesIdentification" parameterType="SpeciesIdentification" useGeneratedKeys="true" keyProperty="identificationId">
+
+    <update id="updateSpeciesIdentification" parameterType="SpeciesIdentification">
+        update nh_species_identification
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="images != null">images = #{images},</if>
+            <if test="observationTime != null">observation_time = #{observationTime},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="latitude != null">latitude = #{latitude},</if>
+            <if test="longitude != null">longitude = #{longitude},</if>
+            <if test="habitat != null">habitat = #{habitat},</if>
+            <if test="features != null">features = #{features},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="bestAnswerId != null">best_answer_id = #{bestAnswerId},</if>
+            <if test="answerCount != null">answer_count = #{answerCount},</if>
+            <if test="viewCount != null">view_count = #{viewCount},</if>
+            <if test="isShared != null">is_shared = #{isShared},</if>
+            <if test="sharedTopicId != null">shared_topic_id = #{sharedTopicId},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+            <if test="auditBy != null">audit_by = #{auditBy},</if>
+            <if test="auditRemark != null">audit_remark = #{auditRemark},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="aiSpeciesName != null">ai_species_name = #{aiSpeciesName},</if>
+            <if test="aiScore != null">ai_score = #{aiScore},</if>
+            <if test="aiType != null">ai_type = #{aiType},</if>
+            <if test="baikeUrl != null">baike_url = #{baikeUrl},</if>
+            <if test="baikeImageUrl != null">baike_image_url = #{baikeImageUrl},</if>
+            <if test="baikeDescription != null">baike_description = #{baikeDescription},</if>
+            <if test="voteAgreeScore != null">vote_agree_score = #{voteAgreeScore},</if>
+            <if test="voteDisagreeScore != null">vote_disagree_score = #{voteDisagreeScore},</if>
+            <if test="voteStatus != null">vote_status = #{voteStatus},</if>
+            <if test="voteResult != null">vote_result = #{voteResult},</if>
+        </trim>
+        where identification_id = #{identificationId}
+    </update>
+
+    <insert id="insertSpeciesIdentification" parameterType="SpeciesIdentification" useGeneratedKeys="true"
+            keyProperty="identificationId">
         insert into nh_species_identification
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="userId != null">user_id,</if>
@@ -99,7 +180,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">update_by,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="remark != null">remark,</if>
-         </trim>
+            <if test="aiSpeciesName != null">ai_species_name,</if>
+            <if test="aiScore != null">ai_score,</if>
+            <if test="aiType != null">ai_type,</if>
+            <if test="baikeUrl != null">baike_url,</if>
+            <if test="baikeImageUrl != null">baike_image_url,</if>
+            <if test="baikeDescription != null">baike_description,</if>
+            <if test="voteAgreeScore != null">vote_agree_score,</if>
+            <if test="voteDisagreeScore != null">vote_disagree_score,</if>
+            <if test="voteStatus != null">vote_status,</if>
+            <if test="voteResult != null">vote_result,</if>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="userId != null">#{userId},</if>
             <if test="title != null and title != ''">#{title},</if>
@@ -127,65 +218,74 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="remark != null">#{remark},</if>
-         </trim>
+            <if test="aiSpeciesName != null">#{aiSpeciesName},</if>
+            <if test="aiScore != null">#{aiScore},</if>
+            <if test="aiType != null">#{aiType},</if>
+            <if test="baikeUrl != null">#{baikeUrl},</if>
+            <if test="baikeImageUrl != null">#{baikeImageUrl},</if>
+            <if test="baikeDescription != null">#{baikeDescription},</if>
+            <if test="voteAgreeScore != null">#{voteAgreeScore},</if>
+            <if test="voteDisagreeScore != null">#{voteDisagreeScore},</if>
+            <if test="voteStatus != null">#{voteStatus},</if>
+            <if test="voteResult != null">#{voteResult},</if>
+        </trim>
     </insert>
 
-    <update id="updateSpeciesIdentification" parameterType="SpeciesIdentification">
-        update nh_species_identification
-        <trim prefix="SET" suffixOverrides=",">
-            <if test="title != null and title != ''">title = #{title},</if>
-            <if test="description != null">description = #{description},</if>
-            <if test="images != null">images = #{images},</if>
-            <if test="observationTime != null">observation_time = #{observationTime},</if>
-            <if test="location != null">location = #{location},</if>
-            <if test="latitude != null">latitude = #{latitude},</if>
-            <if test="longitude != null">longitude = #{longitude},</if>
-            <if test="habitat != null">habitat = #{habitat},</if>
-            <if test="features != null">features = #{features},</if>
-            <if test="status != null">status = #{status},</if>
-            <if test="bestAnswerId != null">best_answer_id = #{bestAnswerId},</if>
-            <if test="answerCount != null">answer_count = #{answerCount},</if>
-            <if test="viewCount != null">view_count = #{viewCount},</if>
-            <if test="isShared != null">is_shared = #{isShared},</if>
-            <if test="sharedTopicId != null">shared_topic_id = #{sharedTopicId},</if>
-            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
-            <if test="auditTime != null">audit_time = #{auditTime},</if>
-            <if test="auditBy != null">audit_by = #{auditBy},</if>
-            <if test="auditRemark != null">audit_remark = #{auditRemark},</if>
-            <if test="updateBy != null">update_by = #{updateBy},</if>
-            <if test="updateTime != null">update_time = #{updateTime},</if>
-            <if test="remark != null">remark = #{remark},</if>
-        </trim>
-        where identification_id = #{identificationId}
-    </update>
-
     <delete id="deleteSpeciesIdentificationByIdentificationId" parameterType="Long">
-        update nh_species_identification set del_flag = '2' where identification_id = #{identificationId}
+        update nh_species_identification
+        set del_flag = '2'
+        where identification_id = #{identificationId}
     </delete>
 
-    <delete id="deleteSpeciesIdentificationByIdentificationIds" parameterType="String">
-        update nh_species_identification set del_flag = '2' where identification_id in 
+    <delete id="deleteSpeciesIdentificationByIdentificationIds" parameterType="Long">
+        update nh_species_identification
+        set del_flag = '2'
+        where identification_id in
         <foreach item="identificationId" collection="array" open="(" separator="," close=")">
             #{identificationId}
         </foreach>
     </delete>
 
-    <update id="incrementViewCount" parameterType="Long">
-        update nh_species_identification set view_count = view_count + 1 where identification_id = #{identificationId}
-    </update>
+    <select id="selectSpeciesIdentificationBySharedTopicId" parameterType="Long"
+            resultMap="SpeciesIdentificationResult">
+        <include refid="selectSpeciesIdentificationVo"/>
+        where si.shared_topic_id = #{sharedTopicId} and si.del_flag = '0'
+    </select>
 
     <update id="updateAnswerCount" parameterType="Long">
-        update nh_species_identification set answer_count = (
-            select count(*) from nh_identification_answer where identification_id = #{identificationId} and del_flag = '0'
-        ) where identification_id = #{identificationId}
+        update nh_species_identification
+        set answer_count = (select count(*)
+                            from nh_identification_answer
+                            where identification_id = #{identificationId}
+                              and del_flag = '0')
+        where identification_id = #{identificationId}
     </update>
 
-    <update id="setBestAnswer">
-        update nh_species_identification set best_answer_id = #{answerId}, status = 2 where identification_id = #{identificationId}
+    <update id="setBestAnswer" parameterType="Long">
+        update nh_species_identification
+        set best_answer_id = #{answerId}
+        where identification_id = #{identificationId}
     </update>
 
-    <select id="selectSpeciesIdentificationBySharedTopicId" parameterType="Long" resultMap="SpeciesIdentificationResult">
-        <include refid="selectSpeciesIdentificationVo"/>
-        where shared_topic_id = #{sharedTopicId}
-    </select>
+    <update id="updateVoteResult">
+        update nh_species_identification
+        set vote_status         = #{voteStatus},
+            vote_result         = #{voteResult},
+            vote_agree_score    = #{agreeScore},
+            vote_disagree_score = #{disagreeScore}
+        where identification_id = #{identificationId}
+    </update>
+
+    <update id="updateStatus">
+        update nh_species_identification
+        set status = #{status}
+        where identification_id = #{identificationId}
+    </update>
+
+    <update id="incrementViewCount" parameterType="Long">
+        update nh_species_identification
+        set view_count = view_count + 1
+        where identification_id = #{identificationId}
+    </update>
 </mapper>
+

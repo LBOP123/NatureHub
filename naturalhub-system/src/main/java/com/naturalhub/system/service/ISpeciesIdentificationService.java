@@ -102,4 +102,107 @@ public interface ISpeciesIdentificationService
      * @return 社群话题ID
      */
     public Long shareToCommunity(Long identificationId, String content, String createBy);
+
+    /**
+     * 异步AI识别（分享到社群时触发）
+     *
+     * @param identificationId 鉴定ID
+     */
+    public void asyncRecognizeAi(Long identificationId);
+
+    /**
+     * 提交投票
+     *
+     * @param identificationId 鉴定ID
+     * @param userId 用户ID
+     * @param userName 用户名
+     * @param voteType 投票类型：0=同意,1=不同意
+     * @return 结果
+     */
+    public int submitVote(Long identificationId, Long userId, String userName, String voteType);
+
+    /**
+     * 获取投票状态信息
+     *
+     * @param identificationId 鉴定ID
+     * @return 投票状态对象
+     */
+    public VoteStatusInfo getVoteStatus(Long identificationId);
+
+    /**
+     * 结束投票
+     *
+     * @param identificationId 鉴定ID
+     * @return 结果
+     */
+    public int endVoting(Long identificationId);
+
+    /**
+     * 获取投票详情列表
+     *
+     * @param identificationId 鉴定ID
+     * @return 投票记录列表
+     */
+    public java.util.List<com.naturalhub.system.domain.IdentificationVote> getVoteDetails(Long identificationId);
+
+    /**
+     * 获取投票数量
+     *
+     * @param identificationId 鉴定ID
+     * @return 投票数量
+     */
+    public int getVoteCount(Long identificationId);
+
+    /**
+     * 投票状态信息类
+     */
+    public static class VoteStatusInfo {
+        /** 同意积分 */
+        private int agreeScore;
+        /** 不同意积分 */
+        private int disagreeScore;
+        /** 投票状态 */
+        private String voteStatus;
+        /** 投票结果：0=同意,1=不同意,2=未确定 */
+        private String voteResult;
+
+        public VoteStatusInfo(int agreeScore, int disagreeScore, String voteStatus, String voteResult) {
+            this.agreeScore = agreeScore;
+            this.disagreeScore = disagreeScore;
+            this.voteStatus = voteStatus;
+            this.voteResult = voteResult;
+        }
+
+        public int getAgreeScore() {
+            return agreeScore;
+        }
+
+        public void setAgreeScore(int agreeScore) {
+            this.agreeScore = agreeScore;
+        }
+
+        public int getDisagreeScore() {
+            return disagreeScore;
+        }
+
+        public void setDisagreeScore(int disagreeScore) {
+            this.disagreeScore = disagreeScore;
+        }
+
+        public String getVoteStatus() {
+            return voteStatus;
+        }
+
+        public void setVoteStatus(String voteStatus) {
+            this.voteStatus = voteStatus;
+        }
+
+        public String getVoteResult() {
+            return voteResult;
+        }
+
+        public void setVoteResult(String voteResult) {
+            this.voteResult = voteResult;
+        }
+    }
 }

@@ -57,6 +57,9 @@
               <el-dropdown-item command="settings">
                 <i class="el-icon-setting"></i> 设置
               </el-dropdown-item>
+              <el-dropdown-item command="gallery">
+                <i class="el-icon-office-building"></i> 我的3D展馆
+              </el-dropdown-item>
               <el-dropdown-item command="applyIdentifier" :disabled="isIdentifier">
                 <i class="el-icon-s-custom"></i>
                 {{ isIdentifier ? '已是鉴定者' : '申请成为鉴定者' }}
@@ -170,6 +173,12 @@ export default {
     },
     handleCommand(command) {
       switch (command) {
+        case 'gallery':
+          this.$router.push('/user/gallery')
+          break
+        case 'gallery':
+          this.$router.push('/user/gallery')
+          break
         case 'profile':
           this.$router.push({ path: '/user/myProfile' })
           break

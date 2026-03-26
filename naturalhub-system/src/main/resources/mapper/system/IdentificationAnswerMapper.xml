@@ -9,6 +9,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="identificationId"    column="identification_id"    />
         <result property="userId"    column="user_id"    />
         <result property="userName"    column="user_name"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="userAvatar"    column="user_avatar"    />
+        <result property="userType"    column="user_type"    />
         <result property="content"    column="content"    />
         <result property="speciesName"    column="species_name"    />
         <result property="confidence"    column="confidence"    />
@@ -22,10 +25,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectIdentificationAnswerVo">
-        select ia.answer_id, ia.identification_id, ia.user_id, ia.user_name, ia.content, 
+        select ia.answer_id, ia.identification_id, ia.user_id, ia.user_name, ia.content,
                ia.species_name, ia.confidence, ia.reference, ia.images, ia.is_best, ia.like_count,
-               ia.del_flag, ia.create_time, ia.update_time
+               ia.del_flag, ia.create_time, ia.update_time,
+               su.nick_name, su.avatar as user_avatar, su.user_type
         from nh_identification_answer ia
+        left join sys_user su on ia.user_id = su.user_id
     </sql>
 
     <select id="selectIdentificationAnswerList" parameterType="IdentificationAnswer" resultMap="IdentificationAnswerResult">
