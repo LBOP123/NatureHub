@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/qa")
+@RequestMapping(value = "/api/qa", produces = "application/json;charset=UTF-8")
 public class QaController {
 
     @Autowired
@@ -26,10 +26,10 @@ public class QaController {
         try {
             String question = (String) params.get("question");
             Long conversationId = params.get("conversationId") != null ?
-                Long.valueOf(params.get("conversationId").toString()) : null;
+                    Long.valueOf(params.get("conversationId").toString()) : null;
 
             if (question == null || question.trim().isEmpty()) {
-                return AjaxResult.error("??????");
+                return AjaxResult.error("问题不能为空");
             }
 
             String answer = wikiRagChatUtil.qwen(question);
@@ -49,9 +49,9 @@ public class QaController {
 
             qaHistoryService.saveQaHistory(history);
 
-            return AjaxResult.success("????", answer);
+            return AjaxResult.success("回答成功", answer);
         } catch (Exception e) {
-            return AjaxResult.error("AI?????" + e.getMessage());
+            return AjaxResult.error("AI回答异常：" + e.getMessage());
         }
     }
 
@@ -60,10 +60,10 @@ public class QaController {
         try {
             String question = (String) params.get("question");
             Long conversationId = params.get("conversationId") != null ?
-                Long.valueOf(params.get("conversationId").toString()) : null;
+                    Long.valueOf(params.get("conversationId").toString()) : null;
 
             if (question == null || question.trim().isEmpty()) {
-                return AjaxResult.error("??????");
+                return AjaxResult.error("问题不能为空");
             }
 
             String answer = wikiRagChatUtil.chat(question);
@@ -85,9 +85,9 @@ public class QaController {
 
             qaHistoryService.saveQaHistory(history);
 
-            return AjaxResult.success("????", answer);
+            return AjaxResult.success("回答成功", answer);
         } catch (Exception e) {
-            return AjaxResult.error("????????" + e.getMessage());
+            return AjaxResult.error("知识库问答异常：" + e.getMessage());
         }
     }
 
@@ -98,7 +98,7 @@ public class QaController {
             List<QaConversation> conversations = qaHistoryService.getUserConversations(username, qaType);
             return AjaxResult.success(conversations);
         } catch (Exception e) {
-            return AjaxResult.error("?????" + e.getMessage());
+            return AjaxResult.error("获取会话失败：" + e.getMessage());
         }
     }
 
@@ -112,7 +112,7 @@ public class QaController {
             Long conversationId = qaHistoryService.createConversation(username, title, qaType);
             return AjaxResult.success(conversationId);
         } catch (Exception e) {
-            return AjaxResult.error("?????" + e.getMessage());
+            return AjaxResult.error("创建会话失败：" + e.getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ public class QaController {
             List<QaHistory> messages = qaHistoryService.getConversationMessages(conversationId);
             return AjaxResult.success(messages);
         } catch (Exception e) {
-            return AjaxResult.error("?????" + e.getMessage());
+            return AjaxResult.error("获取消息失败：" + e.getMessage());
         }
     }
 
@@ -130,9 +130,9 @@ public class QaController {
     public AjaxResult deleteConversation(@PathVariable Long conversationId) {
         try {
             qaHistoryService.deleteConversation(conversationId);
-            return AjaxResult.success("????");
+            return AjaxResult.success("删除成功");
         } catch (Exception e) {
-            return AjaxResult.error("?????" + e.getMessage());
+            return AjaxResult.error("删除会话失败：" + e.getMessage());
         }
     }
 
