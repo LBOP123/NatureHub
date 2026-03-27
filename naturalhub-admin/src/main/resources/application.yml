@@ -68,14 +68,13 @@ spring:
   # redis 配置
   redis:
     # 地址
-#    host: localhost
-    host: 81.68.236.229
+    host: ${REDIS_HOST:81.68.236.229}
     # 端口，默认为6379
-    port: 6379
+    port: ${REDIS_PORT:6379}
     # 数据库索引
     database: 0
     # 密码
-    password:
+    password: ${REDIS_PASSWORD:}
     # 连接超时时间
     timeout: 10s
     lettuce:
@@ -93,8 +92,8 @@ spring:
 token:
   # 令牌自定义标识
   header: Authorization
-  # 令牌密钥
-  secret: abcdefghijklmnopqrstuvwxyz
+  # 令牌密钥（必须设置环境变量 JWT_SECRET）
+  secret: ${JWT_SECRET}
   # 令牌有效期（默认30分钟）
   expireTime: 30
 
@@ -132,24 +131,42 @@ xss:
 # 百度AI配置
 baidu:
   ai:
-    # API Key（请替换为你的实际Key）
-    api-key: ErJWvJtUlv48YRg7FWlvz81w
-    # Secret Key（请替换为你的实际Key）
-    secret-key: tpaZv0Tpuy5032MCXDxnrsuQOsRIE233
+    # API Key
+    api-key: ${BAIDU_API_KEY}
+    # Secret Key
+    secret-key: ${BAIDU_SECRET_KEY}
     # Token缓存时间（秒），默认25天
     token-expire-time: 2160000
+
+# 腾讯云混元生3D极速版配置
+hunyuan3d:
+  # 腾讯云 SecretId
+  secret-id: ${TENCENT_SECRET_ID}
+  # 腾讯云 SecretKey
+  secret-key: ${TENCENT_SECRET_KEY}
+  # 地域
+  region: ${TENCENT_REGION}
 
 # 七牛云配置
 qiniu:
   # 是否启用七牛云存储（true=七牛云，false=本地存储）
   enabled: true
-  # AccessKey（请替换为你的七牛云AccessKey）
-  access-key: LWRS2kV2Nfh7ZYf1Ng4qavgeZqybwt_aQvW1yw-d
-  # SecretKey（请替换为你的七牛云SecretKey）
-  secret-key: GuaYsFRNSM1IS7RcAjdcBwO4FfjpfOOopocetNxH
-  # 存储空间名称（请替换为你的Bucket名称）
-  bucket: naturalhub
-  # 外链域名（请替换为你的七牛云域名，必须以http://或https://开头）
-  domain: http://tbazebjur.hn-bkt.clouddn.com
+  # AccessKey
+  access-key: ${QINIU_ACCESS_KEY}
+  # SecretKey
+  secret-key: ${QINIU_SECRET_KEY}
+  # 存储空间名称
+  bucket: ${QINIU_BUCKET:naturalhub}
+  # 外链域名
+  domain: ${QINIU_DOMAIN}
   # 存储区域（huadong/huabei/huanan/beimei/xinjiapo）
-  zone: huanan
+  zone: ${QINIU_ZONE:huanan}
+
+# Wiki知识库 + 千问AI配置
+wiki:
+  url: ${WIKI_URL}
+  key: ${WIKI_KEY}
+
+qwen:
+  api: ${QWEN_API_URL:https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions}
+  key: ${QWEN_KEY}
