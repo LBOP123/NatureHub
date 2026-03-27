@@ -45,3 +45,15 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
+
+######################################################################
+# Secrets — 绝不提交到 Git
+
+# 本地环境变量文件（含真实密钥）
+.env
+.env.local
+.env.*.local
+
+# Spring Boot 敏感配置文件
+naturalhub-admin/src/main/resources/application.yml
+naturalhub-admin/src/main/resources/application-druid.yml

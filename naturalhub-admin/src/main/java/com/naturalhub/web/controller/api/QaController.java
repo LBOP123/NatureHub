@@ -2,6 +2,7 @@ package com.naturalhub.web.controller.api;
 
 import com.naturalhub.common.core.domain.AjaxResult;
 import com.naturalhub.common.utils.SecurityUtils;
+import com.naturalhub.common.utils.wiki.WikiRagChatUtil;
 import com.naturalhub.system.domain.QaConversation;
 import com.naturalhub.system.domain.QaHistory;
 import com.naturalhub.system.service.IQaHistoryService;
@@ -17,6 +18,9 @@ public class QaController {
     @Autowired
     private IQaHistoryService qaHistoryService;
 
+    @Autowired
+    private WikiRagChatUtil wikiRagChatUtil;
+
     @PostMapping("/ask")
     public AjaxResult ask(@RequestBody Map<String, Object> params, HttpServletRequest request) {
         try {
@@ -25,8 +29,10 @@ public class QaController {
                 Long.valueOf(params.get("conversationId").toString()) : null;
 
             if (question == null || question.trim().isEmpty()) {
+                return AjaxResult.error("??????");
             }
 
+            String answer = wikiRagChatUtil.qwen(question);
 
             QaHistory history = new QaHistory();
             history.setConversationId(conversationId);
@@ -43,7 +49,9 @@ public class QaController {
 
             qaHistoryService.saveQaHistory(history);
 
+            return AjaxResult.success("????", answer);
         } catch (Exception e) {
+            return AjaxResult.error("AI?????" + e.getMessage());
         }
     }
 
@@ -55,8 +63,10 @@ public class QaController {
                 Long.valueOf(params.get("conversationId").toString()) : null;
 
             if (question == null || question.trim().isEmpty()) {
+                return AjaxResult.error("??????");
             }
 
+            String answer = wikiRagChatUtil.chat(question);
             String relatedSpecies = extractSpecies(question);
 
             QaHistory history = new QaHistory();
@@ -75,7 +85,9 @@ public class QaController {
 
             qaHistoryService.saveQaHistory(history);
 
+            return AjaxResult.success("????", answer);
         } catch (Exception e) {
+            return AjaxResult.error("????????" + e.getMessage());
         }
     }
 
@@ -86,6 +98,7 @@ public class QaController {
             List<QaConversation> conversations = qaHistoryService.getUserConversations(username, qaType);
             return AjaxResult.success(conversations);
         } catch (Exception e) {
+            return AjaxResult.error("?????" + e.getMessage());
         }
     }
 
@@ -99,6 +112,7 @@ public class QaController {
             Long conversationId = qaHistoryService.createConversation(username, title, qaType);
             return AjaxResult.success(conversationId);
         } catch (Exception e) {
+            return AjaxResult.error("?????" + e.getMessage());
         }
     }
 
@@ -108,6 +122,7 @@ public class QaController {
             List<QaHistory> messages = qaHistoryService.getConversationMessages(conversationId);
             return AjaxResult.success(messages);
         } catch (Exception e) {
+            return AjaxResult.error("?????" + e.getMessage());
         }
     }
 
@@ -115,7 +130,9 @@ public class QaController {
     public AjaxResult deleteConversation(@PathVariable Long conversationId) {
         try {
             qaHistoryService.deleteConversation(conversationId);
+            return AjaxResult.success("????");
         } catch (Exception e) {
+            return AjaxResult.error("?????" + e.getMessage());
         }
     }
 
