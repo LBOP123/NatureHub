@@ -1,7 +1,12 @@
 package com.naturalhub.common.utils.wiki;
 
+import com.naturalhub.common.config.QwenConfig;
+import com.naturalhub.common.config.WikiRagConfig;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -9,18 +14,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+@Component
 public class WikiRagChatUtil {
 
-    private static final String WIKI_URL = "http://81.68.236.229:3000/graphql";
-    private static final String WIKI_KEY = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGkiOjEsImdycCI6MSwiaWF0IjoxNzcyNzI1ODMyLCJleHAiOjE4MDQyODM0MzIsImF1ZCI6InVybjp3aWtpLmpzIiwiaXNzIjoidXJuOndpa2kuanMifQ.M1DTkryXnFrgjSQ2fUZ55sFOCOdrzO8CTcORa8y6rRc-AxU5yHvUovsCXJD3lzvvdc4-gADwdfaZ6pT18GrTq1vI7WciAx45J6zJd16oB-wa9ObVpvPYBJLt1qm71RAt-xGhxOQgTHQXll1wtixGJTC0Ywfs5HuyhSxiVsCuPlnyPDaQrDDc-gGXxEuSI5XbKizCHrmlH4QqxP8F-HvPxCXnd4VCFzQ3DDyBTkXX67dwM8em4NBe_0RKdOjAR9GaNsKGJGoCVKAe53tiRQbaxFlzbM_ZuGvAJlZpSjx7V6KzM-rnypZQN9nScr0ZHJsWwJORr2D8I2Ts7BvUDVgzQw";
-    private static final String QWEN_KEY = "sk-64fbaf4273d349eeaebddde942edd65f";
-    private static final String QWEN_API = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
+    @Autowired
+    private WikiRagConfig wikiRagConfig;
 
-    public static String search(String keyword) {
+    @Autowired
+    private QwenConfig qwenConfig;
+
+    public String search(String keyword) {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(WIKI_URL).openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(wikiRagConfig.getUrl()).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + WIKI_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + wikiRagConfig.getKey());
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
@@ -32,9 +39,9 @@ public class WikiRagChatUtil {
                 os.write(requestBody.toString().getBytes(StandardCharsets.UTF_8));
             }
 
-            BufferedReader br = conn.getResponseCode() >= 400 
-                ? new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))
-                : new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            BufferedReader br = conn.getResponseCode() >= 400
+                    ? new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))
+                    : new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
 
             StringBuilder sb = new StringBuilder();
             String line;
@@ -47,11 +54,11 @@ public class WikiRagChatUtil {
         }
     }
 
-    public static String getPageContent(String pageId) {
+    public String getPageContent(String pageId) {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(WIKI_URL).openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(wikiRagConfig.getUrl()).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + WIKI_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + wikiRagConfig.getKey());
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
@@ -64,8 +71,8 @@ public class WikiRagChatUtil {
             }
 
             BufferedReader br = conn.getResponseCode() >= 400
-                ? new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))
-                : new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                    ? new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))
+                    : new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
 
             StringBuilder sb = new StringBuilder();
             String line;
@@ -78,11 +85,11 @@ public class WikiRagChatUtil {
         }
     }
 
-    public static String qwen(String prompt) {
+    public String qwen(String prompt) {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(QWEN_API).openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(qwenConfig.getApi()).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + QWEN_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + qwenConfig.getKey());
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
@@ -107,7 +114,7 @@ public class WikiRagChatUtil {
         }
     }
 
-    public static String chat(String question) {
+    public String chat(String question) {
         String wikiSearch = search(question);
         if (wikiSearch == null) return "知识库访问失败";
 
@@ -124,7 +131,6 @@ public class WikiRagChatUtil {
             for (int i = 0; i < results.length(); i++) {
                 JSONObject item = results.getJSONObject(i);
                 String pageId = item.getString("id");
-                String title = item.getString("title");
 
                 String pageJson = getPageContent(pageId);
                 if (pageJson == null) continue;
@@ -136,7 +142,6 @@ public class WikiRagChatUtil {
                         .getString("content")
                         .replaceAll("<[^>]+>", "");
 
-//                context.append("【").append(title).append("】\n");
                 context.append(content).append("\n\n");
             }
 
