@@ -1,12 +1,7 @@
 package com.naturalhub.common.utils.wiki;
 
-import com.naturalhub.common.config.QwenConfig;
-import com.naturalhub.common.config.WikiRagConfig;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -14,20 +9,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-@Component
 public class WikiRagChatUtil {
 
-    @Autowired
-    private WikiRagConfig wikiRagConfig;
 
-    @Autowired
-    private QwenConfig qwenConfig;
-
-    public String search(String keyword) {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(wikiRagConfig.getUrl()).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + wikiRagConfig.getKey());
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
@@ -54,11 +40,8 @@ public class WikiRagChatUtil {
         }
     }
 
-    public String getPageContent(String pageId) {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(wikiRagConfig.getUrl()).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + wikiRagConfig.getKey());
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
@@ -85,11 +68,8 @@ public class WikiRagChatUtil {
         }
     }
 
-    public String qwen(String prompt) {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(qwenConfig.getApi()).openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + qwenConfig.getKey());
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
@@ -114,7 +94,6 @@ public class WikiRagChatUtil {
         }
     }
 
-    public String chat(String question) {
         String wikiSearch = search(question);
         if (wikiSearch == null) return "知识库访问失败";
 
