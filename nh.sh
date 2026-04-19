@@ -1,5 +1,5 @@
 #!/bin/sh
-# ./ry.sh start 启动 stop 停止 restart 重启 status 状态
+# ./nh.sh start 启动 stop 停止 restart 重启 status 状态
 AppName=naturalhub-admin.jar
 
 # JVM参数

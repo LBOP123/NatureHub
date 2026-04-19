@@ -30,7 +30,7 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/VCG211475337255.jpg" alt="species1">
+            <img src="http://tdjd4996t.hd-bkt.clouddn.com/background/%E7%89%A9%E7%A7%8D%E7%9F%A5%E8%AF%86%E5%BA%93.jpg" alt="species1">
           </div>
         </div>
 
@@ -48,7 +48,7 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/%E8%87%AA%E7%84%B6%E5%AF%B9%E8%AF%9D.jpg"
+            <img src="http://tdjd4996t.hd-bkt.clouddn.com/background/%E8%87%AA%E7%84%B6%E5%AF%B9%E8%AF%9D.jpg"
                  alt="knowledge1">
           </div>
         </div>
@@ -67,7 +67,7 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/%E7%94%9F%E7%89%A9%E8%AF%86%E5%88%AB.jpg" alt="term1">
+            <img src="http://tdjd4996t.hd-bkt.clouddn.com/background/%E7%94%9F%E7%89%A9%E8%AF%86%E5%88%AB.jpg" alt="term1">
           </div>
         </div>
 
@@ -85,7 +85,7 @@
             </div>
           </div>
           <div class="card-images">
-            <img src="http://tbazebjur.hn-bkt.clouddn.com/background/3D%E6%A0%87%E6%9C%AC%E5%BA%93.jpg" alt="image1">
+            <img src="http://tdjd4996t.hd-bkt.clouddn.com/background/3D%E6%A0%87%E6%9C%AC%E5%BA%93.jpg" alt="image1">
           </div>
         </div>
       </div>
@@ -99,10 +99,10 @@ export default {
   data() {
     return {
       backgroundImages: [
-        'http://tbazebjur.hn-bkt.clouddn.com/background/%E6%98%A5.JPG',
-        'http://tbazebjur.hn-bkt.clouddn.com/background/%E5%A4%8F.jpg',
-        'http://tbazebjur.hn-bkt.clouddn.com/background/%E7%A7%8B.jpg',
-        'http://tbazebjur.hn-bkt.clouddn.com/background/%E5%86%AC.jpg'
+        'http://tdjd4996t.hd-bkt.clouddn.com/background/%E6%98%A5.JPG',
+        'http://tdjd4996t.hd-bkt.clouddn.com/background/%E5%A4%8F.jpg',
+        'http://tdjd4996t.hd-bkt.clouddn.com/background/%E7%A7%8B.jpg',
+        'http://tdjd4996t.hd-bkt.clouddn.com/background/%E5%86%AC.jpg'
       ],
       currentBgIndex: 0,
       currentBgImage: '',
