@@ -102,11 +102,11 @@ public class UserIdentificationController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SpeciesIdentification speciesIdentification)
     {
-        AjaxResult check = requireIdentifier();
+        /*AjaxResult check = requireIdentifier();
         if (check != null)
         {
             return check;
-        }
+        }*/
         speciesIdentification.setUserId(SecurityUtils.getUserId());
         speciesIdentification.setCreateBy(SecurityUtils.getUsername());
         return toAjax(speciesIdentificationService.insertSpeciesIdentification(speciesIdentification));

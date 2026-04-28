@@ -240,11 +240,11 @@ export default {
     };
   },
   created() {
-    if (!this.isIdentifier) {
+    /*if (!this.isIdentifier) {
       this.$message.error('仅鉴定者可发起物种鉴定')
       this.$router.replace('/user/identification/list')
       return
-    }
+    }*/
     const identificationId = this.$route.query.id || this.$route.params.identificationId;
     if (identificationId) {
       this.loadData(identificationId);
