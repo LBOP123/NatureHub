@@ -453,26 +453,57 @@ export default {
 
 @media (max-width: 768px) {
   .content-wrapper {
-    padding: 40px 16px;
+    padding: 30px 16px;
+    height: auto;
+    min-height: 100vh;
   }
 
   .hero-section {
-    margin-bottom: 60px;
+    margin-bottom: 40px;
 
     .hero-title {
-      font-size: 36px;
+      font-size: 30px;
       letter-spacing: 1px;
+      margin: 0 0 12px 0;
     }
 
     .hero-subtitle {
-      font-size: 16px;
+      font-size: 15px;
     }
   }
 
   .features-grid {
     grid-template-columns: 1fr;
     gap: 16px;
-    margin-bottom: 60px;
+    margin-bottom: 40px;
+  }
+
+  .feature-card {
+    padding: 20px 16px;
+
+    .card-header .card-title {
+      font-size: 18px;
+    }
+
+    .card-stats {
+      gap: 16px;
+
+      .stat-item .stat-number {
+        font-size: 16px;
+      }
+    }
+
+    .card-images img {
+      height: 120px;
+    }
+
+    &:hover {
+      transform: none;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
   }
 
   .explore-nav {
@@ -490,21 +521,65 @@ export default {
     span {
       font-size: 14px;
     }
+
+    &:hover {
+      transform: none;
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
   }
 
   .community-card {
-    padding: 32px 20px;
+    padding: 28px 16px;
 
     .community-icon {
-      font-size: 44px;
+      font-size: 40px;
     }
 
     h3 {
-      font-size: 20px;
+      font-size: 18px;
     }
 
     p {
+      font-size: 13px;
+    }
+
+    &:hover {
+      transform: none;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+@media (max-width: 400px) {
+  .hero-section {
+    .hero-title {
+      font-size: 26px;
+    }
+
+    .hero-subtitle {
       font-size: 14px;
+    }
+  }
+
+  .feature-card {
+    padding: 16px 14px;
+
+    .card-header .card-title {
+      font-size: 16px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+    }
+
+    .card-images img {
+      height: 100px;
     }
   }
 }

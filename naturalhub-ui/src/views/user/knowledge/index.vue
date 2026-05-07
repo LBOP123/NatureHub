@@ -1,6 +1,9 @@
 <template>
   <div class="knowledge-container">
-    <div class="sidebar">
+    <!-- 移动端遮罩 -->
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+
+    <div :class="['sidebar', { open: sidebarOpen }]">
       <div class="sidebar-header">
         <el-button type="success" size="small" icon="el-icon-plus" @click="newConversation" style="width: 100%">
           新建对话
@@ -31,6 +34,7 @@
 
     <div class="chat-area">
       <div class="chat-header">
+        <el-button class="sidebar-toggle" icon="el-icon-s-unfold" @click="sidebarOpen = !sidebarOpen" size="small" circle></el-button>
         <h3>自然知识库</h3>
       </div>
 
@@ -127,6 +131,7 @@ export default {
       loading: false,
       conversations: [],
       currentConversationId: null,
+      sidebarOpen: false,
       // 轮询定时器 map：taskId -> timer
       pollingTimers: {}
     }
@@ -559,5 +564,96 @@ export default {
   .input-row { display: flex; gap: 12px; }
   ::v-deep .el-textarea { flex: 1; }
   .el-button { align-self: flex-end; }
+}
+
+// 默认隐藏移动端按钮
+.sidebar-toggle { display: none; }
+.sidebar-overlay { display: none; }
+
+// 手机端适配
+@media (max-width: 768px) {
+  .knowledge-container {
+    height: 100vh;
+    position: relative;
+  }
+
+  // 侧边栏变为抽屉
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 1001;
+    transition: left 0.3s ease;
+    box-shadow: none;
+
+    &.open {
+      left: 0;
+      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  // 遮罩
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+  }
+
+  // 显示切换按钮
+  .chat-header {
+    position: relative;
+    text-align: center;
+
+    h3 {
+      font-size: 17px;
+      margin: 0;
+    }
+
+    .sidebar-toggle {
+      display: inline-flex;
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+
+  .messages {
+    padding: 16px 12px;
+  }
+
+  .message-content {
+    max-width: 88%;
+    font-size: 13px;
+  }
+
+  .input-area {
+    padding: 12px;
+
+    .quick-questions {
+      gap: 6px;
+      margin-bottom: 10px;
+
+      .el-button {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+    }
+
+    .input-row {
+      gap: 8px;
+
+      ::v-deep .el-textarea__inner {
+        font-size: 14px;
+      }
+    }
+  }
 }
 </style>

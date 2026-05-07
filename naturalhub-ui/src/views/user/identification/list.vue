@@ -539,6 +539,7 @@ export default {
           margin-top: 10px;
           display: flex;
           gap: 6px;
+          flex-wrap: wrap;
         }
       }
     }
@@ -610,23 +611,96 @@ export default {
 
 @media (max-width: 1200px) {
   .grid-view {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 @media (max-width: 992px) {
   .grid-view {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 @media (max-width: 768px) {
-  .identification-list-container { padding: 15px 10px; }
-  .grid-view { grid-template-columns: 1fr; }
-  .view-switch-top { left: 10px; }
+  .identification-list-container {
+    padding: 15px 10px;
+  }
+
+  .page-header {
+    padding-top: 50px;
+
+    .page-title {
+      font-size: 22px;
+    }
+  }
+
+  .view-switch-top {
+    top: 15px;
+    left: 10px;
+  }
 
   .search-wrapper {
     flex-wrap: wrap !important;
-    .search-input { width: 100%; }
-    .search-btn, .add-btn { flex: 1; }
+
+    .search-input {
+      width: 100%;
+    }
+
+    .search-btn, .add-btn {
+      flex: 1;
+    }
+  }
+
+  .grid-view {
+    grid-template-columns: 1fr !important;
+
+    .card-image-wrapper {
+      height: 160px;
+    }
+  }
+
+  // 列表视图：隐藏表头，改为卡片布局
+  .list-header {
+    display: none;
+  }
+
+  .list-content .list-item {
+    flex-wrap: wrap;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-bottom: none;
+
+    .col-1 {
+      flex: 0 0 70px;
+    }
+
+    .col-2 {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .col-3 {
+      display: none;
+    }
+
+    .col-4 {
+      display: none;
+    }
+
+    .col-5 {
+      flex: 0 0 100%;
+      padding-top: 8px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 4px;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+  }
+
+  // 分享弹窗适配
+  ::v-deep .el-dialog {
+    width: 95vw !important;
+    margin: 0 auto;
   }
 }
 </style>

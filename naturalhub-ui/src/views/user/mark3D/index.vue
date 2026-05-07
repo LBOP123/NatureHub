@@ -731,6 +731,11 @@ export default {
     display: block !important;
   }
 
+  .slot-uploader ::v-deep .el-upload {
+    display: block;
+    width: 100%;
+  }
+
   .upload-box {
     width: 100% !important;
     min-height: 350px;
@@ -748,7 +753,6 @@ export default {
 
   .upload-box.single {
     min-height: 350px;
-    min-width: 900px;
   }
 
   .upload-placeholder {
@@ -1042,6 +1046,105 @@ export default {
     min-height: 400px !important;
   }
 }
+
+@media (max-width: 768px) {
+  .mark3d-container {
+    padding: 12px;
+  }
+
+  .page-header {
+    padding: 14px 16px;
+    margin-bottom: 16px;
+
+    .header-left {
+      gap: 12px;
+
+      .header-icon svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      h2 {
+        font-size: 18px;
+        margin: 0 0 2px;
+      }
+
+      p {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .main-content {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .history-card {
+    .task-list {
+      max-height: 300px;
+    }
+  }
+
+  .create-card {
+    .upload-box {
+      min-height: 180px;
+    }
+
+    .upload-placeholder {
+      i { font-size: 28px; }
+      span { font-size: 13px; }
+    }
+
+    .form-actions {
+      .el-button {
+        min-width: 0;
+        width: 100%;
+        margin-left: 0;
+        margin-bottom: 8px;
+      }
+    }
+  }
+
+  .detail-panel {
+    .panel-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+
+      .header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+
+        .el-button {
+          flex: 1;
+          min-width: 0;
+        }
+      }
+    }
+
+    .status-block {
+      padding: 30px 16px;
+    }
+
+    .result-block .viewer-wrap .viewer-area {
+      min-height: 300px !important;
+    }
+
+    .model-actions {
+      .el-button {
+        min-width: 0;
+        flex: 1;
+      }
+    }
+  }
+
+  // 图片预览弹窗适配
+  ::v-deep .el-dialog {
+    width: 95vw !important;
+    margin: 0 auto;
+  }
+}
 </style>
 
 /* 全局样式 */
@@ -1087,6 +1190,12 @@ model-viewer::part(fullscreen-button) {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .custom-model-viewer {
+    height: 350px;
+  }
 }
 
 /* 全屏时的模型查看器样式 */
