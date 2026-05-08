@@ -78,7 +78,7 @@
             #{frontImageUrl},
             <if test="backImageUrl != null">#{backImageUrl},</if>
             <if test="topImageUrl != null">#{topImageUrl},</if>
-            <if test="sideImageNode != null">#{sideImageUrl},</if>
+            <if test="sideImageUrl != null">#{sideImageUrl},</if>
             <if test="meshyTaskId != null">#{meshyTaskId},</if>
             #{taskStatus}, #{progress},
             <if test="remark != null">#{remark},</if>

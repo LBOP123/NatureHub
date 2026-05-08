@@ -155,6 +155,8 @@ export default {
       if (!this.currentConversationId) {
         await this.createNewConversation(userQuestion)
       }
+      // 新问题发出时，关闭之前所有消息的视频引导
+      this.messages.forEach(msg => { msg.videoDismissed = true })
       this.messages.push({ type: 'user', html: userQuestion, videoDismissed: true })
       this.question = ''
       this.loading = true

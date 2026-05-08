@@ -33,7 +33,7 @@ public class VideoTaskAsyncExecutor {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final String COZE_STREAM_URL  = "https://api.coze.cn/v1/workflow/stream_run";
-    private static final String COZE_API_TOKEN   = "pat_QXi1ADgfXu0XP5Hx4bGEr2x9chbqY638qXQxHq3IIEwAQN5MbRpaAZlKGcpZOkEW";
+    private static final String COZE_API_TOKEN   = "pat_WPLAYbcr0fjQxgdLIiJRQpj6AdIpEqbpPlhkXf2Dv2AaTgmesPoKA4XeEsaWlAvn";
     private static final String COZE_WORKFLOW_ID = "7614489912053973034";
 
     private static final String STATUS_IN_PROGRESS = "2";
